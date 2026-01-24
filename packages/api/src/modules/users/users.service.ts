@@ -67,17 +67,20 @@ export class UsersService {
     role?: RoleType;
     status?: UserStatus;
   }) {
-    const { page = 1, pageSize = 20, search, departmentId, role, status } = params;
-    const skip = (page - 1) * pageSize;
+    // Ensure page and pageSize are valid numbers with defaults
+    const page = Number(params.page) || 1;
+    const pageSize = Number(params.pageSize) || 20;
+    const { search, departmentId, role, status } = params;
+    const skip = Math.max(0, (page - 1) * pageSize);
 
     const where: Prisma.UserWhereInput = {};
 
-    if (search) {
+    // Only apply search filter if search string is not empty
+    if (search && search.trim().length > 0) {
       where.OR = [
         { firstName: { contains: search, mode: 'insensitive' } },
         { lastName: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
-        { employeeId: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -122,8 +125,8 @@ export class UsersService {
       data: users,
       meta: {
         pagination: {
-          page,
-          pageSize,
+          page: Number(page),
+          pageSize: Number(pageSize),
           total,
           totalPages: Math.ceil(total / pageSize),
         },

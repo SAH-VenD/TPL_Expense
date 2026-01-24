@@ -74,12 +74,12 @@ export const adminApi = createApi({
   endpoints: (builder) => ({
     // Categories
     getCategories: builder.query<Category[], void>({
-      query: () => '/admin/categories',
+      query: () => '/categories',
       providesTags: ['Category'],
     }),
     createCategory: builder.mutation<Category, Partial<Category>>({
       query: (body) => ({
-        url: '/admin/categories',
+        url: '/categories',
         method: 'POST',
         body,
       }),
@@ -87,7 +87,7 @@ export const adminApi = createApi({
     }),
     updateCategory: builder.mutation<Category, { id: string; data: Partial<Category> }>({
       query: ({ id, data }) => ({
-        url: `/admin/categories/${id}`,
+        url: `/categories/${id}`,
         method: 'PATCH',
         body: data,
       }),
@@ -96,12 +96,12 @@ export const adminApi = createApi({
 
     // Departments
     getDepartments: builder.query<Department[], void>({
-      query: () => '/admin/departments',
+      query: () => '/departments',
       providesTags: ['Department'],
     }),
     createDepartment: builder.mutation<Department, Partial<Department>>({
       query: (body) => ({
-        url: '/admin/departments',
+        url: '/departments',
         method: 'POST',
         body,
       }),
@@ -130,9 +130,38 @@ export const adminApi = createApi({
       }),
       providesTags: ['User'],
     }),
+    createUser: builder.mutation<User, {
+      email: string;
+      firstName: string;
+      lastName: string;
+      role?: string;
+      departmentId?: string;
+      password?: string;
+    }>({
+      query: (body) => ({
+        url: '/users',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['User'],
+    }),
     approveUser: builder.mutation<User, string>({
       query: (id) => ({
         url: `/users/${id}/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['User'],
+    }),
+    deactivateUser: builder.mutation<User, string>({
+      query: (id) => ({
+        url: `/users/${id}/deactivate`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['User'],
+    }),
+    reactivateUser: builder.mutation<User, string>({
+      query: (id) => ({
+        url: `/users/${id}/reactivate`,
         method: 'POST',
       }),
       invalidatesTags: ['User'],
@@ -197,7 +226,10 @@ export const {
   useGetApprovalTiersQuery,
   useCreateApprovalTierMutation,
   useGetUsersQuery,
+  useCreateUserMutation,
   useApproveUserMutation,
+  useDeactivateUserMutation,
+  useReactivateUserMutation,
   useBulkImportUsersMutation,
   useGetAuditLogsQuery,
   useGetSettingsQuery,
