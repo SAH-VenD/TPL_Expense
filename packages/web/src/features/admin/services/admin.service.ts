@@ -166,6 +166,28 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['User'],
     }),
+    updateUser: builder.mutation<User, { id: string; data: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      departmentId?: string;
+      managerId?: string;
+      role?: string;
+    } }>({
+      query: ({ id, data }) => ({
+        url: `/users/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['User'],
+    }),
+    deleteUser: builder.mutation<{ message: string; id: string }, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['User'],
+    }),
     bulkImportUsers: builder.mutation<{ imported: number; errors: string[] }, FormData>({
       query: (formData) => ({
         url: '/users/bulk-import',
@@ -230,6 +252,8 @@ export const {
   useApproveUserMutation,
   useDeactivateUserMutation,
   useReactivateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
   useBulkImportUsersMutation,
   useGetAuditLogsQuery,
   useGetSettingsQuery,

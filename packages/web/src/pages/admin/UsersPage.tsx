@@ -5,7 +5,10 @@ import {
   useApproveUserMutation,
   useDeactivateUserMutation,
   useReactivateUserMutation,
+  useUpdateUserMutation,
+  useDeleteUserMutation,
   useGetDepartmentsQuery,
+  type User,
 } from '@/features/admin/services/admin.service';
 
 type UserStatus = 'PENDING_APPROVAL' | 'ACTIVE' | 'INACTIVE' | 'LOCKED';
@@ -33,6 +36,14 @@ interface CreateUserFormData {
   departmentId: string;
 }
 
+interface EditUserFormData {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: RoleType;
+  departmentId: string;
+}
+
 const initialFormData: CreateUserFormData = {
   firstName: '',
   lastName: '',
@@ -41,17 +52,28 @@ const initialFormData: CreateUserFormData = {
   departmentId: '',
 };
 
+const initialEditFormData: EditUserFormData = {
+  firstName: '',
+  lastName: '',
+  phone: '',
+  role: 'EMPLOYEE',
+  departmentId: '',
+};
+
 export function UsersPage() {
   const [filter, setFilter] = useState<UserStatus | 'ALL'>('ALL');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState<User | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState<{
-    type: 'deactivate' | 'reactivate';
+    type: 'deactivate' | 'reactivate' | 'delete';
     userId: string;
     userName: string;
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState<CreateUserFormData>(initialFormData);
+  const [editFormData, setEditFormData] = useState<EditUserFormData>(initialEditFormData);
   const [formError, setFormError] = useState<string | null>(null);
+  const [editFormError, setEditFormError] = useState<string | null>(null);
 
   // Fetch users from API
   const { data: usersData, isLoading, error } = useGetUsersQuery({ search: searchTerm });
@@ -60,6 +82,8 @@ export function UsersPage() {
   const [approveUser, { isLoading: isApproving }] = useApproveUserMutation();
   const [deactivateUser, { isLoading: isDeactivating }] = useDeactivateUserMutation();
   const [reactivateUser, { isLoading: isReactivating }] = useReactivateUserMutation();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
   const users = usersData?.data || [];
 
@@ -91,6 +115,63 @@ export function UsersPage() {
       setShowConfirmModal(null);
     } catch (err) {
       console.error('Failed to reactivate user:', err);
+    }
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditFormData({
+      firstName: user.firstName,
+      lastName: user.lastName,
+      phone: '',
+      role: user.role as RoleType,
+      departmentId: user.departmentId || '',
+    });
+    setEditFormError(null);
+    setShowEditModal(user);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!showEditModal) return;
+    setEditFormError(null);
+
+    // Validate required fields
+    if (!editFormData.firstName || !editFormData.lastName) {
+      setEditFormError('First name and last name are required');
+      return;
+    }
+
+    try {
+      await updateUser({
+        id: showEditModal.id,
+        data: {
+          firstName: editFormData.firstName,
+          lastName: editFormData.lastName,
+          phone: editFormData.phone || undefined,
+          role: editFormData.role,
+          departmentId: editFormData.departmentId || undefined,
+        },
+      }).unwrap();
+      setShowEditModal(null);
+      setEditFormData(initialEditFormData);
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      setEditFormError(error.data?.message || 'Failed to update user');
+    }
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(null);
+    setEditFormData(initialEditFormData);
+    setEditFormError(null);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId).unwrap();
+      setShowConfirmModal(null);
+    } catch (err) {
+      console.error('Failed to delete user:', err);
     }
   };
 
@@ -277,8 +358,23 @@ export function UsersPage() {
                         {isApproving ? 'Approving...' : 'Approve'}
                       </button>
                     )}
-                    <button className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50">
+                    <button
+                      onClick={() => handleEditUser(user)}
+                      className="px-3 py-1 text-sm border border-gray-300 text-gray-700 rounded hover:bg-gray-50"
+                    >
                       Edit
+                    </button>
+                    <button
+                      onClick={() =>
+                        setShowConfirmModal({
+                          type: 'delete',
+                          userId: user.id,
+                          userName: `${user.firstName} ${user.lastName}`,
+                        })
+                      }
+                      className="px-3 py-1 text-sm border border-red-300 text-red-700 rounded hover:bg-red-50"
+                    >
+                      Delete
                     </button>
                     {user.status === 'ACTIVE' && (
                       <button
@@ -428,18 +524,136 @@ export function UsersPage() {
         </div>
       )}
 
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit User</h3>
+            <form className="space-y-4" onSubmit={handleUpdateUser}>
+              {editFormError && (
+                <div className="rounded-lg bg-red-50 p-3 border border-red-200">
+                  <p className="text-sm text-red-700">{editFormError}</p>
+                </div>
+              )}
+              <div>
+                <label className="label">Email</label>
+                <input
+                  type="email"
+                  className="input bg-gray-100"
+                  value={showEditModal.email}
+                  disabled
+                />
+                <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label">First Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={editFormData.firstName}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, firstName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="label">Last Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={editFormData.lastName}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, lastName: e.target.value })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="label">Phone</label>
+                <input
+                  type="tel"
+                  className="input"
+                  placeholder="Optional"
+                  value={editFormData.phone}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, phone: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="label">Role</label>
+                <select
+                  className="input"
+                  value={editFormData.role}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, role: e.target.value as RoleType })
+                  }
+                >
+                  <option value="EMPLOYEE">Employee</option>
+                  <option value="APPROVER">Approver</option>
+                  <option value="FINANCE">Finance</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Department</label>
+                <select
+                  className="input"
+                  value={editFormData.departmentId}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, departmentId: e.target.value })
+                  }
+                >
+                  <option value="">No department</option>
+                  {departments?.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="btn-primary disabled:opacity-50"
+                >
+                  {isUpdating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              {showConfirmModal.type === 'deactivate' ? 'Deactivate User' : 'Reactivate User'}
+              {showConfirmModal.type === 'deactivate'
+                ? 'Deactivate User'
+                : showConfirmModal.type === 'delete'
+                ? 'Delete User'
+                : 'Reactivate User'}
             </h3>
             <p className="text-gray-600 mb-4">
               Are you sure you want to {showConfirmModal.type}{' '}
               <strong>{showConfirmModal.userName}</strong>?
               {showConfirmModal.type === 'deactivate' &&
                 ' They will no longer be able to log in.'}
+              {showConfirmModal.type === 'delete' &&
+                ' This action cannot be undone.'}
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -449,22 +663,28 @@ export function UsersPage() {
                 Cancel
               </button>
               <button
-                onClick={() =>
-                  showConfirmModal.type === 'deactivate'
-                    ? handleDeactivateUser(showConfirmModal.userId)
-                    : handleReactivateUser(showConfirmModal.userId)
-                }
-                disabled={isDeactivating || isReactivating}
+                onClick={() => {
+                  if (showConfirmModal.type === 'deactivate') {
+                    handleDeactivateUser(showConfirmModal.userId);
+                  } else if (showConfirmModal.type === 'delete') {
+                    handleDeleteUser(showConfirmModal.userId);
+                  } else {
+                    handleReactivateUser(showConfirmModal.userId);
+                  }
+                }}
+                disabled={isDeactivating || isReactivating || isDeleting}
                 className={`px-4 py-2 text-white rounded-lg disabled:opacity-50 ${
-                  showConfirmModal.type === 'deactivate'
+                  showConfirmModal.type === 'deactivate' || showConfirmModal.type === 'delete'
                     ? 'bg-red-600 hover:bg-red-700'
                     : 'bg-green-600 hover:bg-green-700'
                 }`}
               >
-                {isDeactivating || isReactivating
+                {isDeactivating || isReactivating || isDeleting
                   ? 'Processing...'
                   : showConfirmModal.type === 'deactivate'
                   ? 'Deactivate'
+                  : showConfirmModal.type === 'delete'
+                  ? 'Delete'
                   : 'Reactivate'}
               </button>
             </div>

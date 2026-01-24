@@ -7,11 +7,6 @@ import authReducer from '@/features/auth/store/authSlice';
 
 // Create a simplified test store without RTK Query APIs
 // (we mock the hooks directly in tests)
-interface TestStoreOptions {
-  preloadedState?: Record<string, unknown>;
-  route?: string;
-}
-
 function createTestStore(preloadedState?: Record<string, unknown>): EnhancedStore {
   const rootReducer = combineReducers({
     auth: authReducer,

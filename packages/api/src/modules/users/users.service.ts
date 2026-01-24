@@ -282,6 +282,33 @@ export class UsersService {
     return results;
   }
 
+  async delete(id: string) {
+    const user = await this.findOne(id);
+
+    // Check if user has any related records that would prevent deletion
+    const hasExpenses = await this.prisma.expense.count({
+      where: { submitterId: id },
+    });
+
+    if (hasExpenses > 0) {
+      throw new BadRequestException(
+        'Cannot delete user with existing expenses. Deactivate the user instead.',
+      );
+    }
+
+    // Delete related records first
+    await this.prisma.refreshToken.deleteMany({ where: { userId: id } });
+    await this.prisma.notification.deleteMany({ where: { userId: id } });
+
+    // Delete the user
+    await this.prisma.user.delete({ where: { id } });
+
+    return {
+      message: `User ${user.firstName} ${user.lastName} has been deleted`,
+      id,
+    };
+  }
+
   private generateTempPassword(): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
     let password = '';

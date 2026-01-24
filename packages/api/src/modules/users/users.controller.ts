@@ -107,4 +107,11 @@ export class UsersController {
   bulkImport(@Body() users: CreateUserDto[]) {
     return this.usersService.bulkImport(users);
   }
+
+  @Delete(':id')
+  @Roles(RoleType.ADMIN)
+  @ApiOperation({ summary: 'Delete user (Admin only)' })
+  remove(@Param('id') id: string) {
+    return this.usersService.delete(id);
+  }
 }
