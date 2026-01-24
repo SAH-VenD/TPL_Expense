@@ -112,8 +112,8 @@ export function ApprovalQueuePage() {
 
       {/* Bulk Actions */}
       {selectedIds.length > 0 && (
-        <div className="bg-blue-50 rounded-lg p-4 flex items-center justify-between">
-          <span className="text-blue-800 font-medium">
+        <div className="bg-primary-50 rounded-lg p-4 flex items-center justify-between">
+          <span className="text-primary-800 font-medium">
             {selectedIds.length} expense(s) selected
           </span>
           <div className="space-x-3">
@@ -134,7 +134,7 @@ export function ApprovalQueuePage() {
       )}
 
       {/* Approval Queue */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -143,7 +143,7 @@ export function ApprovalQueuePage() {
                   type="checkbox"
                   checked={selectedIds.length === pendingApprovals.length}
                   onChange={handleSelectAll}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -174,12 +174,12 @@ export function ApprovalQueuePage() {
                     type="checkbox"
                     checked={selectedIds.includes(approval.id)}
                     onChange={() => handleSelect(approval.id)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                 </td>
                 <td className="px-6 py-4">
                   <div>
-                    <p className="font-medium text-blue-600">
+                    <p className="font-medium text-primary-600">
                       {approval.expense.expenseNumber}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -209,7 +209,7 @@ export function ApprovalQueuePage() {
                   </p>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-primary-800">
                     Tier {approval.tierLevel}
                   </span>
                 </td>
@@ -253,7 +253,7 @@ export function ApprovalQueuePage() {
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={3}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 placeholder="Please provide a reason..."
                 required
               />

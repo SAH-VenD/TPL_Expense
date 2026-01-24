@@ -64,14 +64,14 @@ export function VoucherListPage() {
         <h1 className="text-2xl font-bold text-gray-900">Petty Cash Vouchers</h1>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
         >
           Request Voucher
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="card p-4">
         <div className="flex flex-wrap gap-2">
           {['ALL', 'REQUESTED', 'APPROVED', 'DISBURSED', 'SETTLED', 'OVERDUE'].map(
             (status) => (
@@ -80,7 +80,7 @@ export function VoucherListPage() {
                 onClick={() => setFilter(status as VoucherStatus | 'ALL')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === status
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -94,12 +94,12 @@ export function VoucherListPage() {
       {/* Voucher Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVouchers.map((voucher) => (
-          <div key={voucher.id} className="bg-white rounded-lg shadow p-6">
+          <div key={voucher.id} className="card p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <Link
                   to={`/vouchers/${voucher.id}`}
-                  className="font-medium text-blue-600 hover:text-blue-800"
+                  className="font-medium text-primary-600 hover:text-primary-700"
                 >
                   {voucher.voucherNumber}
                 </Link>
@@ -170,7 +170,7 @@ export function VoucherListPage() {
       </div>
 
       {filteredVouchers.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
+        <div className="text-center py-12 card">
           <p className="text-gray-500">No vouchers found</p>
         </div>
       )}
@@ -189,7 +189,7 @@ export function VoucherListPage() {
                 </label>
                 <input
                   type="text"
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   placeholder="What is this voucher for?"
                 />
               </div>
@@ -199,7 +199,7 @@ export function VoucherListPage() {
                 </label>
                 <input
                   type="number"
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   placeholder="0"
                 />
               </div>
@@ -209,7 +209,7 @@ export function VoucherListPage() {
                 </label>
                 <textarea
                   rows={3}
-                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                   placeholder="Explain why you need this amount..."
                 />
               </div>
@@ -223,7 +223,7 @@ export function VoucherListPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
                 >
                   Submit Request
                 </button>

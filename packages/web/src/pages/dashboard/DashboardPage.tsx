@@ -12,18 +12,13 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back, {user?.firstName}!
-          </h1>
-          <p className="text-gray-600">
-            Here's what's happening with your expenses today.
-          </p>
-        </div>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-          New Expense
-        </button>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome back, {user?.firstName}!
+        </h1>
+        <p className="text-gray-600">
+          Here's what's happening with your expenses today.
+        </p>
       </div>
 
       {/* Stats Grid */}
@@ -31,7 +26,7 @@ export function DashboardPage() {
         {stats.map((stat) => (
           <div
             key={stat.name}
-            className="bg-white rounded-lg shadow p-6"
+            className="card p-6"
           >
             <p className="text-sm font-medium text-gray-600">{stat.name}</p>
             <p className="mt-2 text-3xl font-bold text-gray-900">{stat.value}</p>
@@ -42,7 +37,7 @@ export function DashboardPage() {
 
       {/* Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow">
+        <div className="card">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Recent Expenses</h2>
           </div>
@@ -66,7 +61,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="card">
           <div className="p-6 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Pending Approvals</h2>
           </div>
@@ -79,10 +74,10 @@ export function DashboardPage() {
                     <p className="text-sm text-gray-500">By: John Doe</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
+                    <button className="px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                       Approve
                     </button>
-                    <button className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
+                    <button className="px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                       Reject
                     </button>
                   </div>
@@ -94,7 +89,7 @@ export function DashboardPage() {
       </div>
 
       {/* Budget Overview */}
-      <div className="bg-white rounded-lg shadow">
+      <div className="card">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Budget Overview</h2>
         </div>
@@ -114,7 +109,7 @@ export function DashboardPage() {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-blue-600 h-2 rounded-full"
+                    className="bg-primary-600 h-2 rounded-full"
                     style={{ width: `${(budget.used / budget.total) * 100}%` }}
                   />
                 </div>

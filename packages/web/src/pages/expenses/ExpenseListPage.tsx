@@ -62,18 +62,12 @@ export function ExpenseListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div>
         <h1 className="text-2xl font-bold text-gray-900">My Expenses</h1>
-        <Link
-          to="/expenses/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          New Expense
-        </Link>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
+      <div className="card p-4">
         <div className="flex flex-wrap gap-2">
           {['ALL', 'DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'PAID'].map(
             (status) => (
@@ -82,7 +76,7 @@ export function ExpenseListPage() {
                 onClick={() => setFilter(status as ExpenseStatus | 'ALL')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === status
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -94,7 +88,7 @@ export function ExpenseListPage() {
       </div>
 
       {/* Expense Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="card overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -124,7 +118,7 @@ export function ExpenseListPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {filteredExpenses.map((expense) => (
               <tr key={expense.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary-600">
                   <Link to={`/expenses/${expense.id}`}>
                     {expense.expenseNumber}
                   </Link>
@@ -153,7 +147,7 @@ export function ExpenseListPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link
                     to={`/expenses/${expense.id}`}
-                    className="text-blue-600 hover:text-blue-900"
+                    className="text-primary-600 hover:text-primary-700"
                   >
                     View
                   </Link>
