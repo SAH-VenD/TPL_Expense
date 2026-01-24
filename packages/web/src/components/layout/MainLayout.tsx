@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { logout } from '@/features/auth/store/authSlice';
-import { useLogoutMutation } from '@/features/auth/services/auth.service';
+import { logout, setUser } from '@/features/auth/store/authSlice';
+import { useLogoutMutation, useGetMeQuery } from '@/features/auth/services/auth.service';
 import clsx from 'clsx';
 
 const navigation = [
@@ -97,9 +97,21 @@ export function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, refreshToken } = useAppSelector((state) => state.auth);
+  const { user, refreshToken, accessToken } = useAppSelector((state) => state.auth);
   const [logoutApi] = useLogoutMutation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Fetch user data if we have a token but no user data
+  const { data: userData } = useGetMeQuery(undefined, {
+    skip: !accessToken || !!user,
+  });
+
+  // Update user in store when fetched
+  useEffect(() => {
+    if (userData && !user) {
+      dispatch(setUser(userData));
+    }
+  }, [userData, user, dispatch]);
 
   const handleLogout = async () => {
     if (refreshToken) {
@@ -116,7 +128,7 @@ export function MainLayout() {
   const showAdminNav = user && ['ADMIN', 'FINANCE'].includes(user.role);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -126,9 +138,9 @@ export function MainLayout() {
       )}
 
       {/* Sidebar */}
-      <div
+      <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform lg:translate-x-0 lg:static lg:inset-auto',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform lg:translate-x-0 lg:relative lg:z-auto flex-shrink-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -215,12 +227,12 @@ export function MainLayout() {
             </button>
           </div>
         </div>
-      </div>
+      </aside>
 
       {/* Main content */}
-      <div className="lg:pl-64">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200">
+        <header className="flex-shrink-0 bg-white border-b border-gray-200">
           <div className="flex items-center justify-between h-16 px-4 lg:px-8">
             <button
               onClick={() => setSidebarOpen(true)}
@@ -236,7 +248,7 @@ export function MainLayout() {
               </svg>
             </button>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 ml-auto">
               <Link
                 to="/expenses/new"
                 className="btn-primary hidden sm:inline-flex"
@@ -248,7 +260,7 @@ export function MainLayout() {
         </header>
 
         {/* Page content */}
-        <main className="p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
           <Outlet />
         </main>
       </div>

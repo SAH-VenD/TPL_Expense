@@ -38,16 +38,20 @@ tpl-expense/
 - [x] Docker Compose (PostgreSQL, Redis, LocalStack, MailHog)
 - [x] NestJS API structure with Prisma
 - [x] Complete Prisma schema with all entities
-- [ ] React app with Vite + Tailwind (IN PROGRESS)
-- [ ] Authentication module with JWT
+- [x] React app with Vite + Tailwind
+- [x] Authentication module with JWT (complete with guards, strategies, decorators)
+- [x] Users module with CRUD, approval workflow, bulk import
+- [x] RTK Query services for all features (auth, expenses, approvals, vouchers, budgets, reports, admin)
+- [x] MainLayout and AuthLayout components
+- [x] Protected routes and role-based routes
+- [ ] Remaining NestJS module placeholders (IN PROGRESS)
+- [ ] Frontend page components
 
 ### Day 2 - TODO
-- [ ] User CRUD with admin approval
-- [ ] CSV bulk import
-- [ ] Password change/reset
-- [ ] Category & Department modules
-- [ ] Frontend auth pages
-- [ ] Main layout
+- [ ] Category & Department modules (full implementation)
+- [ ] Frontend auth pages (LoginForm, RegisterForm)
+- [ ] Storage module (S3)
+- [ ] Receipt upload
 
 ### Day 3 - TODO
 - [ ] S3 storage module
@@ -243,10 +247,18 @@ npm run test -w @tpl-expense/api
 - `FRONTEND_URL` - CORS origin
 
 ## Next Steps (Current Session)
-1. Create remaining module placeholders
-2. Implement auth module
-3. Set up React frontend
-4. Create shared types package
+1. ~~Create remaining module placeholders~~ (IN PROGRESS)
+2. ~~Implement auth module~~ (DONE)
+3. ~~Set up React frontend~~ (DONE)
+4. Create remaining NestJS modules
+5. Create frontend page components
+6. Create database seed script
+
+## Git Branching Strategy
+- **main**: Production-ready code
+- **feature/***: Feature branches (current: feature/day1-auth-setup)
+- Commit frequently, push after each logical feature completion
+- Create PR to merge back to main
 
 ## Learnings & Decisions
 1. Using NestJS over Express for better structure and TypeScript support
@@ -256,3 +268,22 @@ npm run test -w @tpl-expense/api
 5. Monorepo with npm workspaces for shared code
 6. Redux Toolkit + RTK Query for frontend state management
 7. Node.js 22 LTS as required by user
+8. Simple git branching: main + feature branches
+9. Commit after each logical feature completion with descriptive messages
+
+## Completed Modules
+
+### Auth Module (`/packages/api/src/modules/auth/`)
+- `auth.module.ts` - Module definition
+- `auth.controller.ts` - REST endpoints
+- `auth.service.ts` - Business logic (login, register, JWT, etc.)
+- `strategies/jwt.strategy.ts` - JWT validation
+- `guards/jwt-auth.guard.ts` - Route protection
+- `guards/roles.guard.ts` - Role-based access
+- `decorators/` - CurrentUser, Public, Roles
+
+### Users Module (`/packages/api/src/modules/users/`)
+- Full CRUD with pagination
+- Admin approval workflow
+- Bulk import capability
+- Role-based access control
