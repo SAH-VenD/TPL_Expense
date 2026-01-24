@@ -1,0 +1,815 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ENUMS ====================
+
+enum UserStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  INACTIVE
+  LOCKED
+}
+
+enum RoleType {
+  EMPLOYEE
+  APPROVER
+  FINANCE
+  ADMIN
+}
+
+enum ExpenseType {
+  OUT_OF_POCKET
+  PETTY_CASH
+}
+
+enum ExpenseStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CLARIFICATION_REQUESTED
+  RESUBMITTED
+  PAID
+}
+
+enum VoucherStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  DISBURSED
+  PARTIALLY_SETTLED
+  SETTLED
+  OVERDUE
+}
+
+enum PreApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  USED
+}
+
+enum BudgetType {
+  DEPARTMENT
+  PROJECT
+  COST_CENTER
+  EMPLOYEE
+  CATEGORY
+}
+
+enum BudgetPeriod {
+  ANNUAL
+  QUARTERLY
+  MONTHLY
+  PROJECT_BASED
+}
+
+enum BudgetEnforcement {
+  HARD_BLOCK
+  SOFT_WARNING
+  AUTO_ESCALATE
+}
+
+enum Currency {
+  PKR
+  GBP
+  USD
+  SAR
+  AED
+}
+
+enum TaxType {
+  NONE
+  PUNJAB_GST
+  SINDH_GST
+  KPK_GST
+  BALOCHISTAN_GST
+  FEDERAL_GST
+  UK_VAT
+  US_SALES_TAX
+  UAE_VAT
+  SAUDI_VAT
+}
+
+enum ApprovalAction {
+  APPROVED
+  REJECTED
+  CLARIFICATION_REQUESTED
+}
+
+enum NotificationType {
+  EXPENSE_SUBMITTED
+  EXPENSE_APPROVED
+  EXPENSE_REJECTED
+  CLARIFICATION_REQUESTED
+  VOUCHER_APPROVED
+  VOUCHER_DISBURSED
+  VOUCHER_OVERDUE
+  BUDGET_WARNING
+  BUDGET_EXCEEDED
+  PRE_APPROVAL_EXPIRING
+  DELEGATION_STARTED
+  ESCALATION_TRIGGERED
+  MENTION
+}
+
+// ==================== USER & AUTH ====================
+
+model User {
+  id                  String      @id @default(uuid())
+  email               String      @unique
+  passwordHash        String
+  firstName           String
+  lastName            String
+  employeeId          String?     @unique
+  phone               String?
+  status              UserStatus  @default(PENDING_APPROVAL)
+  failedLoginAttempts Int         @default(0)
+  lockedUntil         DateTime?
+  lastLoginAt         DateTime?
+  lastActivityAt      DateTime?
+  mustChangePassword  Boolean     @default(false)
+  passwordChangedAt   DateTime?
+  passwordHistory     String[]    @default([])
+
+  // Organizational
+  departmentId        String?
+  department          Department? @relation(fields: [departmentId], references: [id])
+  managerId           String?
+  manager             User?       @relation("ManagerRelation", fields: [managerId], references: [id])
+  directReports       User[]      @relation("ManagerRelation")
+
+  // Role & Permissions
+  role                RoleType    @default(EMPLOYEE)
+
+  // Related entities
+  expenses            Expense[]   @relation("ExpenseSubmitter")
+  approvalHistory     ApprovalHistory[] @relation("ApprovalApprover")
+  vouchers            Voucher[]
+  preApprovals        PreApproval[] @relation("PreApprovalSubmitter")
+  preApprovalApprovals PreApproval[] @relation("PreApprovalApprover")
+  comments            Comment[]
+  notifications       Notification[]
+  delegationsFrom     ApprovalDelegation[] @relation("DelegationFrom")
+  delegationsTo       ApprovalDelegation[] @relation("DelegationTo")
+  budgets             Budget[]    @relation("BudgetOwner")
+  employeeBudgets     Budget[]    @relation("EmployeeBudgets")
+  auditLogs           AuditLog[]
+  refreshTokens       RefreshToken[]
+
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+
+  @@index([email])
+  @@index([departmentId])
+  @@index([managerId])
+  @@index([status])
+  @@index([role])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  token       String   @unique
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+// ==================== ORGANIZATION ====================
+
+model Department {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  code        String    @unique
+  description String?
+  isActive    Boolean   @default(true)
+
+  parentId    String?
+  parent      Department? @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children    Department[] @relation("DepartmentHierarchy")
+
+  users       User[]
+  expenses    Expense[]
+  budgets     Budget[]
+  costCenters CostCenter[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([code])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  code        String    @unique
+  description String?
+  clientName  String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+
+  expenses    Expense[]
+  budgets     Budget[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([code])
+}
+
+model CostCenter {
+  id           String     @id @default(uuid())
+  name         String
+  code         String     @unique
+  description  String?
+  isActive     Boolean    @default(true)
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  expenses     Expense[]
+  budgets      Budget[]
+
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([code])
+}
+
+// ==================== EXPENSE ====================
+
+model Expense {
+  id                String        @id @default(uuid())
+  expenseNumber     String        @unique
+  type              ExpenseType
+  status            ExpenseStatus @default(DRAFT)
+
+  // Submitter
+  submitterId       String
+  submitter         User          @relation("ExpenseSubmitter", fields: [submitterId], references: [id])
+  submittedAt       DateTime?
+
+  // Vendor
+  vendorId          String?
+  vendor            Vendor?       @relation(fields: [vendorId], references: [id])
+  vendorName        String?
+
+  // Core fields
+  expenseDate       DateTime
+  description       String?
+  receiptNumber     String?
+  invoiceNumber     String?
+
+  // Amount
+  currency          Currency      @default(PKR)
+  amount            Decimal       @db.Decimal(15, 2)
+  taxType           TaxType       @default(NONE)
+  taxAmount         Decimal       @default(0) @db.Decimal(15, 2)
+  totalAmount       Decimal       @db.Decimal(15, 2)
+
+  // Exchange rate (if non-PKR)
+  exchangeRate      Decimal?      @db.Decimal(15, 6)
+  amountInPKR       Decimal?      @db.Decimal(15, 2)
+  exchangeRateDate  DateTime?
+
+  // Classification
+  categoryId        String
+  category          Category      @relation(fields: [categoryId], references: [id])
+  departmentId      String?
+  department        Department?   @relation(fields: [departmentId], references: [id])
+  projectId         String?
+  project           Project?      @relation(fields: [projectId], references: [id])
+  costCenterId      String?
+  costCenter        CostCenter?   @relation(fields: [costCenterId], references: [id])
+  budgetId          String?
+  budget            Budget?       @relation(fields: [budgetId], references: [id])
+
+  // Pre-approval link
+  preApprovalId     String?
+  preApproval       PreApproval?  @relation(fields: [preApprovalId], references: [id])
+
+  // Voucher link (for petty cash)
+  voucherId         String?
+  voucher           Voucher?      @relation(fields: [voucherId], references: [id])
+
+  // Mileage specific
+  isMileage         Boolean       @default(false)
+  mileageStart      String?
+  mileageEnd        String?
+  mileageDistance   Decimal?      @db.Decimal(10, 2)
+  mileageRate       Decimal?      @db.Decimal(10, 2)
+  vehicleType       String?
+
+  // Per Diem specific
+  isPerDiem         Boolean       @default(false)
+  perDiemDays       Decimal?      @db.Decimal(5, 1)
+  perDiemRate       Decimal?      @db.Decimal(10, 2)
+  perDiemDestination String?
+
+  // OCR data
+  ocrProcessed      Boolean       @default(false)
+  ocrConfidence     Float?
+  ocrRawData        Json?
+  ocrNeedsReview    Boolean       @default(false)
+
+  // Rejection/Clarification
+  rejectionReason   String?
+  clarificationNote String?
+
+  // Related entities
+  splits            ExpenseSplit[]
+  receipts          Receipt[]
+  attachments       Attachment[]
+  approvalHistory   ApprovalHistory[]
+  comments          Comment[]
+
+  // Deadline tracking
+  submissionDeadline DateTime?
+  isOverdue         Boolean       @default(false)
+  isDuplicate       Boolean       @default(false)
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([submitterId])
+  @@index([status])
+  @@index([expenseDate])
+  @@index([categoryId])
+  @@index([departmentId])
+  @@index([voucherId])
+  @@index([expenseNumber])
+}
+
+model ExpenseSplit {
+  id          String   @id @default(uuid())
+  expenseId   String
+  expense     Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  projectId   String?
+  costCenterId String?
+  amount      Decimal  @db.Decimal(15, 2)
+  percentage  Decimal? @db.Decimal(5, 2)
+  description String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([expenseId])
+}
+
+model Receipt {
+  id            String   @id @default(uuid())
+  expenseId     String
+  expense       Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  fileName      String
+  originalName  String
+  mimeType      String
+  fileSize      Int
+  s3Key         String
+  s3Bucket      String
+
+  fileHash      String?
+
+  ocrStatus     String?  @default("pending")
+  ocrResult     Json?
+  ocrConfidence Float?
+
+  uploadedAt    DateTime @default(now())
+
+  @@index([expenseId])
+  @@index([fileHash])
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  expenseId   String
+  expense     Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  fileName    String
+  originalName String
+  mimeType    String
+  fileSize    Int
+  s3Key       String
+  s3Bucket    String
+
+  uploadedAt  DateTime @default(now())
+
+  @@index([expenseId])
+}
+
+// ==================== CATEGORY & VENDOR ====================
+
+model Category {
+  id                  String    @id @default(uuid())
+  name                String
+  code                String    @unique
+  description         String?
+  isActive            Boolean   @default(true)
+
+  parentId            String?
+  parent              Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children            Category[] @relation("CategoryHierarchy")
+
+  requiresReceipt     Boolean   @default(true)
+  requiresPreApproval Boolean   @default(false)
+  maxAmount           Decimal?  @db.Decimal(15, 2)
+
+  expenses            Expense[]
+  splits              ExpenseSplit[]
+  budgets             Budget[]
+  vendorMappings      VendorCategoryMapping[]
+  preApprovals        PreApproval[]
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([code])
+  @@index([parentId])
+}
+
+model Vendor {
+  id              String    @id @default(uuid())
+  name            String
+  normalizedName  String
+  taxId           String?
+  address         String?
+  phone           String?
+  email           String?
+  isActive        Boolean   @default(true)
+  isVerified      Boolean   @default(false)
+
+  usageCount      Int       @default(0)
+  lastUsedAt      DateTime?
+
+  expenses        Expense[]
+  categoryMappings VendorCategoryMapping[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([normalizedName])
+  @@index([normalizedName])
+}
+
+model VendorCategoryMapping {
+  id          String   @id @default(uuid())
+  vendorId    String
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  confidence  Float    @default(1.0)
+  usageCount  Int      @default(1)
+
+  @@unique([vendorId, categoryId])
+}
+
+// ==================== VOUCHER ====================
+
+model Voucher {
+  id               String        @id @default(uuid())
+  voucherNumber    String        @unique
+  status           VoucherStatus @default(REQUESTED)
+
+  requesterId      String
+  requester        User          @relation(fields: [requesterId], references: [id])
+  requestedAt      DateTime      @default(now())
+
+  currency         Currency      @default(PKR)
+  requestedAmount  Decimal       @db.Decimal(15, 2)
+  approvedAmount   Decimal?      @db.Decimal(15, 2)
+  disbursedAmount  Decimal?      @db.Decimal(15, 2)
+  settledAmount    Decimal?      @db.Decimal(15, 2)
+
+  purpose          String
+  notes            String?
+
+  approvedAt       DateTime?
+  approvedBy       String?
+  disbursedAt      DateTime?
+  disbursedBy      String?
+  settlementDeadline DateTime?
+  settledAt        DateTime?
+
+  underSpendAmount Decimal?      @db.Decimal(15, 2)
+  overSpendAmount  Decimal?      @db.Decimal(15, 2)
+  cashReturned     Decimal?      @db.Decimal(15, 2)
+
+  expenses         Expense[]
+
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([requesterId])
+  @@index([status])
+  @@index([voucherNumber])
+}
+
+// ==================== APPROVAL ====================
+
+model ApprovalTier {
+  id              String   @id @default(uuid())
+  name            String
+  tierOrder       Int
+  minAmount       Decimal  @db.Decimal(15, 2)
+  maxAmount       Decimal? @db.Decimal(15, 2)
+  approverRole    RoleType
+  isActive        Boolean  @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tierOrder])
+  @@index([minAmount, maxAmount])
+}
+
+model ApprovalHistory {
+  id             String         @id @default(uuid())
+  expenseId      String
+  expense        Expense        @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  approverId     String
+  approver       User           @relation("ApprovalApprover", fields: [approverId], references: [id])
+
+  action         ApprovalAction
+  tierLevel      Int
+  comment        String?
+
+  wasEscalated   Boolean        @default(false)
+  escalatedFromId String?
+  delegatedFromId String?
+
+  createdAt      DateTime       @default(now())
+
+  @@index([expenseId])
+  @@index([approverId])
+}
+
+model ApprovalDelegation {
+  id          String   @id @default(uuid())
+  fromUserId  String
+  fromUser    User     @relation("DelegationFrom", fields: [fromUserId], references: [id])
+  toUserId    String
+  toUser      User     @relation("DelegationTo", fields: [toUserId], references: [id])
+
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?
+  isActive    Boolean  @default(true)
+
+  createdAt   DateTime @default(now())
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([startDate, endDate])
+}
+
+// ==================== PRE-APPROVAL ====================
+
+model PreApproval {
+  id                String           @id @default(uuid())
+  preApprovalNumber String           @unique
+  status            PreApprovalStatus @default(PENDING)
+
+  requesterId       String
+  requester         User             @relation("PreApprovalSubmitter", fields: [requesterId], references: [id])
+
+  approverId        String?
+  approver          User?            @relation("PreApprovalApprover", fields: [approverId], references: [id])
+
+  categoryId        String
+  category          Category         @relation(fields: [categoryId], references: [id])
+
+  description       String
+  estimatedAmount   Decimal          @db.Decimal(15, 2)
+  currency          Currency         @default(PKR)
+  expectedDate      DateTime?
+  purpose           String?
+
+  requestedAt       DateTime         @default(now())
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectionReason   String?
+  expiresAt         DateTime
+
+  expenses          Expense[]
+  actualAmount      Decimal?         @db.Decimal(15, 2)
+
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([requesterId])
+  @@index([status])
+  @@index([preApprovalNumber])
+}
+
+// ==================== BUDGET ====================
+
+model Budget {
+  id               String           @id @default(uuid())
+  name             String
+  type             BudgetType
+  period           BudgetPeriod
+
+  currency         Currency         @default(PKR)
+  totalAmount      Decimal          @db.Decimal(15, 2)
+  usedAmount       Decimal          @default(0) @db.Decimal(15, 2)
+
+  startDate        DateTime
+  endDate          DateTime
+
+  warningThreshold Decimal          @default(80) @db.Decimal(5, 2)
+  enforcement      BudgetEnforcement @default(SOFT_WARNING)
+
+  ownerId          String?
+  owner            User?            @relation("BudgetOwner", fields: [ownerId], references: [id])
+
+  departmentId     String?
+  department       Department?      @relation(fields: [departmentId], references: [id])
+  projectId        String?
+  project          Project?         @relation(fields: [projectId], references: [id])
+  costCenterId     String?
+  costCenter       CostCenter?      @relation(fields: [costCenterId], references: [id])
+  employeeId       String?
+  employee         User?            @relation("EmployeeBudgets", fields: [employeeId], references: [id])
+  categoryId       String?
+  category         Category?        @relation(fields: [categoryId], references: [id])
+
+  isActive         Boolean          @default(true)
+
+  expenses         Expense[]
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([type])
+  @@index([startDate, endDate])
+}
+
+// ==================== COMMUNICATION ====================
+
+model Comment {
+  id          String   @id @default(uuid())
+  expenseId   String
+  expense     Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+
+  content     String
+  mentions    String[] @default([])
+
+  parentId    String?
+  parent      Comment? @relation("CommentThread", fields: [parentId], references: [id])
+  replies     Comment[] @relation("CommentThread")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([expenseId])
+  @@index([authorId])
+}
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        NotificationType
+  title       String
+  message     String
+  data        Json?
+
+  entityType  String?
+  entityId    String?
+
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ==================== AUDIT & SYSTEM ====================
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+
+  action      String
+  entityType  String
+  entityId    String?
+
+  oldValue    Json?
+  newValue    Json?
+
+  ipAddress   String?
+  userAgent   String?
+  sessionId   String?
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+model ExchangeRate {
+  id            String   @id @default(uuid())
+  fromCurrency  Currency
+  toCurrency    Currency @default(PKR)
+  rate          Decimal  @db.Decimal(15, 6)
+  effectiveDate DateTime
+  source        String?
+
+  createdAt     DateTime @default(now())
+
+  @@unique([fromCurrency, toCurrency, effectiveDate])
+  @@index([fromCurrency, toCurrency])
+  @@index([effectiveDate])
+}
+
+model MileageRate {
+  id            String   @id @default(uuid())
+  name          String
+  vehicleType   String
+  ratePerKm     Decimal  @db.Decimal(10, 2)
+  currency      Currency @default(PKR)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([vehicleType])
+  @@index([effectiveFrom])
+}
+
+model PerDiemRate {
+  id            String   @id @default(uuid())
+  destination   String
+  destinationType String @default("DOMESTIC")
+  dailyRate     Decimal  @db.Decimal(10, 2)
+  halfDayRate   Decimal  @db.Decimal(10, 2)
+  currency      Currency @default(PKR)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([destination])
+  @@index([effectiveFrom])
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  category    String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+}
+
+model SequenceCounter {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  prefix      String
+  currentValue Int     @default(0)
+  year        Int
+
+  @@unique([name, year])
+}

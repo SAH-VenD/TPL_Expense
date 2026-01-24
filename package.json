@@ -1,0 +1,34 @@
+{
+  "name": "tpl-expense",
+  "version": "1.0.0",
+  "description": "Expense & Receipt Automation System for Tekcellent",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm run dev -w @tpl-expense/api",
+    "dev:web": "npm run dev -w @tpl-expense/web",
+    "build": "npm run build -w @tpl-expense/api && npm run build -w @tpl-expense/web",
+    "build:api": "npm run build -w @tpl-expense/api",
+    "build:web": "npm run build -w @tpl-expense/web",
+    "test": "npm run test -w @tpl-expense/api",
+    "test:e2e": "npm run test:e2e -w @tpl-expense/api",
+    "lint": "npm run lint --workspaces",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "db:migrate": "npm run db:migrate -w @tpl-expense/api",
+    "db:seed": "npm run db:seed -w @tpl-expense/api",
+    "db:studio": "npm run db:studio -w @tpl-expense/api",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
