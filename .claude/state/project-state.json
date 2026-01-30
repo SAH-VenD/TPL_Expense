@@ -1,0 +1,89 @@
+{
+  "project_name": "tpl-expense",
+  "created_at": "2026-01-28T00:00:00Z",
+  "last_updated": "2026-01-30T00:00:00Z",
+
+  "current_phase": "phase-1",
+  "phase_description": "Core expense submission functionality",
+
+  "features": {
+    "auth": {
+      "status": "complete",
+      "priority": 1,
+      "completed_at": "2026-01-28"
+    },
+    "users": {
+      "status": "complete",
+      "priority": 2,
+      "completed_at": "2026-01-29"
+    },
+    "categories": {
+      "status": "pending",
+      "priority": 3,
+      "dependencies": ["auth"]
+    },
+    "expenses": {
+      "status": "pending",
+      "priority": 4,
+      "dependencies": ["auth", "users", "categories"]
+    },
+    "receipts": {
+      "status": "pending",
+      "priority": 5,
+      "dependencies": ["expenses"]
+    },
+    "approvals": {
+      "status": "pending",
+      "priority": 6,
+      "dependencies": ["expenses", "users"]
+    },
+    "vouchers": {
+      "status": "pending",
+      "priority": 7,
+      "dependencies": ["expenses", "approvals"]
+    },
+    "budgets": {
+      "status": "pending",
+      "priority": 8,
+      "dependencies": ["expenses", "categories"]
+    },
+    "reports": {
+      "status": "pending",
+      "priority": 9,
+      "dependencies": ["expenses", "budgets"]
+    }
+  },
+
+  "agents_available": [
+    "backend-engineer",
+    "frontend-engineer",
+    "qa-engineer",
+    "code-reviewer",
+    "devops-engineer",
+    "documentation"
+  ],
+
+  "recent_sessions": [],
+
+  "global_notes": [
+    "Using NestJS 10 for backend, React 18 for frontend",
+    "PostgreSQL database with Prisma ORM",
+    "Redux Toolkit + RTK Query for state management",
+    "LocalStack for local AWS S3/Textract development"
+  ],
+
+  "blockers": [],
+
+  "decisions_made": [
+    {
+      "date": "2026-01-28",
+      "decision": "Use Prisma ORM instead of TypeORM",
+      "rationale": "Better TypeScript integration, schema-first approach"
+    },
+    {
+      "date": "2026-01-28",
+      "decision": "Use RTK Query instead of React Query",
+      "rationale": "Already using Redux Toolkit, better integration"
+    }
+  ]
+}

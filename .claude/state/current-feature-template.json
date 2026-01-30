@@ -1,0 +1,55 @@
+{
+  "feature": "[feature-name]",
+  "started_at": "[ISO timestamp]",
+  "requirements_source": "[PRD section or ticket]",
+
+  "tasks": {
+    "[feature]-backend": {
+      "agent": "backend-engineer",
+      "status": "pending | in_progress | complete",
+      "started_at": null,
+      "completed_at": null,
+      "output_file": null
+    },
+    "[feature]-frontend": {
+      "agent": "frontend-engineer",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "depends_on": ["[feature]-backend"],
+      "output_file": null
+    },
+    "[feature]-qa": {
+      "agent": "qa-engineer",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "depends_on": ["[feature]-backend", "[feature]-frontend"],
+      "output_file": null
+    },
+    "[feature]-review": {
+      "agent": "code-reviewer",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "depends_on": ["[feature]-qa"],
+      "output_file": null
+    },
+    "[feature]-docs": {
+      "agent": "documentation",
+      "status": "pending",
+      "started_at": null,
+      "completed_at": null,
+      "depends_on": ["[feature]-review"],
+      "output_file": null
+    }
+  },
+
+  "handoff_data": {
+    "api_contracts": {},
+    "component_interfaces": {}
+  },
+
+  "blockers": [],
+  "notes": []
+}
