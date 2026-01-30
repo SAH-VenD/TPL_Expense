@@ -12,11 +12,7 @@ import {
   Expense,
   Currency,
 } from '@prisma/client';
-import {
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 
 describe('VouchersService', () => {
@@ -253,9 +249,7 @@ describe('VouchersService', () => {
         status: VoucherStatus.DISBURSED,
       });
 
-      await expect(service.create(mockEmployee.id, createDto)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.create(mockEmployee.id, createDto)).rejects.toThrow(BadRequestException);
       await expect(service.create(mockEmployee.id, createDto)).rejects.toThrow(
         'already have an open petty cash voucher',
       );
@@ -502,12 +496,12 @@ describe('VouchersService', () => {
     it('should require rejection reason', async () => {
       mockPrismaService.voucher.findUnique.mockResolvedValue(mockVoucher);
 
-      await expect(
-        service.reject(mockVoucher.id, mockApprover, { reason: '' }),
-      ).rejects.toThrow(BadRequestException);
-      await expect(
-        service.reject(mockVoucher.id, mockApprover, { reason: '  ' }),
-      ).rejects.toThrow('Rejection reason is required');
+      await expect(service.reject(mockVoucher.id, mockApprover, { reason: '' })).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.reject(mockVoucher.id, mockApprover, { reason: '  ' })).rejects.toThrow(
+        'Rejection reason is required',
+      );
     });
 
     it('should reject non-requested voucher', async () => {
@@ -763,11 +757,10 @@ describe('VouchersService', () => {
         expenses: [],
       });
 
-      const result = await service.settle(
-        mockVoucher.id,
-        mockEmployee,
-        { ...settleDto, cashReturnConfirmed: false },
-      );
+      const result = await service.settle(mockVoucher.id, mockEmployee, {
+        ...settleDto,
+        cashReturnConfirmed: false,
+      });
 
       expect(result.status).toBe(VoucherStatus.SETTLED);
     });
@@ -918,11 +911,10 @@ describe('VouchersService', () => {
         expenses: [],
       });
 
-      const result = await service.settle(
-        mockVoucher.id,
-        mockFinance,
-        { ...settleDto, cashReturnConfirmed: false },
-      );
+      const result = await service.settle(mockVoucher.id, mockFinance, {
+        ...settleDto,
+        cashReturnConfirmed: false,
+      });
 
       expect(result.status).toBe(VoucherStatus.SETTLED);
     });
@@ -961,11 +953,10 @@ describe('VouchersService', () => {
         expenses: [],
       });
 
-      const result = await service.settle(
-        mockVoucher.id,
-        mockEmployee,
-        { ...settleDto, cashReturnConfirmed: false },
-      );
+      const result = await service.settle(mockVoucher.id, mockEmployee, {
+        ...settleDto,
+        cashReturnConfirmed: false,
+      });
 
       expect(result.status).toBe(VoucherStatus.SETTLED);
     });
@@ -989,11 +980,10 @@ describe('VouchersService', () => {
         expenses: [],
       });
 
-      const result = await service.settle(
-        mockVoucher.id,
-        mockAdmin,
-        { ...settleDto, cashReturnConfirmed: false },
-      );
+      const result = await service.settle(mockVoucher.id, mockAdmin, {
+        ...settleDto,
+        cashReturnConfirmed: false,
+      });
 
       expect(result.status).toBe(VoucherStatus.SETTLED);
     });

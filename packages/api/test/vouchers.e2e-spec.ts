@@ -1205,10 +1205,12 @@ describe('Vouchers Workflow (e2e)', () => {
       });
 
       // Get employee2 token
-      const employee2Login = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
-        email: `voucher-employee2-${testTimestamp}@tekcellent.com`,
-        password: TEST_PASSWORD,
-      });
+      const employee2Login = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({
+          email: `voucher-employee2-${testTimestamp}@tekcellent.com`,
+          password: TEST_PASSWORD,
+        });
       const employee2Token = employee2Login.body.accessToken;
 
       // Should be able to create new voucher
@@ -1241,10 +1243,12 @@ describe('Vouchers Workflow (e2e)', () => {
       });
 
       // Get employee2 token
-      const employee2Login = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
-        email: `voucher-employee2-${testTimestamp}@tekcellent.com`,
-        password: TEST_PASSWORD,
-      });
+      const employee2Login = await request(app.getHttpServer())
+        .post('/api/v1/auth/login')
+        .send({
+          email: `voucher-employee2-${testTimestamp}@tekcellent.com`,
+          password: TEST_PASSWORD,
+        });
       const employee2Token = employee2Login.body.accessToken;
 
       // Should be able to create new voucher

@@ -62,9 +62,11 @@
       "notes": "Full petty cash voucher lifecycle with overspend/underspend handling, expense linking, 114 unit tests"
     },
     "budgets": {
-      "status": "pending",
+      "status": "complete",
       "priority": 8,
-      "dependencies": ["expenses", "categories"]
+      "completed_at": "2026-01-30",
+      "dependencies": ["expenses", "categories"],
+      "notes": "Comprehensive budget tracking with utilization, enforcement, transfers, status management, 85 unit tests"
     },
     "reports": {
       "status": "pending",
