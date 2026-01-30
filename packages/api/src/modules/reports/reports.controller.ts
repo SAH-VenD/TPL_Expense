@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  Query,
-  Res,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
@@ -28,10 +20,7 @@ export class ReportsController {
   @ApiOperation({ summary: 'Get spend by department report' })
   @ApiQuery({ name: 'startDate', required: false })
   @ApiQuery({ name: 'endDate', required: false })
-  getSpendByDepartment(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getSpendByDepartment(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.reportsService.getSpendByDepartment(startDate, endDate);
   }
 
@@ -39,10 +28,7 @@ export class ReportsController {
   @ApiOperation({ summary: 'Get spend by category report' })
   @ApiQuery({ name: 'startDate', required: false })
   @ApiQuery({ name: 'endDate', required: false })
-  getSpendByCategory(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getSpendByCategory(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.reportsService.getSpendByCategory(startDate, endDate);
   }
 
@@ -50,10 +36,7 @@ export class ReportsController {
   @ApiOperation({ summary: 'Get spend by vendor report' })
   @ApiQuery({ name: 'startDate', required: false })
   @ApiQuery({ name: 'endDate', required: false })
-  getSpendByVendor(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getSpendByVendor(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.reportsService.getSpendByVendor(startDate, endDate);
   }
 
@@ -82,10 +65,7 @@ export class ReportsController {
     const file = await this.reportsService.exportReport(exportDto);
 
     res.setHeader('Content-Type', file.contentType);
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${file.filename}"`,
-    );
+    res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
     res.send(file.buffer);
   }
 }

@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  TextractClient,
-  AnalyzeExpenseCommand,
-  ExpenseDocument,
-} from '@aws-sdk/client-textract';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { TextractClient, AnalyzeExpenseCommand, ExpenseDocument } from '@aws-sdk/client-textract';
+import { S3Client } from '@aws-sdk/client-s3';
 
 export interface OcrResult {
   vendorName?: string;

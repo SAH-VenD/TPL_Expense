@@ -8,7 +8,9 @@ export class CostCentersService {
   constructor(private prisma: PrismaService) {}
 
   async create(createCostCenterDto: CreateCostCenterDto) {
-    const code = createCostCenterDto.code || `CC-${createCostCenterDto.name.toUpperCase().replaceAll(/\s+/g, '-').slice(0, 15)}`;
+    const code =
+      createCostCenterDto.code ||
+      `CC-${createCostCenterDto.name.toUpperCase().replaceAll(/\s+/g, '-').slice(0, 15)}`;
     return this.prisma.costCenter.create({
       data: {
         name: createCostCenterDto.name,

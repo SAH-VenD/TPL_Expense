@@ -36,10 +36,7 @@ export class PreApprovalsService {
     });
   }
 
-  async findAll(
-    user: User,
-    status?: PreApprovalStatus,
-  ) {
+  async findAll(user: User, status?: PreApprovalStatus) {
     const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
 
     return this.prisma.preApproval.findMany({
@@ -106,7 +103,7 @@ export class PreApprovalsService {
     return preApproval;
   }
 
-  async approve(id: string, user: User, comments?: string) {
+  async approve(id: string, user: User, _comments?: string) {
     const preApproval = await this.prisma.preApproval.findUnique({
       where: { id },
     });

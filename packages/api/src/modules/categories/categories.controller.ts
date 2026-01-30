@@ -111,10 +111,7 @@ export class CategoriesController {
   @ApiResponse({ status: 400, description: 'Invalid input or circular reference' })
   @ApiResponse({ status: 404, description: 'Category not found' })
   @ApiResponse({ status: 409, description: 'Category code already exists' })
-  update(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateCategoryDto: UpdateCategoryDto,
-  ) {
+  update(@Param('id', ParseUUIDPipe) id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoriesService.update(id, updateCategoryDto);
   }
 

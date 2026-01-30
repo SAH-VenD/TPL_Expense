@@ -11,17 +11,6 @@ export class ReportsService {
   async getSpendByDepartment(startDate?: string, endDate?: string) {
     const dateFilter = this.getDateFilter(startDate, endDate);
 
-    const result = await this.prisma.expense.groupBy({
-      by: ['submitterId'],
-      where: {
-        status: ExpenseStatus.APPROVED,
-        ...dateFilter,
-      },
-      _sum: {
-        totalAmount: true,
-      },
-    });
-
     // Get department details
     const expenses = await this.prisma.expense.findMany({
       where: {
@@ -37,11 +26,14 @@ export class ReportsService {
       },
     });
 
-    const departmentSpend = expenses.reduce((acc, expense) => {
-      const deptName = expense.submitter.department?.name || 'Unknown';
-      acc[deptName] = (acc[deptName] || 0) + Number(expense.totalAmount);
-      return acc;
-    }, {} as Record<string, number>);
+    const departmentSpend = expenses.reduce(
+      (acc, expense) => {
+        const deptName = expense.submitter.department?.name || 'Unknown';
+        acc[deptName] = (acc[deptName] || 0) + Number(expense.totalAmount);
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     return Object.entries(departmentSpend).map(([department, amount]) => ({
       department,
@@ -123,7 +115,7 @@ export class ReportsService {
     const result = [];
 
     for (const budget of budgets) {
-      let where: any = {
+      const where: any = {
         status: ExpenseStatus.APPROVED,
         createdAt: {
           gte: budget.startDate,
@@ -149,11 +141,9 @@ export class ReportsService {
         type: budget.type,
         budgetAmount: Number(budget.totalAmount),
         actualAmount: Number(actual._sum.totalAmount || 0),
-        variance:
-          Number(budget.totalAmount) - Number(actual._sum.totalAmount || 0),
+        variance: Number(budget.totalAmount) - Number(actual._sum.totalAmount || 0),
         utilizationPercentage:
-          (Number(actual._sum.totalAmount || 0) / Number(budget.totalAmount)) *
-          100,
+          (Number(actual._sum.totalAmount || 0) / Number(budget.totalAmount)) * 100,
       });
     }
 
@@ -209,14 +199,8 @@ export class ReportsService {
 
     return {
       year: targetYear,
-      totalExpenses: expenses.reduce(
-        (sum, exp) => sum + Number(exp.totalAmount),
-        0,
-      ),
-      totalTax: expenses.reduce(
-        (sum, exp) => sum + Number(exp.taxAmount || 0),
-        0,
-      ),
+      totalExpenses: expenses.reduce((sum, exp) => sum + Number(exp.totalAmount), 0),
+      totalTax: expenses.reduce((sum, exp) => sum + Number(exp.taxAmount || 0), 0),
       breakdown: taxBreakdown,
     };
   }
@@ -279,8 +263,7 @@ export class ReportsService {
 
     return {
       buffer: Buffer.from(buffer),
-      contentType:
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       filename: `${reportType}-${Date.now()}.xlsx`,
     };
   }
@@ -305,7 +288,7 @@ export class ReportsService {
     };
   }
 
-  private generatePdf(reportType: string, data: any[]) {
+  private generatePdf(reportType: string, _data: unknown[]) {
     // TODO: Implement PDF generation with pdfkit
     return {
       buffer: Buffer.from('PDF generation not implemented'),

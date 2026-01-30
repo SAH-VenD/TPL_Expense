@@ -20,12 +20,8 @@ export class ProjectsService {
         name: createProjectDto.name,
         code,
         description: createProjectDto.description,
-        startDate: createProjectDto.startDate
-          ? new Date(createProjectDto.startDate)
-          : undefined,
-        endDate: createProjectDto.endDate
-          ? new Date(createProjectDto.endDate)
-          : undefined,
+        startDate: createProjectDto.startDate ? new Date(createProjectDto.startDate) : undefined,
+        endDate: createProjectDto.endDate ? new Date(createProjectDto.endDate) : undefined,
       },
     });
   }

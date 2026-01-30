@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CostCentersService } from './cost-centers.service';
 import { CreateCostCenterDto } from './dto/create-cost-center.dto';
@@ -46,10 +37,7 @@ export class CostCentersController {
   @Patch(':id')
   @Roles(RoleType.ADMIN, RoleType.FINANCE)
   @ApiOperation({ summary: 'Update a cost center' })
-  update(
-    @Param('id') id: string,
-    @Body() updateCostCenterDto: UpdateCostCenterDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateCostCenterDto: UpdateCostCenterDto) {
     return this.costCentersService.update(id, updateCostCenterDto);
   }
 

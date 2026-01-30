@@ -47,10 +47,7 @@ export class AuditController {
   @ApiOperation({ summary: 'Export audit logs' })
   @ApiQuery({ name: 'startDate', required: true })
   @ApiQuery({ name: 'endDate', required: true })
-  exportLogs(
-    @Query('startDate') startDate: string,
-    @Query('endDate') endDate: string,
-  ) {
+  exportLogs(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
     return this.auditService.exportLogs(startDate, endDate);
   }
 }

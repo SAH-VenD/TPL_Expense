@@ -60,7 +60,7 @@ export class BudgetsService {
     const budget = await this.findOne(id);
 
     // Calculate actual spend based on budget type
-    let where: any = {
+    const where: any = {
       status: ExpenseStatus.APPROVED,
       createdAt: {
         gte: budget.startDate,
@@ -142,9 +142,7 @@ export class BudgetsService {
     for (const budget of budgets) {
       const utilization = await this.getUtilization(budget.id);
       const newUtilization =
-        ((utilization.usedAmount + Number(expense.totalAmount)) /
-          Number(budget.totalAmount)) *
-        100;
+        ((utilization.usedAmount + Number(expense.totalAmount)) / Number(budget.totalAmount)) * 100;
 
       if (newUtilization > 100 && budget.enforcement === 'HARD_BLOCK') {
         return {
