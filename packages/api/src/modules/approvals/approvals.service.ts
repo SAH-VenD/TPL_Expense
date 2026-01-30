@@ -298,7 +298,10 @@ export class ApprovalsService {
     }
 
     // Validate can resubmit
-    const resubmittableStatuses = [ExpenseStatus.REJECTED, ExpenseStatus.CLARIFICATION_REQUESTED];
+    const resubmittableStatuses: ExpenseStatus[] = [
+      ExpenseStatus.REJECTED,
+      ExpenseStatus.CLARIFICATION_REQUESTED,
+    ];
 
     if (!resubmittableStatuses.includes(expense.status)) {
       throw new BadRequestException(
@@ -479,7 +482,10 @@ export class ApprovalsService {
       throw new NotFoundException(`Expense with ID ${expenseId} not found`);
     }
 
-    const approvableStatuses = [ExpenseStatus.SUBMITTED, ExpenseStatus.PENDING_APPROVAL];
+    const approvableStatuses: ExpenseStatus[] = [
+      ExpenseStatus.SUBMITTED,
+      ExpenseStatus.PENDING_APPROVAL,
+    ];
 
     if (!approvableStatuses.includes(expense.status)) {
       throw new BadRequestException(
