@@ -47,8 +47,8 @@ tpl-expense/
 - [ ] Remaining NestJS module placeholders (IN PROGRESS)
 - [ ] Frontend page components
 
-### Day 2 - TODO
-- [ ] Category & Department modules (full implementation)
+### Day 2 - IN PROGRESS
+- [x] Category & Department modules (full implementation)
 - [ ] Frontend auth pages (LoginForm, RegisterForm)
 - [ ] Storage module (S3)
 - [ ] Receipt upload
@@ -287,3 +287,25 @@ npm run test -w @tpl-expense/api
 - Admin approval workflow
 - Bulk import capability
 - Role-based access control
+
+### Categories Module (`/packages/api/src/modules/categories/`)
+- Hierarchical CRUD (parent-child relationships)
+- Tree structure responses for UI
+- Flat list for dropdown selections
+- Soft delete with cascade to children
+- Unique code validation
+- Circular reference prevention
+
+### Departments Module (`/packages/api/src/modules/departments/`)
+- Hierarchical CRUD (parent-child relationships)
+- Tree structure responses for UI
+- Flat list for dropdown selections
+- Soft delete with active user check
+- Unique name/code validation
+- User count in responses
+
+## Context Files (Progressive Disclosure)
+- `/packages/api/CLAUDE.md` - API-specific context
+- `/packages/web/CLAUDE.md` - Web-specific context
+- `/packages/api/src/modules/CLAUDE.md` - Module patterns
+- `/packages/api/prisma/CLAUDE.md` - Database patterns
