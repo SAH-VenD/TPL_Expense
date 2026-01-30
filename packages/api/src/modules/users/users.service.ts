@@ -54,8 +54,9 @@ export class UsersService {
       },
     });
 
-    // Return user without password hash
-    const { passwordHash: _, passwordHistory: __, ...result } = user;
+    // Return user without password hash (eslint-disable for destructuring pattern)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, passwordHistory, ...result } = user;
     return result;
   }
 

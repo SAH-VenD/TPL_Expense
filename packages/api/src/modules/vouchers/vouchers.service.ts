@@ -130,7 +130,7 @@ export class VouchersService {
     });
   }
 
-  async settle(id: string, user: User, dto: SettleVoucherDto) {
+  async settle(id: string, user: User, _dto: SettleVoucherDto) {
     const voucher = await this.prisma.voucher.findUnique({
       where: { id },
       include: {
@@ -150,10 +150,7 @@ export class VouchersService {
       throw new BadRequestException('Only disbursed vouchers can be settled');
     }
 
-    const totalExpenses = voucher.expenses.reduce(
-      (sum, exp) => sum + Number(exp.totalAmount),
-      0,
-    );
+    const totalExpenses = voucher.expenses.reduce((sum, exp) => sum + Number(exp.totalAmount), 0);
 
     const returnAmount = Number(voucher.disbursedAmount) - totalExpenses;
 

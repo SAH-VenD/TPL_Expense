@@ -1,7 +1,7 @@
 {
   "project_name": "tpl-expense",
   "created_at": "2026-01-28T00:00:00Z",
-  "last_updated": "2026-01-30T00:00:00Z",
+  "last_updated": "2026-01-30T12:00:00Z",
 
   "current_phase": "phase-1",
   "phase_description": "Core expense submission functionality",
@@ -18,8 +18,15 @@
       "completed_at": "2026-01-29"
     },
     "categories": {
-      "status": "pending",
+      "status": "complete",
       "priority": 3,
+      "completed_at": "2026-01-30",
+      "dependencies": ["auth"]
+    },
+    "departments": {
+      "status": "complete",
+      "priority": 3,
+      "completed_at": "2026-01-30",
       "dependencies": ["auth"]
     },
     "expenses": {
@@ -63,13 +70,21 @@
     "documentation"
   ],
 
-  "recent_sessions": [],
+  "recent_sessions": [
+    {
+      "date": "2026-01-30",
+      "features_completed": ["categories", "departments"],
+      "agents_used": ["backend-engineer (parallel x2)"],
+      "notes": "Implemented hierarchical CRUD for Categories and Departments using parallel agents"
+    }
+  ],
 
   "global_notes": [
     "Using NestJS 10 for backend, React 18 for frontend",
     "PostgreSQL database with Prisma ORM",
     "Redux Toolkit + RTK Query for state management",
-    "LocalStack for local AWS S3/Textract development"
+    "LocalStack for local AWS S3/Textract development",
+    "CLAUDE.md files in subfolders for progressive disclosure"
   ],
 
   "blockers": [],
@@ -84,6 +99,16 @@
       "date": "2026-01-28",
       "decision": "Use RTK Query instead of React Query",
       "rationale": "Already using Redux Toolkit, better integration"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Use parallel agents for independent module implementation",
+      "rationale": "Categories and Departments have no dependencies on each other, parallel implementation cuts time in half"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Create CLAUDE.md files in subfolders",
+      "rationale": "Progressive disclosure reduces context size, each folder has relevant context only"
     }
   ]
 }
