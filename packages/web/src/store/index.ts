@@ -8,6 +8,7 @@ import { vouchersApi } from '../features/vouchers/services/vouchers.service';
 import { budgetsApi } from '../features/budgets/services/budgets.service';
 import { reportsApi } from '../features/reports/services/reports.service';
 import { adminApi } from '../features/admin/services/admin.service';
+import { notificationsApi } from '../features/notifications/services/notifications.service';
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ export const store = configureStore({
     [budgetsApi.reducerPath]: budgetsApi.reducer,
     [reportsApi.reducerPath]: reportsApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
+    [notificationsApi.reducerPath]: notificationsApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -29,6 +31,7 @@ export const store = configureStore({
       budgetsApi.middleware,
       reportsApi.middleware,
       adminApi.middleware,
+      notificationsApi.middleware,
     ),
 });
 

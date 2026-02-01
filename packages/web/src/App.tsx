@@ -4,6 +4,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ProtectedRoute } from './router/ProtectedRoute';
 import { RoleBasedRoute } from './router/RoleBasedRoute';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -25,6 +26,9 @@ import { UsersPage } from './pages/admin/UsersPage';
 import { CategoriesPage } from './pages/admin/CategoriesPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage';
+
+// Notification pages
+import { NotificationListPage } from './pages/notifications/NotificationListPage';
 
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -48,7 +52,9 @@ function App() {
       <Route
         element={
           <ProtectedRoute>
-            <MainLayout />
+            <ErrorBoundary>
+              <MainLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
@@ -60,6 +66,7 @@ function App() {
         <Route path="/vouchers" element={<VoucherListPage />} />
         <Route path="/vouchers/:id" element={<VoucherDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/notifications" element={<NotificationListPage />} />
 
         {/* Admin routes */}
         <Route

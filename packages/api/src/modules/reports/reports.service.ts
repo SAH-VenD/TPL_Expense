@@ -111,11 +111,19 @@ export class ReportsService {
       },
     });
 
-    return result.map((r) => ({
-      category: categories.find((c) => c.id === r.categoryId)?.name || 'Unknown',
-      amount: Number(r._sum.totalAmount),
-      count: r._count,
-    }));
+    // Calculate total for percentage calculation
+    const totalAmount = result.reduce((sum, r) => sum + Number(r._sum.totalAmount || 0), 0);
+
+    return result.map((r) => {
+      const amount = Number(r._sum.totalAmount || 0);
+      return {
+        categoryId: r.categoryId,
+        categoryName: categories.find((c) => c.id === r.categoryId)?.name || 'Unknown',
+        totalAmount: amount,
+        count: r._count,
+        percentage: totalAmount > 0 ? (amount / totalAmount) * 100 : 0,
+      };
+    });
   }
 
   /**
