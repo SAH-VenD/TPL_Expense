@@ -16,8 +16,8 @@ test.describe('Expense Management', () => {
     await page.click('text=Expenses');
     await expect(page).toHaveURL('/expenses');
 
-    // Should display expenses page elements
-    await expect(page.locator('text=/expenses|my expenses/i')).toBeVisible();
+    // Should display expenses page heading
+    await expect(page.getByRole('heading', { name: /my expenses/i })).toBeVisible();
   });
 
   test('EXP-02: Navigate to create expense page', async ({ page }) => {
@@ -27,8 +27,8 @@ test.describe('Expense Management', () => {
     // Click New Expense button (visible in header)
     await page.click('text=New Expense');
 
-    // Should be on create expense page or modal
-    await expect(page.locator('text=/new expense|create expense|add expense/i')).toBeVisible({
+    // Should be on create expense page - check for the heading
+    await expect(page.getByRole('heading', { name: /create expense/i })).toBeVisible({
       timeout: 5000,
     });
   });

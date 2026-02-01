@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module, Injectable, ExecutionContext } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 
@@ -24,6 +24,21 @@ import { VendorsModule } from './modules/vendors/vendors.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
 
+/**
+ * Custom ThrottlerGuard that disables rate limiting in non-production environments
+ * This allows E2E tests to run without hitting rate limits
+ */
+@Injectable()
+class ConditionalThrottlerGuard extends ThrottlerGuard {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Skip throttling entirely in non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+      return true;
+    }
+    return super.canActivate(context);
+  }
+}
+
 @Module({
   imports: [
     // Configuration
@@ -32,32 +47,24 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Rate limiting - disabled in development/test mode for E2E testing
-    ThrottlerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const isProduction = config.get('NODE_ENV') === 'production';
-        // In development, set very high limits to avoid blocking E2E tests
-        return [
-          {
-            name: 'short',
-            ttl: 1000,
-            limit: isProduction ? 3 : 1000,
-          },
-          {
-            name: 'medium',
-            ttl: 10000,
-            limit: isProduction ? 20 : 5000,
-          },
-          {
-            name: 'long',
-            ttl: 60000,
-            limit: isProduction ? 100 : 10000,
-          },
-        ];
+    // Rate limiting - only active in production
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 3,
       },
-    }),
+      {
+        name: 'medium',
+        ttl: 10000,
+        limit: 20,
+      },
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
 
     // Database
     PrismaModule,
@@ -86,7 +93,7 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ConditionalThrottlerGuard,
     },
   ],
 })
