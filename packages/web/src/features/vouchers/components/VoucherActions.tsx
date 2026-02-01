@@ -110,7 +110,7 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
     try {
       await disburseVoucher({
         id: voucher.id,
-        data: { disbursedAmount },
+        data: { amount: disbursedAmount },
       }).unwrap();
       setShowDisburseModal(false);
       onActionComplete();
