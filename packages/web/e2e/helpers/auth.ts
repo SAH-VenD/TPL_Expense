@@ -13,12 +13,12 @@ export const TEST_USERS = {
     password: 'Employee@123',
   },
   approver: {
-    email: 'approver@tekcellent.com',
-    password: 'Approver@123',
+    email: 'manager@tekcellent.com',
+    password: 'Admin@123',
   },
   finance: {
     email: 'finance@tekcellent.com',
-    password: 'Finance@123',
+    password: 'Admin@123',
   },
 };
 
@@ -56,18 +56,9 @@ export async function loginAsEmployee(page: Page): Promise<void> {
  * Logout helper
  */
 export async function logout(page: Page): Promise<void> {
-  // Look for logout button or menu
-  const logoutButton = page.locator('button:has-text("Logout"), a:has-text("Logout")');
-  if (await logoutButton.isVisible()) {
-    await logoutButton.click();
-  } else {
-    // May need to open user menu first
-    const userMenu = page.locator('[data-testid="user-menu"], .user-menu');
-    if (await userMenu.isVisible()) {
-      await userMenu.click();
-      await page.click('text=Logout');
-    }
-  }
+  // Look for Sign out button (visible in sidebar)
+  const signOutButton = page.locator('text=Sign out');
+  await signOutButton.click();
   await expect(page).toHaveURL('/login');
 }
 

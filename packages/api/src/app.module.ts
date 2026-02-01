@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -33,24 +33,31 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Rate limiting
-    ThrottlerModule.forRoot([
-      {
-        name: 'short',
-        ttl: 1000,
-        limit: 3,
+    // Rate limiting - relaxed in development/test mode
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const isDevOrTest = config.get('NODE_ENV') !== 'production';
+        return [
+          {
+            name: 'short',
+            ttl: 1000,
+            limit: isDevOrTest ? 30 : 3,
+          },
+          {
+            name: 'medium',
+            ttl: 10000,
+            limit: isDevOrTest ? 200 : 20,
+          },
+          {
+            name: 'long',
+            ttl: 60000,
+            limit: isDevOrTest ? 1000 : 100,
+          },
+        ];
       },
-      {
-        name: 'medium',
-        ttl: 10000,
-        limit: 20,
-      },
-      {
-        name: 'long',
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
+    }),
 
     // Database
     PrismaModule,
