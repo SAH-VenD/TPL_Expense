@@ -1,9 +1,9 @@
 import React from 'react';
-import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, InformationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Modal } from './Modal';
 import clsx from 'clsx';
 
-export type ConfirmDialogVariant = 'danger' | 'warning' | 'info';
+export type ConfirmDialogVariant = 'danger' | 'warning' | 'info' | 'primary';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -35,6 +35,10 @@ const variantConfig: Record<
     icon: <InformationCircleIcon className="h-6 w-6 text-blue-600" />,
     buttonClass: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
   },
+  primary: {
+    icon: <CheckCircleIcon className="h-6 w-6 text-primary-600" />,
+    buttonClass: 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500',
+  },
 };
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -61,7 +65,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             'mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full sm:mx-0 sm:h-10 sm:w-10',
             variant === 'danger' && 'bg-red-100',
             variant === 'warning' && 'bg-yellow-100',
-            variant === 'info' && 'bg-blue-100'
+            variant === 'info' && 'bg-blue-100',
+            variant === 'primary' && 'bg-primary-100'
           )}
         >
           {config.icon}

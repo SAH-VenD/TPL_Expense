@@ -21,7 +21,7 @@ export interface RejectDto {
 
 export interface ClarificationDto {
   expenseId: string;
-  note: string;
+  question: string;
 }
 
 export interface Delegation {
@@ -62,7 +62,7 @@ export const approvalsApi = createApi({
     bulkApprove: builder.mutation<{ approved: number }, { expenseIds: string[]; comment?: string }>(
       {
         query: (data) => ({
-          url: '/approvals/bulk-approve',
+          url: '/approvals/approve/bulk',
           method: 'POST',
           body: data,
         }),
@@ -101,9 +101,10 @@ export const approvalsApi = createApi({
       invalidatesTags: ['Delegation'],
     }),
     revokeDelegation: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `/approvals/delegations/${id}`,
-        method: 'DELETE',
+      query: (delegationId) => ({
+        url: '/approvals/delegations/revoke',
+        method: 'POST',
+        body: { delegationId },
       }),
       invalidatesTags: ['Delegation'],
     }),

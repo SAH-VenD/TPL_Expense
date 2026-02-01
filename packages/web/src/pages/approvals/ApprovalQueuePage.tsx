@@ -1,77 +1,78 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  CheckIcon,
+  XMarkIcon,
+  QuestionMarkCircleIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline';
+import clsx from 'clsx';
+import { formatDistanceToNow } from 'date-fns';
+import {
+  useGetPendingApprovalsQuery,
+  useApproveExpenseMutation,
+  useRejectExpenseMutation,
+  useBulkApproveMutation,
+  useRequestClarificationMutation,
+} from '@/features/approvals/services/approvals.service';
+import { Skeleton, ConfirmDialog, showToast } from '@/components/ui';
+import type { Expense } from '@/features/expenses/services/expenses.service';
 
-interface PendingApproval {
-  id: string;
-  expense: {
-    id: string;
-    expenseNumber: string;
-    description: string;
-    amount: number;
-    totalAmount: number;
-    category: { name: string };
-    expenseDate: string;
-  };
-  submitter: {
-    firstName: string;
-    lastName: string;
-    department: { name: string };
-  };
-  submittedAt: string;
-  tierLevel: number;
-}
+const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
+  return new Intl.NumberFormat('en-PK', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const formatRelativeDate = (dateString: string): string => {
+  try {
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+  } catch {
+    return dateString;
+  }
+};
 
 export function ApprovalQueuePage() {
+  const navigate = useNavigate();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  // Modal states
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showClarifyModal, setShowClarifyModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [clarifyQuestion, setClarifyQuestion] = useState('');
+  const [actionExpenseId, setActionExpenseId] = useState<string | null>(null);
+  const [isBulkAction, setIsBulkAction] = useState(false);
 
-  // Mock data
-  const pendingApprovals: PendingApproval[] = [
-    {
-      id: '1',
-      expense: {
-        id: 'e1',
-        expenseNumber: 'EXP-2024-00002',
-        description: 'Client meeting lunch',
-        amount: 3500,
-        totalAmount: 4095,
-        category: { name: 'Meals & Entertainment' },
-        expenseDate: '2024-01-18',
-      },
-      submitter: {
-        firstName: 'Jane',
-        lastName: 'Smith',
-        department: { name: 'Sales' },
-      },
-      submittedAt: '2024-01-19T09:00:00',
-      tierLevel: 1,
-    },
-    {
-      id: '2',
-      expense: {
-        id: 'e2',
-        expenseNumber: 'EXP-2024-00003',
-        description: 'Software subscription renewal',
-        amount: 25000,
-        totalAmount: 25000,
-        category: { name: 'Software & Subscriptions' },
-        expenseDate: '2024-01-20',
-      },
-      submitter: {
-        firstName: 'Bob',
-        lastName: 'Johnson',
-        department: { name: 'Engineering' },
-      },
-      submittedAt: '2024-01-20T14:30:00',
-      tierLevel: 2,
-    },
-  ];
+  // RTK Query hooks
+  const {
+    data,
+    isLoading,
+    isError,
+    isFetching,
+    refetch,
+  } = useGetPendingApprovalsQuery({ page, pageSize });
 
+  const [approveExpense, { isLoading: isApproving }] = useApproveExpenseMutation();
+  const [rejectExpense, { isLoading: isRejecting }] = useRejectExpenseMutation();
+  const [bulkApprove, { isLoading: isBulkApproving }] = useBulkApproveMutation();
+  const [requestClarification, { isLoading: isClarifying }] = useRequestClarificationMutation();
+
+  const pendingApprovals = data?.data || [];
+  const totalItems = data?.meta?.pagination?.total || 0;
+  const totalPages = data?.meta?.pagination?.totalPages || 1;
+
+  // Selection handlers
   const handleSelectAll = () => {
     if (selectedIds.length === pendingApprovals.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(pendingApprovals.map((a) => a.id));
+      setSelectedIds(pendingApprovals.map((expense) => expense.id));
     }
   };
 
@@ -83,30 +84,190 @@ export function ApprovalQueuePage() {
     }
   };
 
-  const handleBulkApprove = () => {
-    // TODO: API call
-    console.log('Approving:', selectedIds);
-    setSelectedIds([]);
+  // Single approve handler
+  const handleApprove = async (expenseId: string) => {
+    try {
+      await approveExpense({ expenseId }).unwrap();
+      showToast.success('Expense approved successfully');
+      setSelectedIds(selectedIds.filter((id) => id !== expenseId));
+    } catch (error: any) {
+      showToast.error(error?.data?.message || 'Failed to approve expense');
+    }
   };
 
-  const handleBulkReject = () => {
+  // Bulk approve handler
+  const handleBulkApprove = async () => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      const result = await bulkApprove({ expenseIds: selectedIds }).unwrap();
+      showToast.success(`${result.approved} expense(s) approved successfully`);
+      setSelectedIds([]);
+    } catch (error: any) {
+      showToast.error(error?.data?.message || 'Failed to approve expenses');
+    }
+  };
+
+  // Single reject handler - opens modal
+  const handleRejectClick = (expenseId: string) => {
+    setActionExpenseId(expenseId);
+    setIsBulkAction(false);
+    setRejectReason('');
     setShowRejectModal(true);
   };
 
-  const confirmReject = () => {
-    // TODO: API call
-    console.log('Rejecting:', selectedIds, 'Reason:', rejectReason);
-    setShowRejectModal(false);
+  // Bulk reject handler - opens modal
+  const handleBulkReject = () => {
+    if (selectedIds.length === 0) return;
+    setIsBulkAction(true);
     setRejectReason('');
-    setSelectedIds([]);
+    setShowRejectModal(true);
   };
+
+  // Confirm rejection
+  const confirmReject = async () => {
+    if (!rejectReason.trim()) return;
+
+    try {
+      if (isBulkAction) {
+        // Reject each selected expense sequentially
+        let successCount = 0;
+        for (const expenseId of selectedIds) {
+          try {
+            await rejectExpense({ expenseId, reason: rejectReason }).unwrap();
+            successCount++;
+          } catch {
+            // Continue with next expense
+          }
+        }
+        showToast.success(`${successCount} expense(s) rejected`);
+        setSelectedIds([]);
+      } else if (actionExpenseId) {
+        await rejectExpense({ expenseId: actionExpenseId, reason: rejectReason }).unwrap();
+        showToast.success('Expense rejected');
+        setSelectedIds(selectedIds.filter((id) => id !== actionExpenseId));
+      }
+    } catch (error: any) {
+      showToast.error(error?.data?.message || 'Failed to reject expense');
+    } finally {
+      setShowRejectModal(false);
+      setRejectReason('');
+      setActionExpenseId(null);
+      setIsBulkAction(false);
+    }
+  };
+
+  // Clarification handler - opens modal
+  const handleClarifyClick = (expenseId: string) => {
+    setActionExpenseId(expenseId);
+    setClarifyQuestion('');
+    setShowClarifyModal(true);
+  };
+
+  // Confirm clarification request
+  const confirmClarify = async () => {
+    if (!clarifyQuestion.trim() || !actionExpenseId) return;
+
+    try {
+      await requestClarification({
+        expenseId: actionExpenseId,
+        question: clarifyQuestion,
+      }).unwrap();
+      showToast.success('Clarification requested');
+      setSelectedIds(selectedIds.filter((id) => id !== actionExpenseId));
+    } catch (error: any) {
+      showToast.error(error?.data?.message || 'Failed to request clarification');
+    } finally {
+      setShowClarifyModal(false);
+      setClarifyQuestion('');
+      setActionExpenseId(null);
+    }
+  };
+
+  // Navigation
+  const handleRowClick = (expenseId: string) => {
+    navigate(`/expenses/${expenseId}`);
+  };
+
+  const isActionInProgress = isApproving || isRejecting || isBulkApproving || isClarifying;
+
+  // Loading skeleton
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton width={200} height={32} />
+          <Skeleton width={150} height={20} />
+        </div>
+        <div className="card overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3"><Skeleton width={20} height={20} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {[...Array(5)].map((_, i) => (
+                <tr key={i}>
+                  <td className="px-6 py-4"><Skeleton width={20} height={20} /></td>
+                  <td className="px-6 py-4"><Skeleton width={150} height={40} /></td>
+                  <td className="px-6 py-4"><Skeleton width={100} height={30} /></td>
+                  <td className="px-6 py-4"><Skeleton width={80} height={20} /></td>
+                  <td className="px-6 py-4"><Skeleton width={80} height={20} /></td>
+                  <td className="px-6 py-4"><Skeleton width={50} height={24} /></td>
+                  <td className="px-6 py-4"><Skeleton width={180} height={32} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
+        </div>
+        <div className="card p-8 text-center">
+          <p className="text-red-600 mb-4">Failed to load pending approvals</p>
+          <button
+            onClick={() => refetch()}
+            className="btn-primary inline-flex items-center"
+          >
+            <ArrowPathIcon className="h-4 w-4 mr-2" />
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
-        <div className="text-sm text-gray-500">
-          {pendingApprovals.length} expense(s) awaiting your approval
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+            title="Refresh"
+          >
+            <ArrowPathIcon className={clsx('h-5 w-5', isFetching && 'animate-spin')} />
+          </button>
+          <span className="text-sm text-gray-500">
+            {totalItems} expense(s) awaiting your approval
+          </span>
         </div>
       </div>
 
@@ -119,13 +280,15 @@ export function ApprovalQueuePage() {
           <div className="space-x-3">
             <button
               onClick={handleBulkApprove}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              disabled={isActionInProgress}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              Approve Selected
+              {isBulkApproving ? 'Approving...' : 'Approve Selected'}
             </button>
             <button
               onClick={handleBulkReject}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              disabled={isActionInProgress}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
               Reject Selected
             </button>
@@ -141,8 +304,9 @@ export function ApprovalQueuePage() {
               <th className="px-6 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === pendingApprovals.length}
+                  checked={pendingApprovals.length > 0 && selectedIds.length === pendingApprovals.length}
                   onChange={handleSelectAll}
+                  disabled={pendingApprovals.length === 0}
                   className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                 />
               </th>
@@ -159,7 +323,7 @@ export function ApprovalQueuePage() {
                 Amount
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tier
+                Submitted
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -167,115 +331,202 @@ export function ApprovalQueuePage() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {pendingApprovals.map((approval) => (
-              <tr key={approval.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <input
-                    type="checkbox"
-                    checked={selectedIds.includes(approval.id)}
-                    onChange={() => handleSelect(approval.id)}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <div>
-                    <p className="font-medium text-primary-600">
-                      {approval.expense.expenseNumber}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {approval.expense.description}
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      {new Date(approval.expense.expenseDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div>
+            {pendingApprovals.map((expense: Expense) => {
+              const submitterName = expense.submitter
+                ? `${expense.submitter.firstName} ${expense.submitter.lastName}`
+                : 'Unknown';
+              const department = expense.submitter?.department?.name || '';
+
+              return (
+                <tr
+                  key={expense.id}
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleRowClick(expense.id)}
+                >
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(expense.id)}
+                      onChange={() => handleSelect(expense.id)}
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="font-medium text-primary-600">
+                        {expense.expenseNumber || `EXP-${expense.id.slice(0, 8)}`}
+                      </p>
+                      <p className="text-sm text-gray-500 truncate max-w-xs">
+                        {expense.description || 'No description'}
+                      </p>
+                      {expense.expenseDate && (
+                        <p className="text-xs text-gray-400">
+                          {new Date(expense.expenseDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <p className="font-medium text-gray-900">{submitterName}</p>
+                      {department && (
+                        <p className="text-sm text-gray-500">{department}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {expense.category?.name || 'Uncategorized'}
+                  </td>
+                  <td className="px-6 py-4">
                     <p className="font-medium text-gray-900">
-                      {approval.submitter.firstName} {approval.submitter.lastName}
+                      {formatCurrency(expense.totalAmount, expense.currency)}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      {approval.submitter.department.name}
-                    </p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">
-                  {approval.expense.category.name}
-                </td>
-                <td className="px-6 py-4">
-                  <p className="font-medium text-gray-900">
-                    PKR {approval.expense.totalAmount.toLocaleString()}
-                  </p>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-primary-800">
-                    Tier {approval.tierLevel}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex justify-end space-x-2">
-                    <button className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700">
-                      Approve
-                    </button>
-                    <button className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700">
-                      Reject
-                    </button>
-                    <button className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700">
-                      Clarify
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {expense.submittedAt
+                      ? formatRelativeDate(expense.submittedAt)
+                      : formatRelativeDate(expense.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        onClick={() => handleApprove(expense.id)}
+                        disabled={isActionInProgress}
+                        className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 inline-flex items-center"
+                        title="Approve"
+                      >
+                        <CheckIcon className="h-4 w-4 mr-1" />
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRejectClick(expense.id)}
+                        disabled={isActionInProgress}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 inline-flex items-center"
+                        title="Reject"
+                      >
+                        <XMarkIcon className="h-4 w-4 mr-1" />
+                        Reject
+                      </button>
+                      <button
+                        onClick={() => handleClarifyClick(expense.id)}
+                        disabled={isActionInProgress}
+                        className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 inline-flex items-center"
+                        title="Request Clarification"
+                      >
+                        <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
+                        Clarify
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
+        {/* Empty state */}
         {pendingApprovals.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No pending approvals</p>
+            <CheckIcon className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg">All caught up!</p>
+            <p className="text-gray-400 text-sm">No pending approvals at the moment.</p>
           </div>
         )}
       </div>
 
-      {/* Reject Modal */}
-      {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Reject Expense(s)
-            </h3>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for rejection
-              </label>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={3}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                placeholder="Please provide a reason..."
-                required
-              />
-            </div>
-            <div className="mt-4 flex justify-end space-x-3">
-              <button
-                onClick={() => setShowRejectModal(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmReject}
-                disabled={!rejectReason.trim()}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-              >
-                Confirm Rejection
-              </button>
-            </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg">
+          <div className="text-sm text-gray-500">
+            Page {page} of {totalPages}
+          </div>
+          <div className="space-x-2">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || isFetching}
+              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || isFetching}
+              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       )}
+
+      {/* Reject Modal */}
+      <ConfirmDialog
+        isOpen={showRejectModal}
+        onClose={() => {
+          setShowRejectModal(false);
+          setRejectReason('');
+          setActionExpenseId(null);
+          setIsBulkAction(false);
+        }}
+        onConfirm={confirmReject}
+        title={isBulkAction ? `Reject ${selectedIds.length} Expense(s)` : 'Reject Expense'}
+        message="Please provide a reason for rejecting this expense."
+        confirmText={isRejecting ? 'Rejecting...' : 'Reject'}
+        variant="danger"
+        isLoading={isRejecting}
+      >
+        <div className="mt-4">
+          <label
+            htmlFor="reject-reason"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Rejection Reason <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="reject-reason"
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+            rows={3}
+            className="input w-full"
+            placeholder="Please provide a reason for rejection..."
+            required
+          />
+        </div>
+      </ConfirmDialog>
+
+      {/* Clarification Modal */}
+      <ConfirmDialog
+        isOpen={showClarifyModal}
+        onClose={() => {
+          setShowClarifyModal(false);
+          setClarifyQuestion('');
+          setActionExpenseId(null);
+        }}
+        onConfirm={confirmClarify}
+        title="Request Clarification"
+        message="What information do you need from the submitter?"
+        confirmText={isClarifying ? 'Sending...' : 'Send Request'}
+        variant="primary"
+        isLoading={isClarifying}
+      >
+        <div className="mt-4">
+          <label
+            htmlFor="clarify-question"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Question <span className="text-red-500">*</span>
+          </label>
+          <textarea
+            id="clarify-question"
+            value={clarifyQuestion}
+            onChange={(e) => setClarifyQuestion(e.target.value)}
+            rows={3}
+            className="input w-full"
+            placeholder="Enter your question for the expense submitter..."
+            required
+          />
+        </div>
+      </ConfirmDialog>
     </div>
   );
 }
