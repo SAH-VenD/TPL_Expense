@@ -130,7 +130,7 @@ export const reportsApi = createApi({
     getDashboardSummary: builder.query<DashboardSummaryResponse, { days?: number }>({
       query: ({ days = 30 } = {}) => ({
         url: '/reports/dashboard-summary',
-        params: { days },
+        params: { periodDays: days },
       }),
       providesTags: ['DashboardSummary'],
     }),

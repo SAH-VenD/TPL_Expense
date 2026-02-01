@@ -201,7 +201,7 @@ export const expensesApi = createApi({
       query: (filters) => {
         const params: Record<string, string | number | undefined> = {
           page: filters.page,
-          pageSize: filters.pageSize,
+          limit: filters.pageSize,
           dateFrom: filters.dateFrom,
           dateTo: filters.dateTo,
           categoryId: filters.categoryId,
