@@ -31,9 +31,15 @@ export async function login(
   password: string
 ): Promise<void> {
   await page.goto('/login');
+  await page.waitForLoadState('networkidle');
+
   await page.fill('input[name="email"], input[type="email"]', email);
   await page.fill('input[name="password"], input[type="password"]', password);
   await page.click('button[type="submit"]');
+
+  // Wait for navigation to complete after login
+  await page.waitForURL('/', { timeout: 10000 });
+  await page.waitForLoadState('networkidle');
 }
 
 /**

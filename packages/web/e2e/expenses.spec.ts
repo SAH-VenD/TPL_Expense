@@ -21,38 +21,49 @@ test.describe('Expense Management', () => {
     test('EXP-02: Expense list shows filter options', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses');
+      await page.waitForLoadState('networkidle');
 
-      // Check for status filter buttons/tabs
-      const filterOptions = ['All', 'Draft', 'Submitted', 'Approved', 'Rejected'];
-      let foundFilter = false;
-      for (const option of filterOptions) {
-        const filterButton = page.locator(
-          `button:has-text("${option}"), [role="tab"]:has-text("${option}")`
-        );
-        if (await filterButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-          foundFilter = true;
-          break;
-        }
+      // Check for search input and Filters button
+      const searchInput = page.locator('input[placeholder*="Search"]');
+      const filtersButton = page.locator('button:has-text("Filters")');
+
+      // At least search or filters should be visible
+      const hasSearch = await searchInput.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasFilters = await filtersButton.isVisible({ timeout: 2000 }).catch(() => false);
+
+      expect(hasSearch || hasFilters).toBeTruthy();
+
+      // Click Filters to expand and verify status options exist
+      if (hasFilters) {
+        await filtersButton.click();
+        await page.waitForTimeout(300);
+        // Should show status filter section - use label to be specific
+        await expect(page.locator('label:has-text("Status")')).toBeVisible();
       }
-      expect(foundFilter).toBeTruthy();
     });
 
     test('EXP-03: Filter expenses by status', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses');
-
-      // Wait for the page to load
       await page.waitForLoadState('networkidle');
 
-      // Click on Draft filter if available
-      const draftFilter = page.locator('button:has-text("Draft"), [role="tab"]:has-text("Draft")');
-      if (await draftFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await draftFilter.click();
-        // URL should update with status parameter
-        await page.waitForTimeout(500);
-        const url = page.url();
-        expect(url).toContain('status=DRAFT');
-      }
+      // Open filters panel first
+      const filtersButton = page.locator('button:has-text("Filters")');
+      await expect(filtersButton).toBeVisible({ timeout: 5000 });
+      await filtersButton.click();
+      await page.waitForTimeout(500);
+
+      // Click on Draft status filter button (inside expanded filters)
+      const draftFilter = page.locator('button:has-text("Draft")').first();
+      await expect(draftFilter).toBeVisible({ timeout: 3000 });
+      await draftFilter.click();
+      await page.waitForTimeout(500);
+
+      // Verify filter is active - button should have active styling or filters badge should show count
+      // Check that Filters button shows a badge (indicating active filter)
+      const filtersBadge = page.locator('button:has-text("Filters")');
+      const badgeText = await filtersBadge.textContent();
+      expect(badgeText).toContain('1'); // Should show "Filters 1" or similar
     });
 
     test('EXP-04: View toggle switches between list and grid', async ({ page }) => {
@@ -107,20 +118,22 @@ test.describe('Expense Management', () => {
     test('EXP-06: Search expenses by description', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses');
+      await page.waitForLoadState('networkidle');
 
-      // Find search input
-      const searchInput = page.locator(
-        'input[placeholder*="search" i], input[type="search"], [data-testid="search-input"]'
-      );
+      // Find search input in the filters area
+      const searchInput = page.locator('input[placeholder*="Search"]');
+      await expect(searchInput).toBeVisible({ timeout: 5000 });
 
-      if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await searchInput.fill('test expense');
-        await page.waitForTimeout(500);
+      await searchInput.fill('test expense');
+      await page.waitForTimeout(500);
 
-        // URL should update with search param
-        const url = page.url();
-        expect(url).toContain('search=');
-      }
+      // Verify the search value is in the input (filter is working on UI side)
+      await expect(searchInput).toHaveValue('test expense');
+
+      // Check that Filters badge shows count or Clear All appears
+      const clearAllButton = page.locator('button:has-text("Clear All")');
+      const hasClearAll = await clearAllButton.isVisible({ timeout: 2000 }).catch(() => false);
+      expect(hasClearAll).toBeTruthy();
     });
 
     test('EXP-07: Pagination shows correct controls', async ({ page }) => {
@@ -188,37 +201,41 @@ test.describe('Expense Management', () => {
     test('EXP-10: Create expense form shows step wizard', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
+      await page.waitForLoadState('networkidle');
 
-      // Check for step indicators
-      await expect(page.locator('text=Details')).toBeVisible();
+      // Check for step indicators in the wizard (step numbers with labels)
+      await expect(page.locator('text=Details').first()).toBeVisible({ timeout: 5000 });
+      await expect(page.locator('text=Receipts').first()).toBeVisible();
+      await expect(page.locator('text=Review').first()).toBeVisible();
 
-      // Should show step 1 elements
-      await expect(page.locator('text=Expense Type')).toBeVisible();
-      await expect(page.locator('text=Category')).toBeVisible();
-      await expect(page.locator('text=Description')).toBeVisible();
+      // Should show step 1 form elements
+      await expect(page.locator('label:has-text("Expense Type")')).toBeVisible();
+      await expect(page.locator('label:has-text("Category")')).toBeVisible();
+      await expect(page.locator('label:has-text("Description")')).toBeVisible();
     });
 
     test('EXP-11: Form validation requires mandatory fields', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
-
-      // Try to click Next without filling required fields
-      const nextButton = page.locator('button:has-text("Next")');
-      await expect(nextButton).toBeDisabled();
-
-      // Fill in category (required)
-      const categorySelect = page.locator('select').first();
       await page.waitForLoadState('networkidle');
 
-      // Wait for categories to load
-      await page.waitForTimeout(1000);
+      // Next button should be disabled without required fields filled
+      const nextButton = page.locator('button:has-text("Next: Upload Receipts")');
+      await expect(nextButton).toBeDisabled({ timeout: 5000 });
 
-      // Get available options
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        // Select first non-placeholder option
-        await categorySelect.selectOption({ index: 1 });
-      }
+      // Wait for categories API to load - Category is the SECOND select on page
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1]; // Category is second select
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
+
+      // Select first real category (index 1 = first category after "Select a category")
+      await categorySelect.selectOption({ index: 1 });
 
       // Fill description (required)
       const descriptionField = page.locator('textarea');
@@ -235,27 +252,30 @@ test.describe('Expense Management', () => {
     test('EXP-12: Navigate through wizard steps', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
-
-      // Wait for page to load
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
+
+      // Wait for categories to load - Category is the SECOND select
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1];
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
 
       // Fill Step 1 required fields
-      const categorySelect = page.locator('select').first();
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        await categorySelect.selectOption({ index: 1 });
-      }
-
+      await categorySelect.selectOption({ index: 1 });
       await page.locator('textarea').fill('Test expense for wizard test');
       await page.locator('input[type="number"]').first().fill('250');
 
       // Click Next to go to Step 2
-      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next: Upload Receipts")');
       await page.waitForTimeout(500);
 
       // Should be on receipts step
-      await expect(page.locator('text=Upload Receipts')).toBeVisible();
+      await expect(page.locator('label:has-text("Upload Receipts")')).toBeVisible();
 
       // Click Next to go to Step 3
       await page.click('button:has-text("Next: Review")');
@@ -268,21 +288,26 @@ test.describe('Expense Management', () => {
     test('EXP-13: Can go back between steps', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
-
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
+
+      // Wait for categories to load - Category is the SECOND select
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1];
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
 
       // Fill Step 1
-      const categorySelect = page.locator('select').first();
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        await categorySelect.selectOption({ index: 1 });
-      }
+      await categorySelect.selectOption({ index: 1 });
       await page.locator('textarea').fill('Test expense');
       await page.locator('input[type="number"]').first().fill('100');
 
       // Go to Step 2
-      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next: Upload Receipts")');
       await page.waitForTimeout(300);
 
       // Click Back
@@ -290,27 +315,32 @@ test.describe('Expense Management', () => {
       await page.waitForTimeout(300);
 
       // Should be back on Step 1
-      await expect(page.locator('text=Expense Type')).toBeVisible();
+      await expect(page.locator('label:has-text("Expense Type")')).toBeVisible();
     });
 
     test('EXP-14: Review step shows expense summary', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
-
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
+
+      // Wait for categories to load - Category is the SECOND select
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1];
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
 
       // Fill Step 1
-      const categorySelect = page.locator('select').first();
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        await categorySelect.selectOption({ index: 1 });
-      }
+      await categorySelect.selectOption({ index: 1 });
       await page.locator('textarea').fill('Test expense summary');
       await page.locator('input[type="number"]').first().fill('500');
 
       // Navigate to review
-      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next: Upload Receipts")');
       await page.waitForTimeout(300);
       await page.click('button:has-text("Next: Review")');
       await page.waitForTimeout(300);
@@ -318,27 +348,32 @@ test.describe('Expense Management', () => {
       // Review should show summary data
       await expect(page.locator('text=Test expense summary')).toBeVisible();
       await expect(page.locator('text=500')).toBeVisible();
-      await expect(page.locator('text=Save as Draft')).toBeVisible();
+      await expect(page.locator('button:has-text("Save as Draft")')).toBeVisible();
     });
 
     test('EXP-15: Submit for approval requires receipt', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
-
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
+
+      // Wait for categories to load - Category is the SECOND select
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1];
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
 
       // Fill Step 1
-      const categorySelect = page.locator('select').first();
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        await categorySelect.selectOption({ index: 1 });
-      }
+      await categorySelect.selectOption({ index: 1 });
       await page.locator('textarea').fill('Test expense');
       await page.locator('input[type="number"]').first().fill('100');
 
       // Navigate to review (skip receipt upload)
-      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next: Upload Receipts")');
       await page.waitForTimeout(300);
       await page.click('button:has-text("Next: Review")');
       await page.waitForTimeout(300);
@@ -354,6 +389,7 @@ test.describe('Expense Management', () => {
     test('EXP-16: Cancel navigates back to expenses list', async ({ page }) => {
       await login(page, TEST_USERS.admin.email, TEST_USERS.admin.password);
       await page.goto('/expenses/new');
+      await page.waitForLoadState('networkidle');
 
       const cancelButton = page.locator('button:has-text("Cancel"), a:has-text("Cancel")');
       await cancelButton.click();
@@ -572,19 +608,25 @@ test.describe('Expense Management', () => {
 
       await page.goto('/expenses/new');
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1000);
+
+      // Wait for categories to load - Category is the SECOND select
+      const categorySelect = page.locator('select').nth(1);
+      await page.waitForFunction(
+        () => {
+          const selects = document.querySelectorAll('select');
+          const categorySelect = selects[1];
+          return categorySelect && categorySelect.options.length > 1 && !categorySelect.options[0].textContent?.includes('Loading');
+        },
+        { timeout: 10000 }
+      );
 
       // Fill form
-      const categorySelect = page.locator('select').first();
-      const options = await categorySelect.locator('option').allTextContents();
-      if (options.length > 1) {
-        await categorySelect.selectOption({ index: 1 });
-      }
+      await categorySelect.selectOption({ index: 1 });
       await page.locator('textarea').fill('API test expense');
       await page.locator('input[type="number"]').first().fill('100');
 
       // Navigate to review
-      await page.click('button:has-text("Next")');
+      await page.click('button:has-text("Next: Upload Receipts")');
       await page.waitForTimeout(300);
       await page.click('button:has-text("Next: Review")');
       await page.waitForTimeout(300);
