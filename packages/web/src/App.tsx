@@ -26,6 +26,9 @@ import { CategoriesPage } from './pages/admin/CategoriesPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 
+// Notification pages
+import { NotificationListPage } from './pages/notifications/NotificationListPage';
+
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -60,6 +63,7 @@ function App() {
         <Route path="/vouchers" element={<VoucherListPage />} />
         <Route path="/vouchers/:id" element={<VoucherDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/notifications" element={<NotificationListPage />} />
 
         {/* Admin routes */}
         <Route

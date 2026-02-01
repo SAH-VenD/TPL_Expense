@@ -1,115 +1,199 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '@/services/api';
 import type { PaginatedResponse } from '@/types/api.types';
+import type {
+  Voucher,
+  VoucherFilters,
+  CreateVoucherDto,
+  UpdateVoucherDto,
+  ApproveVoucherDto,
+  RejectVoucherDto,
+  DisburseVoucherDto,
+  SettleVoucherDto,
+  LinkedExpense,
+  VoucherStatus,
+} from '../types/vouchers.types';
 
-export type VoucherStatus =
-  | 'REQUESTED'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'DISBURSED'
-  | 'PARTIALLY_SETTLED'
-  | 'SETTLED'
-  | 'OVERDUE';
+// Re-export types for convenience
+export type {
+  Voucher,
+  VoucherFilters,
+  CreateVoucherDto,
+  VoucherStatus,
+} from '../types/vouchers.types';
 
-export interface Voucher {
-  id: string;
-  voucherNumber: string;
-  status: VoucherStatus;
-  requesterId: string;
-  requester: {
-    id: string;
-    firstName: string;
-    lastName: string;
-  };
-  currency: string;
-  requestedAmount: number;
-  approvedAmount?: number;
-  disbursedAmount?: number;
-  settledAmount?: number;
-  purpose: string;
-  notes?: string;
-  requestedAt: string;
-  approvedAt?: string;
-  disbursedAt?: string;
-  settlementDeadline?: string;
-  settledAt?: string;
-  underSpendAmount?: number;
-  overSpendAmount?: number;
-  createdAt: string;
-  updatedAt: string;
+export interface VouchersResponse extends PaginatedResponse<Voucher> {
+  statusCounts?: Record<VoucherStatus | 'ALL', number>;
 }
 
-export interface VoucherFilters {
-  page?: number;
-  pageSize?: number;
-  status?: VoucherStatus;
-}
-
-export interface CreateVoucherDto {
-  requestedAmount: number;
-  currency?: string;
-  purpose: string;
-  notes?: string;
+export interface VoucherDetailResponse extends Voucher {
+  expenses?: LinkedExpense[];
 }
 
 export const vouchersApi = createApi({
   reducerPath: 'vouchersApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Voucher'],
+  tagTypes: ['Voucher', 'VoucherList'],
   endpoints: (builder) => ({
-    getVouchers: builder.query<PaginatedResponse<Voucher>, VoucherFilters>({
+    // Get paginated list of vouchers
+    getVouchers: builder.query<VouchersResponse, VoucherFilters>({
       query: (filters) => ({
         url: '/vouchers',
-        params: filters,
+        params: {
+          ...filters,
+          // Clean up undefined values
+          ...(filters.status && { status: filters.status }),
+          ...(filters.page && { page: filters.page }),
+          ...(filters.pageSize && { pageSize: filters.pageSize }),
+          ...(filters.requesterId && { requesterId: filters.requesterId }),
+          ...(filters.startDate && { startDate: filters.startDate }),
+          ...(filters.endDate && { endDate: filters.endDate }),
+          ...(filters.minAmount !== undefined && { minAmount: filters.minAmount }),
+          ...(filters.maxAmount !== undefined && { maxAmount: filters.maxAmount }),
+        },
       }),
-      providesTags: ['Voucher'],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({ type: 'Voucher' as const, id })),
+              { type: 'VoucherList', id: 'LIST' },
+            ]
+          : [{ type: 'VoucherList', id: 'LIST' }],
     }),
-    getVoucher: builder.query<Voucher, string>({
+
+    // Get single voucher by ID
+    getVoucher: builder.query<VoucherDetailResponse, string>({
       query: (id) => `/vouchers/${id}`,
       providesTags: (_result, _error, id) => [{ type: 'Voucher', id }],
     }),
+
+    // Get voucher linked expenses
+    getVoucherExpenses: builder.query<LinkedExpense[], string>({
+      query: (voucherId) => `/vouchers/${voucherId}/expenses`,
+      providesTags: (_result, _error, id) => [{ type: 'Voucher', id }],
+    }),
+
+    // Create new voucher request
     createVoucher: builder.mutation<Voucher, CreateVoucherDto>({
       query: (body) => ({
         url: '/vouchers',
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Voucher'],
+      invalidatesTags: [{ type: 'VoucherList', id: 'LIST' }],
     }),
-    approveVoucher: builder.mutation<Voucher, { id: string; approvedAmount?: number }>({
-      query: ({ id, approvedAmount }) => ({
+
+    // Update draft voucher
+    updateVoucher: builder.mutation<Voucher, { id: string; data: UpdateVoucherDto }>({
+      query: ({ id, data }) => ({
+        url: `/vouchers/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Voucher', id },
+        { type: 'VoucherList', id: 'LIST' },
+      ],
+    }),
+
+    // Delete/cancel voucher
+    deleteVoucher: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/vouchers/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'VoucherList', id: 'LIST' }],
+    }),
+
+    // Approve voucher
+    approveVoucher: builder.mutation<Voucher, { id: string; data?: ApproveVoucherDto }>({
+      query: ({ id, data }) => ({
         url: `/vouchers/${id}/approve`,
         method: 'POST',
-        body: { approvedAmount },
+        body: data || {},
       }),
-      invalidatesTags: ['Voucher'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Voucher', id },
+        { type: 'VoucherList', id: 'LIST' },
+      ],
     }),
-    rejectVoucher: builder.mutation<Voucher, { id: string; reason: string }>({
-      query: ({ id, reason }) => ({
+
+    // Reject voucher
+    rejectVoucher: builder.mutation<Voucher, { id: string; data: RejectVoucherDto }>({
+      query: ({ id, data }) => ({
         url: `/vouchers/${id}/reject`,
         method: 'POST',
-        body: { reason },
+        body: data,
       }),
-      invalidatesTags: ['Voucher'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Voucher', id },
+        { type: 'VoucherList', id: 'LIST' },
+      ],
     }),
-    disburseVoucher: builder.mutation<Voucher, { id: string; disbursedAmount: number }>({
-      query: ({ id, disbursedAmount }) => ({
+
+    // Disburse voucher
+    disburseVoucher: builder.mutation<Voucher, { id: string; data: DisburseVoucherDto }>({
+      query: ({ id, data }) => ({
         url: `/vouchers/${id}/disburse`,
         method: 'POST',
-        body: { disbursedAmount },
+        body: data,
       }),
-      invalidatesTags: ['Voucher'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Voucher', id },
+        { type: 'VoucherList', id: 'LIST' },
+      ],
     }),
-    settleVoucher: builder.mutation<
-      Voucher,
-      { id: string; settledAmount: number; cashReturned?: number }
-    >({
-      query: ({ id, ...body }) => ({
+
+    // Settle voucher
+    settleVoucher: builder.mutation<Voucher, { id: string; data: SettleVoucherDto }>({
+      query: ({ id, data }) => ({
         url: `/vouchers/${id}/settle`,
         method: 'POST',
-        body,
+        body: data,
       }),
-      invalidatesTags: ['Voucher'],
+      invalidatesTags: (_result, _error, { id }) => [
+        { type: 'Voucher', id },
+        { type: 'VoucherList', id: 'LIST' },
+      ],
+    }),
+
+    // Link expense to voucher
+    linkExpenseToVoucher: builder.mutation<Voucher, { voucherId: string; expenseId: string }>({
+      query: ({ voucherId, expenseId }) => ({
+        url: `/vouchers/${voucherId}/expenses`,
+        method: 'POST',
+        body: { expenseId },
+      }),
+      invalidatesTags: (_result, _error, { voucherId }) => [
+        { type: 'Voucher', id: voucherId },
+      ],
+    }),
+
+    // Unlink expense from voucher
+    unlinkExpenseFromVoucher: builder.mutation<
+      Voucher,
+      { voucherId: string; expenseId: string }
+    >({
+      query: ({ voucherId, expenseId }) => ({
+        url: `/vouchers/${voucherId}/expenses/${expenseId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { voucherId }) => [
+        { type: 'Voucher', id: voucherId },
+      ],
+    }),
+
+    // Get user's open vouchers (for warning messages)
+    getUserOpenVouchers: builder.query<Voucher[], void>({
+      query: () => ({
+        url: '/vouchers',
+        params: {
+          status: 'REQUESTED,APPROVED,DISBURSED',
+          pageSize: 10,
+        },
+      }),
+      transformResponse: (response: PaginatedResponse<Voucher>) => response.data,
+      providesTags: [{ type: 'VoucherList', id: 'OPEN' }],
     }),
   }),
 });
@@ -117,9 +201,15 @@ export const vouchersApi = createApi({
 export const {
   useGetVouchersQuery,
   useGetVoucherQuery,
+  useGetVoucherExpensesQuery,
   useCreateVoucherMutation,
+  useUpdateVoucherMutation,
+  useDeleteVoucherMutation,
   useApproveVoucherMutation,
   useRejectVoucherMutation,
   useDisburseVoucherMutation,
   useSettleVoucherMutation,
+  useLinkExpenseToVoucherMutation,
+  useUnlinkExpenseFromVoucherMutation,
+  useGetUserOpenVouchersQuery,
 } = vouchersApi;

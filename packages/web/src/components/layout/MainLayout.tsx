@@ -3,6 +3,7 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout, setUser } from '@/features/auth/store/authSlice';
 import { useLogoutMutation, useGetMeQuery } from '@/features/auth/services/auth.service';
+import { NotificationBell } from '@/components/notifications';
 import clsx from 'clsx';
 
 const navigation = [
@@ -249,6 +250,9 @@ export function MainLayout() {
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
+              {/* Notification Bell */}
+              <NotificationBell position="header" />
+
               <Link
                 to="/expenses/new"
                 className="btn-primary hidden sm:inline-flex"

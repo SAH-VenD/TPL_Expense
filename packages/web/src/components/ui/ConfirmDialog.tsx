@@ -15,6 +15,8 @@ export interface ConfirmDialogProps {
   cancelText?: string;
   variant?: ConfirmDialogVariant;
   loading?: boolean;
+  isLoading?: boolean;
+  children?: React.ReactNode;
 }
 
 const variantConfig: Record<
@@ -45,8 +47,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelText = 'Cancel',
   variant = 'danger',
   loading,
+  isLoading,
+  children,
 }) => {
   const config = variantConfig[variant];
+  const isProcessing = loading || isLoading;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm" showCloseButton={false}>
@@ -69,6 +74,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             ) : (
               message
             )}
+            {children}
           </div>
         </div>
       </div>
@@ -76,7 +82,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <button
           type="button"
           onClick={onClose}
-          disabled={loading}
+          disabled={isProcessing}
           className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
         >
           {cancelText}
@@ -84,13 +90,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <button
           type="button"
           onClick={onConfirm}
-          disabled={loading}
+          disabled={isProcessing}
           className={clsx(
             'px-4 py-2 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50',
             config.buttonClass
           )}
         >
-          {loading ? 'Processing...' : confirmText}
+          {isProcessing ? 'Processing...' : confirmText}
         </button>
       </div>
     </Modal>
