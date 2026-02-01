@@ -20,6 +20,9 @@ import { ApprovalQueuePage } from './pages/approvals/ApprovalQueuePage';
 import { VoucherListPage } from './pages/vouchers/VoucherListPage';
 import { VoucherDetailPage } from './pages/vouchers/VoucherDetailPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
+import { BudgetListPage } from './pages/budgets/BudgetListPage';
+import { BudgetCreatePage } from './pages/budgets/BudgetCreatePage';
+import { BudgetDetailPage } from './pages/budgets/BudgetDetailPage';
 
 // Admin pages
 import { UsersPage } from './pages/admin/UsersPage';
@@ -65,6 +68,9 @@ function App() {
         <Route path="/approvals" element={<ApprovalQueuePage />} />
         <Route path="/vouchers" element={<VoucherListPage />} />
         <Route path="/vouchers/:id" element={<VoucherDetailPage />} />
+        <Route path="/budgets" element={<BudgetListPage />} />
+        <Route path="/budgets/new" element={<BudgetCreatePage />} />
+        <Route path="/budgets/:id" element={<BudgetDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/notifications" element={<NotificationListPage />} />
 
