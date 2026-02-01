@@ -189,7 +189,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({
   };
 
   const handleRowClick = (expenseId: string) => {
-    navigate(`/approvals/${expenseId}`);
+    navigate(`/expenses/${expenseId}`);
   };
 
   return (

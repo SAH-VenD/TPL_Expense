@@ -44,7 +44,10 @@ export const approvalsApi = createApi({
     getPendingApprovals: builder.query<PaginatedResponse<Expense>, ApprovalFilters>({
       query: (filters) => ({
         url: '/approvals/pending',
-        params: filters,
+        params: {
+          page: filters.page,
+          limit: filters.pageSize,
+        },
       }),
       providesTags: ['Approval'],
     }),
