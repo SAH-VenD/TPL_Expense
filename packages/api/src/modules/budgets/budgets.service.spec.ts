@@ -782,9 +782,9 @@ describe('BudgetsService', () => {
     });
 
     it('should throw error for invalid month', () => {
-      expect(() =>
-        service.getBudgetPeriodDates(BudgetPeriod.MONTHLY, 2024, undefined, 13),
-      ).toThrow(BadRequestException);
+      expect(() => service.getBudgetPeriodDates(BudgetPeriod.MONTHLY, 2024, undefined, 13)).toThrow(
+        BadRequestException,
+      );
       expect(() => service.getBudgetPeriodDates(BudgetPeriod.MONTHLY, 2024, undefined, 0)).toThrow(
         BadRequestException,
       );
@@ -985,7 +985,9 @@ describe('BudgetsService', () => {
       const inactiveBudget = { ...mockBudget, isActive: false };
       mockPrismaService.budget.findUnique.mockResolvedValue(inactiveBudget);
 
-      await expect(service.closeBudget('budget-id', 'user-id')).rejects.toThrow(BadRequestException);
+      await expect(service.closeBudget('budget-id', 'user-id')).rejects.toThrow(
+        BadRequestException,
+      );
       await expect(service.closeBudget('budget-id', 'user-id')).rejects.toThrow('already inactive');
     });
   });
