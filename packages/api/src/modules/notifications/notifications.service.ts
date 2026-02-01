@@ -6,13 +6,7 @@ import { NotificationType } from '@prisma/client';
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(
-    userId: string,
-    type: NotificationType,
-    title: string,
-    message: string,
-    data?: any,
-  ) {
+  async create(userId: string, type: NotificationType, title: string, message: string, data?: any) {
     return this.prisma.notification.create({
       data: {
         userId,

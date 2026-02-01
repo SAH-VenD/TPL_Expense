@@ -1,12 +1,4 @@
-import {
-  IsNumber,
-  IsBoolean,
-  IsOptional,
-  IsArray,
-  IsString,
-  Min,
-  Max,
-} from 'class-validator';
+import { IsNumber, IsBoolean, IsOptional, IsArray, IsString, Min, Max } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SystemSettingsDto {

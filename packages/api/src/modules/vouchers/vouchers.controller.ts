@@ -1,18 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  UseGuards,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query, Req, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { VouchersService } from './vouchers.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
-import { DisburseVoucherDto, SettleVoucherDto } from './dto/voucher-actions.dto';
+import {
+  DisburseVoucherDto,
+  SettleVoucherDto,
+  RejectVoucherDto,
+  LinkExpenseDto,
+} from './dto/voucher-actions.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -33,10 +28,31 @@ export class VouchersController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all vouchers' })
+  @ApiOperation({ summary: 'Get all vouchers (filtered by user unless admin/finance)' })
   @ApiQuery({ name: 'status', enum: VoucherStatus, required: false })
   findAll(@Req() req: AuthenticatedRequest, @Query('status') status?: VoucherStatus) {
     return this.vouchersService.findAll(req.user, status);
+  }
+
+  @Get('pending-approval')
+  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @ApiOperation({ summary: 'Get all vouchers pending approval' })
+  getPendingApproval(@Req() req: AuthenticatedRequest) {
+    return this.vouchersService.getPendingApproval(req.user);
+  }
+
+  @Get('outstanding')
+  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @ApiOperation({ summary: 'Get all outstanding vouchers (disbursed or partially settled)' })
+  getOutstanding(@Req() req: AuthenticatedRequest) {
+    return this.vouchersService.getOutstanding(req.user);
+  }
+
+  @Get('overdue')
+  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @ApiOperation({ summary: 'Get all overdue vouchers past settlement deadline' })
+  getOverdue(@Req() req: AuthenticatedRequest) {
+    return this.vouchersService.getOverdue(req.user);
   }
 
   @Get(':id')
@@ -50,6 +66,23 @@ export class VouchersController {
   @ApiOperation({ summary: 'Approve a voucher request' })
   approve(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.vouchersService.approve(id, req.user);
+  }
+
+  @Post(':id/reject')
+  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @ApiOperation({ summary: 'Reject a voucher request with reason' })
+  reject(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() rejectDto: RejectVoucherDto,
+  ) {
+    return this.vouchersService.reject(id, req.user, rejectDto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Cancel a voucher (before disbursement only)' })
+  cancel(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.vouchersService.cancel(id, req.user);
   }
 
   @Post(':id/disburse')
@@ -71,5 +104,15 @@ export class VouchersController {
     @Body() settleDto: SettleVoucherDto,
   ) {
     return this.vouchersService.settle(id, req.user, settleDto);
+  }
+
+  @Post(':id/link-expense')
+  @ApiOperation({ summary: 'Link an expense to this voucher' })
+  linkExpense(
+    @Req() req: AuthenticatedRequest,
+    @Param('id') id: string,
+    @Body() linkExpenseDto: LinkExpenseDto,
+  ) {
+    return this.vouchersService.linkExpense(id, req.user, linkExpenseDto);
   }
 }

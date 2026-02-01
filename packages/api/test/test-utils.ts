@@ -145,7 +145,7 @@ export function expectSuccessResponse(response: { status: number; body: unknown 
 export function expectErrorResponse(
   response: { status: number; body: { message?: string } },
   expectedStatus: number,
-  messageContains?: string
+  messageContains?: string,
 ) {
   expect(response.status).toBe(expectedStatus);
   if (messageContains) {

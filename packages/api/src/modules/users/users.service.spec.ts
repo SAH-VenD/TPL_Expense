@@ -37,10 +37,7 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        UsersService,
-        { provide: PrismaService, useValue: mockPrismaService },
-      ],
+      providers: [UsersService, { provide: PrismaService, useValue: mockPrismaService }],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
@@ -285,7 +282,7 @@ describe('UsersService', () => {
         mustChangePassword: true,
       });
 
-      const result = await service.create(createUserDto);
+      await service.create(createUserDto);
 
       expect(mockPrismaService.user.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -375,7 +372,9 @@ describe('UsersService', () => {
     it('should throw NotFoundException for non-existent user', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.update('non-existent', updateUserDto)).rejects.toThrow(NotFoundException);
+      await expect(service.update('non-existent', updateUserDto)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should update role', async () => {

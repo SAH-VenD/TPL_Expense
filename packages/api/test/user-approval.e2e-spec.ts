@@ -60,12 +60,10 @@ describe('User Registration & Approval Flow (e2e)', () => {
     });
 
     // Login as admin to get a real token
-    const loginResponse = await request(app.getHttpServer())
-      .post('/api/v1/auth/login')
-      .send({
-        email: adminEmail,
-        password: TEST_PASSWORD,
-      });
+    const loginResponse = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
+      email: adminEmail,
+      password: TEST_PASSWORD,
+    });
 
     adminToken = loginResponse.body.accessToken;
   }, 30000);
@@ -97,14 +95,12 @@ describe('User Registration & Approval Flow (e2e)', () => {
     let registeredUserId: string;
 
     it('Step 1: Register a new user', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/auth/register')
-        .send({
-          email: testEmail,
-          password: TEST_PASSWORD,
-          firstName: 'E2E New',
-          lastName: 'User',
-        });
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/register').send({
+        email: testEmail,
+        password: TEST_PASSWORD,
+        firstName: 'E2E New',
+        lastName: 'User',
+      });
 
       expect(response.status).toBe(201);
       expect(response.body).toHaveProperty('userId');
@@ -122,12 +118,10 @@ describe('User Registration & Approval Flow (e2e)', () => {
     });
 
     it('Step 2: Attempt login with pending user (should fail)', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/auth/login')
-        .send({
-          email: testEmail,
-          password: TEST_PASSWORD,
-        });
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
+        email: testEmail,
+        password: TEST_PASSWORD,
+      });
 
       expect(response.status).toBe(401);
       expect(response.body.message).toMatch(/pending|not active|approval/i);
@@ -143,9 +137,7 @@ describe('User Registration & Approval Flow (e2e)', () => {
       expect(response.body).toHaveProperty('data');
       expect(Array.isArray(response.body.data)).toBe(true);
 
-      const pendingUser = response.body.data.find(
-        (u: { email: string }) => u.email === testEmail,
-      );
+      const pendingUser = response.body.data.find((u: { email: string }) => u.email === testEmail);
       expect(pendingUser).toBeDefined();
       expect(pendingUser.status).toBe('PENDING_APPROVAL');
     });
@@ -166,12 +158,10 @@ describe('User Registration & Approval Flow (e2e)', () => {
     });
 
     it('Step 5: User can now login after approval', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/auth/login')
-        .send({
-          email: testEmail,
-          password: TEST_PASSWORD,
-        });
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
+        email: testEmail,
+        password: TEST_PASSWORD,
+      });
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('accessToken');
@@ -182,14 +172,12 @@ describe('User Registration & Approval Flow (e2e)', () => {
 
   describe('Registration Validation', () => {
     it('should reject registration with non-tekcellent.com email', async () => {
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/auth/register')
-        .send({
-          email: 'user@gmail.com',
-          password: TEST_PASSWORD,
-          firstName: 'Invalid',
-          lastName: 'User',
-        });
+      const response = await request(app.getHttpServer()).post('/api/v1/auth/register').send({
+        email: 'user@gmail.com',
+        password: TEST_PASSWORD,
+        firstName: 'Invalid',
+        lastName: 'User',
+      });
 
       expect(response.status).toBe(400);
       expect(response.body.message).toMatch(/tekcellent\.com/i);
@@ -238,12 +226,10 @@ describe('User Registration & Approval Flow (e2e)', () => {
       expect(response.body.status).toBe('INACTIVE');
 
       // Verify deactivated user cannot login
-      const loginResponse = await request(app.getHttpServer())
-        .post('/api/v1/auth/login')
-        .send({
-          email: activeUserEmail,
-          password: TEST_PASSWORD,
-        });
+      const loginResponse = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
+        email: activeUserEmail,
+        password: TEST_PASSWORD,
+      });
 
       expect(loginResponse.status).toBe(401);
     });
@@ -257,12 +243,10 @@ describe('User Registration & Approval Flow (e2e)', () => {
       expect(response.body.status).toBe('ACTIVE');
 
       // Verify reactivated user can login
-      const loginResponse = await request(app.getHttpServer())
-        .post('/api/v1/auth/login')
-        .send({
-          email: activeUserEmail,
-          password: TEST_PASSWORD,
-        });
+      const loginResponse = await request(app.getHttpServer()).post('/api/v1/auth/login').send({
+        email: activeUserEmail,
+        password: TEST_PASSWORD,
+      });
 
       expect(loginResponse.status).toBe(200);
       expect(loginResponse.body).toHaveProperty('accessToken');
@@ -279,7 +263,8 @@ describe('User Registration & Approval Flow (e2e)', () => {
     it('should prevent non-admin from viewing user list', async () => {
       // Use an invalid/fake token to test authorization
       // This avoids rate limiting issues from too many login attempts
-      const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmYWtlLXVzZXItaWQiLCJyb2xlIjoiRU1QTE9ZRUUiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTgwMDAwMDAwMH0.invalid';
+      const fakeToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmYWtlLXVzZXItaWQiLCJyb2xlIjoiRU1QTE9ZRUUiLCJpYXQiOjE3MDAwMDAwMDAsImV4cCI6MTgwMDAwMDAwMH0.invalid';
 
       const response = await request(app.getHttpServer())
         .get('/api/v1/users')

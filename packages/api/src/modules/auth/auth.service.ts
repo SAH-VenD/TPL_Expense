@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,10 +22,10 @@ export interface JwtPayload {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly BCRYPT_ROUNDS = 12;
   private readonly MAX_LOGIN_ATTEMPTS = 5;
   private readonly LOCKOUT_DURATION_MINUTES = 15;
-  private readonly PASSWORD_HISTORY_LENGTH = 5;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -81,12 +82,8 @@ export class AuthService {
 
     // Check if account is locked
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      const remainingMinutes = Math.ceil(
-        (user.lockedUntil.getTime() - Date.now()) / 60000,
-      );
-      throw new UnauthorizedException(
-        `Account locked. Try again in ${remainingMinutes} minutes.`,
-      );
+      const remainingMinutes = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+      throw new UnauthorizedException(`Account locked. Try again in ${remainingMinutes} minutes.`);
     }
 
     // Check user status
@@ -166,11 +163,7 @@ export class AuthService {
       include: { user: true },
     });
 
-    if (
-      !storedToken ||
-      storedToken.revokedAt ||
-      storedToken.expiresAt < new Date()
-    ) {
+    if (!storedToken || storedToken.revokedAt || storedToken.expiresAt < new Date()) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
@@ -198,19 +191,18 @@ export class AuthService {
       return { message: 'If the email exists, a reset link has been sent.' };
     }
 
-    // Generate reset token
+    // Generate reset token with expiry
     const resetToken = uuidv4();
     const resetExpiry = new Date(
       Date.now() +
-        this.configService.get<number>('PASSWORD_RESET_EXPIRATION_HOURS', 24) *
-          60 *
-          60 *
-          1000,
+        this.configService.get<number>('PASSWORD_RESET_EXPIRATION_HOURS', 24) * 60 * 60 * 1000,
     );
 
-    // Store reset token (in a real app, you'd send an email)
-    // For now, we'll just log it
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    // TODO: Store reset token and expiry in database, then send email
+    // For now, we log it with the logger for development
+    this.logger.debug(
+      `Password reset token for ${email}: ${resetToken}, expires: ${resetExpiry.toISOString()}`,
+    );
 
     // TODO: Send email with reset link
 
@@ -248,10 +240,7 @@ export class AuthService {
     }
 
     // Check session timeout
-    const sessionTimeout = this.configService.get<number>(
-      'SESSION_TIMEOUT_MINUTES',
-      5,
-    );
+    const sessionTimeout = this.configService.get<number>('SESSION_TIMEOUT_MINUTES', 5);
     if (user.lastActivityAt) {
       const lastActivity = new Date(user.lastActivityAt).getTime();
       const now = Date.now();
@@ -299,9 +288,7 @@ export class AuthService {
     };
 
     if (failedAttempts >= this.MAX_LOGIN_ATTEMPTS) {
-      updateData.lockedUntil = new Date(
-        Date.now() + this.LOCKOUT_DURATION_MINUTES * 60 * 1000,
-      );
+      updateData.lockedUntil = new Date(Date.now() + this.LOCKOUT_DURATION_MINUTES * 60 * 1000);
       updateData.status = UserStatus.LOCKED;
     }
 
@@ -312,10 +299,7 @@ export class AuthService {
   }
 
   private validateEmailDomain(email: string) {
-    const allowedDomain = this.configService.get<string>(
-      'ALLOWED_EMAIL_DOMAIN',
-      'tekcellent.com',
-    );
+    const allowedDomain = this.configService.get<string>('ALLOWED_EMAIL_DOMAIN', 'tekcellent.com');
     const domain = email.split('@')[1]?.toLowerCase();
 
     if (domain !== allowedDomain) {
@@ -364,12 +348,7 @@ export class AuthService {
     }
   }
 
-  private async logAudit(
-    userId: string,
-    action: string,
-    entityType: string,
-    entityId: string,
-  ) {
+  private async logAudit(userId: string, action: string, entityType: string, entityId: string) {
     await this.prisma.auditLog.create({
       data: {
         userId,

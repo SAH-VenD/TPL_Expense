@@ -28,12 +28,12 @@ export class UsersService {
 
     // Generate temporary password if not provided
     const tempPassword = dto.password || this.generateTempPassword();
-    const passwordHash = await bcrypt.hash(tempPassword, this.BCRYPT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(tempPassword, this.BCRYPT_ROUNDS);
 
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
-        passwordHash,
+        passwordHash: hashedPassword,
         firstName: dto.firstName,
         lastName: dto.lastName,
         employeeId: dto.employeeId,
@@ -42,7 +42,7 @@ export class UsersService {
         managerId: dto.managerId,
         role: dto.role || RoleType.EMPLOYEE,
         status: UserStatus.ACTIVE, // Admin-created users are active
-        passwordHistory: [passwordHash],
+        passwordHistory: [hashedPassword],
         mustChangePassword: true,
         passwordChangedAt: new Date(),
       },
@@ -54,8 +54,9 @@ export class UsersService {
       },
     });
 
-    // Return user without password hash
-    const { passwordHash: _, passwordHistory: __, ...result } = user;
+    // Return user without password hash (eslint-disable for destructuring pattern)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { passwordHash, passwordHistory, ...result } = user;
     return result;
   }
 

@@ -44,10 +44,7 @@ export class ExpensesService {
     });
   }
 
-  async findAll(
-    user: User,
-    filters: { status?: ExpenseStatus; page?: number; limit?: number },
-  ) {
+  async findAll(user: User, filters: { status?: ExpenseStatus; page?: number; limit?: number }) {
     const { status, page = 1, limit = 20 } = filters;
     const skip = (page - 1) * limit;
 
@@ -131,11 +128,7 @@ export class ExpensesService {
     return expense;
   }
 
-  async update(
-    id: string,
-    user: User,
-    updateExpenseDto: UpdateExpenseDto,
-  ) {
+  async update(id: string, user: User, updateExpenseDto: UpdateExpenseDto) {
     const expense = await this.prisma.expense.findUnique({
       where: { id },
     });
@@ -260,10 +253,7 @@ export class ExpensesService {
 
     let sequence = 1;
     if (lastExpense) {
-      const lastSequence = parseInt(
-        lastExpense.expenseNumber.split('-')[2],
-        10,
-      );
+      const lastSequence = parseInt(lastExpense.expenseNumber.split('-')[2], 10);
       sequence = lastSequence + 1;
     }
 

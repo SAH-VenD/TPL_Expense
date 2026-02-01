@@ -1,7 +1,7 @@
 {
   "project_name": "tpl-expense",
   "created_at": "2026-01-28T00:00:00Z",
-  "last_updated": "2026-01-30T00:00:00Z",
+  "last_updated": "2026-02-01T10:00:00Z",
 
   "current_phase": "phase-1",
   "phase_description": "Core expense submission functionality",
@@ -18,39 +18,62 @@
       "completed_at": "2026-01-29"
     },
     "categories": {
-      "status": "pending",
+      "status": "complete",
       "priority": 3,
+      "completed_at": "2026-01-30",
       "dependencies": ["auth"]
     },
-    "expenses": {
-      "status": "pending",
+    "departments": {
+      "status": "complete",
+      "priority": 3,
+      "completed_at": "2026-01-30",
+      "dependencies": ["auth"]
+    },
+    "storage": {
+      "status": "complete",
       "priority": 4,
+      "completed_at": "2026-01-30",
+      "notes": "S3 provider + LocalStorage placeholder for dev"
+    },
+    "expenses": {
+      "status": "complete",
+      "priority": 4,
+      "completed_at": "2026-01-30",
       "dependencies": ["auth", "users", "categories"]
     },
     "receipts": {
-      "status": "pending",
+      "status": "complete",
       "priority": 5,
-      "dependencies": ["expenses"]
+      "completed_at": "2026-01-30",
+      "dependencies": ["expenses", "storage"]
     },
     "approvals": {
-      "status": "pending",
+      "status": "complete",
       "priority": 6,
-      "dependencies": ["expenses", "users"]
+      "completed_at": "2026-01-30",
+      "dependencies": ["expenses", "users"],
+      "notes": "Multi-tier approval workflow with delegation, history tracking, and resubmission"
     },
     "vouchers": {
-      "status": "pending",
+      "status": "complete",
       "priority": 7,
-      "dependencies": ["expenses", "approvals"]
+      "completed_at": "2026-01-30",
+      "dependencies": ["expenses", "approvals"],
+      "notes": "Full petty cash voucher lifecycle with overspend/underspend handling, expense linking, 114 unit tests"
     },
     "budgets": {
-      "status": "pending",
+      "status": "complete",
       "priority": 8,
-      "dependencies": ["expenses", "categories"]
+      "completed_at": "2026-01-30",
+      "dependencies": ["expenses", "categories"],
+      "notes": "Comprehensive budget tracking with utilization, enforcement, transfers, status management, 85 unit tests"
     },
     "reports": {
-      "status": "pending",
+      "status": "complete",
       "priority": 9,
-      "dependencies": ["expenses", "budgets"]
+      "completed_at": "2026-02-01",
+      "dependencies": ["expenses", "budgets"],
+      "notes": "Comprehensive analytics with 14 endpoints, spend breakdowns, trends, approval metrics, dashboard, exports, 52 unit tests, 70+ E2E tests"
     }
   },
 
@@ -63,13 +86,46 @@
     "documentation"
   ],
 
-  "recent_sessions": [],
+  "recent_sessions": [
+    {
+      "date": "2026-02-01",
+      "features_completed": ["reports"],
+      "agents_used": ["Backend-Engineer", "Qa-engineer"],
+      "notes": "PHASE 1 COMPLETE. Implemented comprehensive reports module with 14 endpoints, spend analytics, monthly trends, approval metrics, dashboard summary, XLSX/CSV exports, 52 unit tests, 70+ E2E tests"
+    },
+    {
+      "date": "2026-01-30",
+      "features_completed": ["vouchers"],
+      "agents_used": ["general-purpose"],
+      "notes": "Implemented petty cash voucher management with full lifecycle, business rules, overspend/underspend handling, and 114 unit tests"
+    },
+    {
+      "date": "2026-01-30",
+      "features_completed": ["approvals"],
+      "agents_used": [],
+      "notes": "Enhanced approvals module with multi-tier workflow, delegation system, approval history, bulk actions, and resubmission flow"
+    },
+    {
+      "date": "2026-01-30",
+      "features_completed": ["categories", "departments"],
+      "agents_used": ["backend-engineer (parallel x2)"],
+      "notes": "Implemented hierarchical CRUD for Categories and Departments using parallel agents"
+    },
+    {
+      "date": "2026-01-30",
+      "features_completed": ["storage", "expenses", "receipts"],
+      "agents_used": [],
+      "notes": "Integrated Storage with Receipts, added LocalStorage placeholder for AWS, fixed lint errors"
+    }
+  ],
 
   "global_notes": [
     "Using NestJS 10 for backend, React 18 for frontend",
     "PostgreSQL database with Prisma ORM",
     "Redux Toolkit + RTK Query for state management",
-    "LocalStack for local AWS S3/Textract development"
+    "LocalStack for local AWS S3/Textract development",
+    "CLAUDE.md files in subfolders for progressive disclosure",
+    "STORAGE_TYPE env var controls S3 vs local storage"
   ],
 
   "blockers": [],
@@ -84,6 +140,26 @@
       "date": "2026-01-28",
       "decision": "Use RTK Query instead of React Query",
       "rationale": "Already using Redux Toolkit, better integration"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Use parallel agents for independent module implementation",
+      "rationale": "Categories and Departments have no dependencies on each other, parallel implementation cuts time in half"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Create CLAUDE.md files in subfolders",
+      "rationale": "Progressive disclosure reduces context size, each folder has relevant context only"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Use LocalStorage provider as default for development",
+      "rationale": "Avoids AWS dependency during development, STORAGE_TYPE=s3 for production"
+    },
+    {
+      "date": "2026-01-30",
+      "decision": "Implement tier-based approval system with role matching",
+      "rationale": "Expenses are approved sequentially through tiers based on amount thresholds. Each tier matches approver role, with delegation support for flexibility."
     }
   ]
 }

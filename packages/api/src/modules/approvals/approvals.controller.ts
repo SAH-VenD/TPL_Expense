@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  Query,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Query, Req, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { ApprovalsService } from './approvals.service';
 import { ApproveDto, RejectDto, ClarifyDto, BulkApproveDto } from './dto/approval.dto';
-import { CreateDelegationDto } from './dto/delegation.dto';
+import { CreateDelegationDto, RevokeDelegationDto } from './dto/delegation.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -18,11 +10,13 @@ import { RoleType } from '@prisma/client';
 import { AuthenticatedRequest } from '../../common/types/request';
 
 @ApiTags('Approvals')
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('approvals')
 export class ApprovalsController {
   constructor(private readonly approvalsService: ApprovalsService) {}
+
+  // ==================== PENDING & HISTORY ====================
 
   @Get('pending')
   @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
@@ -43,6 +37,15 @@ export class ApprovalsController {
   getHistory(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getApprovalHistory(req.user);
   }
+
+  @Get('expenses/:expenseId/history')
+  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN, RoleType.EMPLOYEE)
+  @ApiOperation({ summary: 'Get approval timeline for a specific expense' })
+  getExpenseApprovalHistory(@Param('expenseId') expenseId: string) {
+    return this.approvalsService.getExpenseApprovalHistory(expenseId);
+  }
+
+  // ==================== APPROVAL ACTIONS ====================
 
   @Post('approve')
   @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
@@ -72,9 +75,11 @@ export class ApprovalsController {
     return this.approvalsService.requestClarification(req.user, clarifyDto);
   }
 
+  // ==================== DELEGATIONS ====================
+
   @Get('delegations')
   @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
-  @ApiOperation({ summary: 'Get active delegations' })
+  @ApiOperation({ summary: 'Get active delegations for current user' })
   getDelegations(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getDelegations(req.user.id);
   }
@@ -82,7 +87,29 @@ export class ApprovalsController {
   @Post('delegations')
   @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
   @ApiOperation({ summary: 'Create an approval delegation' })
-  createDelegation(@Req() req: AuthenticatedRequest, @Body() createDelegationDto: CreateDelegationDto) {
+  createDelegation(
+    @Req() req: AuthenticatedRequest,
+    @Body() createDelegationDto: CreateDelegationDto,
+  ) {
     return this.approvalsService.createDelegation(req.user.id, createDelegationDto);
+  }
+
+  @Post('delegations/revoke')
+  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @ApiOperation({ summary: 'Revoke an approval delegation' })
+  revokeDelegation(
+    @Req() req: AuthenticatedRequest,
+    @Body() revokeDelegationDto: RevokeDelegationDto,
+  ) {
+    return this.approvalsService.revokeDelegation(req.user.id, revokeDelegationDto);
+  }
+
+  // ==================== APPROVAL TIERS ====================
+
+  @Get('tiers')
+  @Roles(RoleType.ADMIN, RoleType.FINANCE)
+  @ApiOperation({ summary: 'Get all approval tiers' })
+  getApprovalTiers() {
+    return this.approvalsService.getApprovalTiers();
   }
 }

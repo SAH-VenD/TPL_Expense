@@ -20,3 +20,9 @@ export class CreateDelegationDto {
   @MaxLength(500)
   reason?: string;
 }
+
+export class RevokeDelegationDto {
+  @ApiProperty()
+  @IsUUID()
+  delegationId: string;
+}
