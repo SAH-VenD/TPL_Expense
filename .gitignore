@@ -40,6 +40,11 @@ Thumbs.db
 coverage/
 .nyc_output/
 
+# Playwright
+playwright-report/
+playwright/.cache/
+test-results/
+
 # Prisma
 packages/api/prisma/migrations/**/migration_lock.toml
 
