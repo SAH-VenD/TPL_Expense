@@ -101,15 +101,23 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
     );
   }
 
-  // Sort approvals by tier
-  const sortedApprovals = [...approvals].sort((a, b) => a.tier - b.tier);
+  // Sort approvals by tier level
+  const sortedApprovals = [...approvals].sort((a, b) => a.tierLevel - b.tierLevel);
+
+  // Default config for unknown/missing actions
+  const defaultConfig = {
+    icon: <ClockIcon className="h-5 w-5" />,
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-100',
+    label: 'Unknown',
+  };
 
   return (
     <div className={className}>
       <div className="flow-root">
         <ul className="-mb-8">
           {sortedApprovals.map((approval, index) => {
-            const config = statusConfig[approval.status];
+            const config = statusConfig[approval.action as ApprovalStatus] || defaultConfig;
             const isLast = index === sortedApprovals.length - 1;
 
             return (
@@ -138,7 +146,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="text-sm">
-                        <span className="font-medium text-gray-900">Tier {approval.tier}</span>
+                        <span className="font-medium text-gray-900">Tier {approval.tierLevel}</span>
                         <span
                           className={clsx(
                             'ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
@@ -148,20 +156,29 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                         >
                           {config.label}
                         </span>
+                        {approval.wasEscalated && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                            Escalated
+                          </span>
+                        )}
+                        {approval.delegatedFromId && (
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
+                            Delegated
+                          </span>
+                        )}
                       </div>
 
                       {/* Approver info */}
                       <div className="mt-1 text-sm text-gray-500">
-                        {approval.status === 'PENDING' ? (
-                          <span>Awaiting approval</span>
-                        ) : approval.approvedBy ? (
+                        {approval.approver ? (
                           <span>
-                            {approval.status === 'APPROVED' ? 'Approved' : 'Reviewed'} by{' '}
+                            {approval.action === 'APPROVED' ? 'Approved' :
+                             approval.action === 'REJECTED' ? 'Rejected' : 'Reviewed'} by{' '}
                             <span className="font-medium text-gray-700">
-                              {approval.approvedBy.firstName} {approval.approvedBy.lastName}
+                              {approval.approver.firstName} {approval.approver.lastName}
                             </span>
-                            {approval.approvedBy.email && (
-                              <span className="text-gray-400"> ({approval.approvedBy.email})</span>
+                            {approval.approver.email && (
+                              <span className="text-gray-400"> ({approval.approver.email})</span>
                             )}
                           </span>
                         ) : (
@@ -170,37 +187,28 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                       </div>
 
                       {/* Date */}
-                      {approval.approvedAt && (
+                      {approval.createdAt && (
                         <p className="mt-0.5 text-xs text-gray-400">
-                          {formatDateTime(approval.approvedAt)}
+                          {formatDateTime(approval.createdAt)}
                         </p>
                       )}
 
-                      {/* Comment or reason */}
-                      {(approval.comment ||
-                        approval.rejectionReason ||
-                        approval.clarificationRequest) && (
+                      {/* Comment */}
+                      {approval.comment && (
                         <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
-                          {approval.comment && (
-                            <div>
-                              <span className="font-medium text-gray-700">Comment:</span>
-                              <p className="text-gray-600 mt-1">{approval.comment}</p>
-                            </div>
-                          )}
-                          {approval.rejectionReason && (
-                            <div>
-                              <span className="font-medium text-red-700">Rejection Reason:</span>
-                              <p className="text-gray-600 mt-1">{approval.rejectionReason}</p>
-                            </div>
-                          )}
-                          {approval.clarificationRequest && (
-                            <div>
-                              <span className="font-medium text-amber-700">
-                                Clarification Request:
-                              </span>
-                              <p className="text-gray-600 mt-1">{approval.clarificationRequest}</p>
-                            </div>
-                          )}
+                          <div>
+                            <span className={clsx(
+                              'font-medium',
+                              approval.action === 'REJECTED' ? 'text-red-700' :
+                              approval.action === 'CLARIFICATION_REQUESTED' ? 'text-amber-700' :
+                              'text-gray-700'
+                            )}>
+                              {approval.action === 'REJECTED' ? 'Rejection Reason:' :
+                               approval.action === 'CLARIFICATION_REQUESTED' ? 'Clarification Request:' :
+                               'Comment:'}
+                            </span>
+                            <p className="text-gray-600 mt-1">{approval.comment}</p>
+                          </div>
                         </div>
                       )}
                     </div>

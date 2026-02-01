@@ -105,18 +105,19 @@ export interface ExpenseSplit {
 export interface ApprovalHistory {
   id: string;
   expenseId: string;
-  tier: number;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CLARIFICATION_REQUESTED';
-  approvedBy?: {
+  approverId: string;
+  approver: {
     id: string;
     firstName: string;
     lastName: string;
     email: string;
   };
-  approvedAt?: string;
-  comment?: string;
-  rejectionReason?: string;
-  clarificationRequest?: string;
+  action: 'APPROVED' | 'REJECTED' | 'CLARIFICATION_REQUESTED';
+  tierLevel: number;
+  comment: string | null;
+  wasEscalated: boolean;
+  escalatedFromId: string | null;
+  delegatedFromId: string | null;
   createdAt: string;
 }
 

@@ -358,23 +358,33 @@ export function ExpenseDetailPage() {
               <div className="space-y-4">
                 {approvalHistory.map((history) => (
                   <div key={history.id} className="flex items-start space-x-3 text-sm">
-                    <div className="w-2 h-2 mt-2 rounded-full bg-blue-600" />
+                    <div className={`w-2 h-2 mt-2 rounded-full ${
+                      history.action === 'APPROVED' ? 'bg-green-600' :
+                      history.action === 'REJECTED' ? 'bg-red-600' :
+                      'bg-amber-600'
+                    }`} />
                     <div>
                       <p className="font-medium text-gray-900">
-                        {history.status}
-                        {history.approvedBy && (
-                          <> by {history.approvedBy.firstName} {history.approvedBy.lastName}</>
+                        {history.action === 'APPROVED' ? 'Approved' :
+                         history.action === 'REJECTED' ? 'Rejected' :
+                         'Clarification Requested'}
+                        {history.approver && (
+                          <> by {history.approver.firstName} {history.approver.lastName}</>
                         )}
                       </p>
                       <p className="text-gray-500">
                         {format(new Date(history.createdAt), 'PPp')}
                       </p>
-                      {history.comment && <p className="text-gray-600 mt-1">{history.comment}</p>}
-                      {history.rejectionReason && (
-                        <p className="text-red-600 mt-1">Reason: {history.rejectionReason}</p>
-                      )}
-                      {history.clarificationRequest && (
-                        <p className="text-orange-600 mt-1">Clarification: {history.clarificationRequest}</p>
+                      {history.comment && (
+                        <p className={`mt-1 ${
+                          history.action === 'REJECTED' ? 'text-red-600' :
+                          history.action === 'CLARIFICATION_REQUESTED' ? 'text-orange-600' :
+                          'text-gray-600'
+                        }`}>
+                          {history.action === 'REJECTED' ? 'Reason: ' :
+                           history.action === 'CLARIFICATION_REQUESTED' ? 'Question: ' : ''}
+                          {history.comment}
+                        </p>
                       )}
                     </div>
                   </div>
