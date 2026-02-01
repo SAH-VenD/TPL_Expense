@@ -18,6 +18,7 @@ import { ExpenseCreatePage } from './pages/expenses/ExpenseCreatePage';
 import { ExpenseDetailPage } from './pages/expenses/ExpenseDetailPage';
 import { ApprovalQueuePage } from './pages/approvals/ApprovalQueuePage';
 import { VoucherListPage } from './pages/vouchers/VoucherListPage';
+import { VoucherRequestPage } from './pages/vouchers/VoucherRequestPage';
 import { VoucherDetailPage } from './pages/vouchers/VoucherDetailPage';
 import { ReportsPage } from './pages/reports/ReportsPage';
 import { BudgetListPage } from './pages/budgets/BudgetListPage';
@@ -67,6 +68,7 @@ function App() {
         <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
         <Route path="/approvals" element={<ApprovalQueuePage />} />
         <Route path="/vouchers" element={<VoucherListPage />} />
+        <Route path="/vouchers/request" element={<VoucherRequestPage />} />
         <Route path="/vouchers/:id" element={<VoucherDetailPage />} />
         <Route path="/budgets" element={<BudgetListPage />} />
         <Route path="/budgets/new" element={<BudgetCreatePage />} />

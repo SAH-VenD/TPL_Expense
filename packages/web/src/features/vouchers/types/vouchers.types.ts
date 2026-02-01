@@ -100,17 +100,15 @@ export interface RejectVoucherDto {
 }
 
 export interface DisburseVoucherDto {
-  disbursedAmount: number;
-  notes?: string;
+  amount: number;
+  paymentMethod?: string;
+  paymentReference?: string;
 }
 
 export interface SettleVoucherDto {
-  settledAmount: number;
-  cashReturned?: number;
-  cashReturnConfirmed?: boolean;
+  notes?: string;
   overspendJustification?: string;
-  overspendApproved?: boolean;
-  linkedExpenseIds?: string[];
+  cashReturnConfirmed?: boolean;
 }
 
 export interface VoucherListState {

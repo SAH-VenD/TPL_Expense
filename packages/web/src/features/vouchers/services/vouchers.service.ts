@@ -160,23 +160,9 @@ export const vouchersApi = createApi({
     // Link expense to voucher
     linkExpenseToVoucher: builder.mutation<Voucher, { voucherId: string; expenseId: string }>({
       query: ({ voucherId, expenseId }) => ({
-        url: `/vouchers/${voucherId}/expenses`,
+        url: `/vouchers/${voucherId}/link-expense`,
         method: 'POST',
         body: { expenseId },
-      }),
-      invalidatesTags: (_result, _error, { voucherId }) => [
-        { type: 'Voucher', id: voucherId },
-      ],
-    }),
-
-    // Unlink expense from voucher
-    unlinkExpenseFromVoucher: builder.mutation<
-      Voucher,
-      { voucherId: string; expenseId: string }
-    >({
-      query: ({ voucherId, expenseId }) => ({
-        url: `/vouchers/${voucherId}/expenses/${expenseId}`,
-        method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, { voucherId }) => [
         { type: 'Voucher', id: voucherId },
@@ -210,6 +196,5 @@ export const {
   useDisburseVoucherMutation,
   useSettleVoucherMutation,
   useLinkExpenseToVoucherMutation,
-  useUnlinkExpenseFromVoucherMutation,
   useGetUserOpenVouchersQuery,
 } = vouchersApi;
