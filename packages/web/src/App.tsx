@@ -4,6 +4,7 @@ import { MainLayout } from './components/layout/MainLayout';
 import { AuthLayout } from './components/layout/AuthLayout';
 import { ProtectedRoute } from './router/ProtectedRoute';
 import { RoleBasedRoute } from './router/RoleBasedRoute';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 
 // Auth pages
 import { LoginPage } from './pages/auth/LoginPage';
@@ -51,7 +52,9 @@ function App() {
       <Route
         element={
           <ProtectedRoute>
-            <MainLayout />
+            <ErrorBoundary>
+              <MainLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
