@@ -295,6 +295,45 @@ packages/web/e2e/*.spec.ts (existing E2E test patterns)
 
 ---
 
+## Story 6B.5: Budget Navigation
+
+Add navigation menu item to the sidebar so users can easily access the budgets page.
+
+### Context to Load
+```
+packages/web/src/components/layout/MainLayout.tsx
+```
+
+### Tasks
+
+#### Task 6B.5.1: Add Budgets Menu Item to Sidebar
+**File:** `packages/web/src/components/layout/MainLayout.tsx`
+
+**Acceptance Criteria:**
+- [x] Add BudgetIcon SVG component (banknotes/wallet style)
+- [x] Add Budgets entry to navigation array
+- [x] Position after Vouchers, before Reports
+- [x] Visible to FINANCE and ADMIN roles only
+- [x] Links to `/budgets` route
+- [x] Active state highlighting works correctly
+
+**Code Changes:**
+```typescript
+// Add BudgetIcon function
+function BudgetIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.25 18.75a60.07..." />
+    </svg>
+  );
+}
+
+// Add to navigation array (after Vouchers, before Reports)
+{ name: 'Budgets', href: '/budgets', icon: BudgetIcon, roles: ['FINANCE', 'ADMIN'] },
+```
+
+---
+
 ## TypeScript Interfaces
 
 ### Page Components
@@ -431,6 +470,14 @@ git commit -m "test(budgets): add component and E2E tests
 - Add BudgetDetailPage tests
 - Add E2E flow tests
 - Task 6B.2.2, 6B.3.3, 6B.4.1"
+
+# Story 6B.5 (navigation)
+git commit -m "feat(budgets): add Budgets menu item to sidebar navigation
+
+- Add BudgetIcon SVG component
+- Add Budgets entry to navigation array
+- Visible to FINANCE and ADMIN roles
+- Task 6B.5.1"
 ```
 
 ---
