@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useRef, useImperativeHandle } from 'react';
 import { format, parseISO, isValid } from 'date-fns';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
@@ -40,6 +40,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
     },
     ref
   ) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
+
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
     const inputValue = toDateInputValue(value);
     const minValue = toDateInputValue(minDate);
@@ -47,6 +50,13 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange(e.target.value);
+    };
+
+    const handleIconClick = () => {
+      if (!disabled && inputRef.current) {
+        inputRef.current.showPicker?.();
+        inputRef.current.focus();
+      }
     };
 
     return (
@@ -57,11 +67,18 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
           </label>
         )}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+          <button
+            type="button"
+            onClick={handleIconClick}
+            disabled={disabled}
+            className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none disabled:cursor-not-allowed"
+            tabIndex={-1}
+            aria-label="Open date picker"
+          >
             <CalendarIcon className="h-5 w-5" aria-hidden="true" />
-          </div>
+          </button>
           <input
-            ref={ref}
+            ref={inputRef}
             id={inputId}
             type="date"
             value={inputValue}
@@ -70,7 +87,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
             max={maxValue}
             disabled={disabled}
             className={clsx(
-              'input pl-10',
+              'input pl-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
               error && 'input-error',
               className
             )}

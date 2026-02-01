@@ -293,7 +293,7 @@ export function ExpenseListPage() {
         <div className="flex items-center gap-3">
           <ViewToggle value={view} onChange={setView} />
           <Link
-            to="/expenses/create"
+            to="/expenses/new"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
             <PlusIcon className="h-5 w-5" />
@@ -333,7 +333,7 @@ export function ExpenseListPage() {
           }
           action={
             <Link
-              to="/expenses/create"
+              to="/expenses/new"
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
             >
               <PlusIcon className="h-5 w-5" />

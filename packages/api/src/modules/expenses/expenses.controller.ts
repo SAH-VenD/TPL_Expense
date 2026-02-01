@@ -10,12 +10,13 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ExpensesService } from './expenses.service';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { BulkExpenseDto } from './dto/bulk-expense.dto';
+import { ExpenseFiltersDto } from './dto/expense-filters.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { ExpenseStatus } from '@prisma/client';
 import { AuthenticatedRequest } from '../../common/types/request';
 
 @ApiTags('Expenses')
@@ -33,16 +34,20 @@ export class ExpensesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all expenses for current user' })
-  @ApiQuery({ name: 'status', enum: ExpenseStatus, required: false })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'limit', required: false })
-  findAll(
-    @Req() req: AuthenticatedRequest,
-    @Query('status') status?: ExpenseStatus,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
-    return this.expensesService.findAll(req.user, { status, page, limit });
+  findAll(@Req() req: AuthenticatedRequest, @Query() filters: ExpenseFiltersDto) {
+    return this.expensesService.findAll(req.user, filters);
+  }
+
+  @Post('bulk-submit')
+  @ApiOperation({ summary: 'Submit multiple draft expenses' })
+  bulkSubmit(@Req() req: AuthenticatedRequest, @Body() bulkExpenseDto: BulkExpenseDto) {
+    return this.expensesService.bulkSubmit(req.user.id, bulkExpenseDto.expenseIds);
+  }
+
+  @Post('bulk-delete')
+  @ApiOperation({ summary: 'Delete multiple draft expenses' })
+  bulkDelete(@Req() req: AuthenticatedRequest, @Body() bulkExpenseDto: BulkExpenseDto) {
+    return this.expensesService.bulkDelete(req.user.id, bulkExpenseDto.expenseIds);
   }
 
   @Get(':id')
@@ -71,6 +76,18 @@ export class ExpensesController {
   @ApiOperation({ summary: 'Resubmit a rejected expense' })
   resubmit(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.expensesService.resubmit(id, req.user);
+  }
+
+  @Post(':id/withdraw')
+  @ApiOperation({ summary: 'Withdraw a submitted expense' })
+  withdraw(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expensesService.withdraw(id, req.user);
+  }
+
+  @Get(':id/approvals')
+  @ApiOperation({ summary: 'Get approval history for an expense' })
+  getApprovals(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.expensesService.getApprovals(id, req.user);
   }
 
   @Delete(':id')

@@ -234,7 +234,7 @@ export const ExpenseActions: React.FC<ExpenseActionsProps> = ({
       onClone();
     } else {
       // Navigate to create page with cloned data
-      navigate('/expenses/create', { state: { cloneFrom: expense } });
+      navigate('/expenses/new', { state: { cloneFrom: expense } });
     }
   };
 

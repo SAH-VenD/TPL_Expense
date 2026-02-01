@@ -290,14 +290,26 @@ export const expensesApi = createApi({
       ],
     }),
 
-    // Upload receipt
-    uploadReceipt: builder.mutation<UploadReceiptResponse, FormData>({
-      query: (formData) => ({
-        url: '/receipts/upload',
+    // Resubmit rejected expense
+    resubmitExpense: builder.mutation<Expense, string>({
+      query: (id) => ({
+        url: `/expenses/${id}/resubmit`,
         method: 'POST',
-        body: formData,
       }),
-      invalidatesTags: ['Receipt'],
+      invalidatesTags: (_result, _error, id) => [
+        { type: 'Expense', id },
+        { type: 'Expense', id: 'LIST' },
+      ],
+    }),
+
+    // Upload receipt
+    uploadReceipt: builder.mutation<UploadReceiptResponse, { expenseId: string; file: FormData }>({
+      query: ({ expenseId, file }) => ({
+        url: `/receipts/${expenseId}`,
+        method: 'POST',
+        body: file,
+      }),
+      invalidatesTags: ['Receipt', { type: 'Expense', id: 'LIST' }],
     }),
 
     // Delete receipt
@@ -311,20 +323,20 @@ export const expensesApi = createApi({
 
     // Bulk submit expenses
     bulkSubmitExpenses: builder.mutation<{ submitted: number }, string[]>({
-      query: (ids) => ({
+      query: (expenseIds) => ({
         url: '/expenses/bulk-submit',
         method: 'POST',
-        body: { ids },
+        body: { expenseIds },
       }),
       invalidatesTags: [{ type: 'Expense', id: 'LIST' }],
     }),
 
     // Bulk delete expenses
     bulkDeleteExpenses: builder.mutation<{ deleted: number }, string[]>({
-      query: (ids) => ({
+      query: (expenseIds) => ({
         url: '/expenses/bulk-delete',
         method: 'POST',
-        body: { ids },
+        body: { expenseIds },
       }),
       invalidatesTags: [{ type: 'Expense', id: 'LIST' }],
     }),
@@ -345,6 +357,7 @@ export const {
   useDeleteExpenseMutation,
   useSubmitExpenseMutation,
   useWithdrawExpenseMutation,
+  useResubmitExpenseMutation,
   useUploadReceiptMutation,
   useDeleteReceiptMutation,
   useBulkSubmitExpensesMutation,
