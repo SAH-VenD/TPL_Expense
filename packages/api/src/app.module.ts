@@ -1,8 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, Injectable, ExecutionContext } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -25,6 +24,21 @@ import { VendorsModule } from './modules/vendors/vendors.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
 
+/**
+ * Custom ThrottlerGuard that disables rate limiting in non-production environments
+ * This allows E2E tests to run without hitting rate limits
+ */
+@Injectable()
+class ConditionalThrottlerGuard extends ThrottlerGuard {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Skip throttling entirely in non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+      return true;
+    }
+    return super.canActivate(context);
+  }
+}
+
 @Module({
   imports: [
     // Configuration
@@ -33,7 +47,7 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Rate limiting
+    // Rate limiting - only active in production
     ThrottlerModule.forRoot([
       {
         name: 'short',
@@ -79,7 +93,7 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: ConditionalThrottlerGuard,
     },
   ],
 })
