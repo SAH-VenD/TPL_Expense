@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -33,27 +32,28 @@ import { CostCentersModule } from './modules/cost-centers/cost-centers.module';
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Rate limiting - relaxed in development/test mode
+    // Rate limiting - disabled in development/test mode for E2E testing
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const isDevOrTest = config.get('NODE_ENV') !== 'production';
+        const isProduction = config.get('NODE_ENV') === 'production';
+        // In development, set very high limits to avoid blocking E2E tests
         return [
           {
             name: 'short',
             ttl: 1000,
-            limit: isDevOrTest ? 30 : 3,
+            limit: isProduction ? 3 : 1000,
           },
           {
             name: 'medium',
             ttl: 10000,
-            limit: isDevOrTest ? 200 : 20,
+            limit: isProduction ? 20 : 5000,
           },
           {
             name: 'long',
             ttl: 60000,
-            limit: isDevOrTest ? 1000 : 100,
+            limit: isProduction ? 100 : 10000,
           },
         ];
       },
