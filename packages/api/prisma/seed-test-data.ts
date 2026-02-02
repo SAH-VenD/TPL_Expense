@@ -669,7 +669,7 @@ async function seedExpenses(
       amount: 28000,
       totalAmount: 28000,
       categoryId: categories[6].id,
-      departmentId: departments[5].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
     },
     {
       expenseNumber: 'TEST-EXP-2026-003',
@@ -713,7 +713,7 @@ async function seedExpenses(
       amount: 12500,
       totalAmount: 12500,
       categoryId: categories[1].id,
-      departmentId: departments[5].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
       voucherId: vouchers[0].id,
     },
     {
@@ -729,7 +729,8 @@ async function seedExpenses(
       amount: 95000,
       totalAmount: 95000,
       categoryId: categories[3].id,
-      departmentId: departments[5].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
+      projectId: projects[0].id, // Added to match Website Project Budget
       clarificationNote: '[TEST] Please provide license key and confirmation email',
     },
     {
@@ -744,8 +745,8 @@ async function seedExpenses(
       description: '[TEST] Transportation to client site',
       amount: 3500,
       totalAmount: 3500,
-      categoryId: categories[0].id,
-      departmentId: departments[8].id,
+      categoryId: categories[0].id, // Travel category - matches Travel Category Budget
+      departmentId: departments[2].id, // Changed from departments[8] to match Marketing budget
       isMileage: true,
       mileageStart: 'Office - Gulberg',
       mileageEnd: 'Client - DHA',
@@ -766,14 +767,14 @@ async function seedExpenses(
       amount: 18000,
       totalAmount: 18000,
       categoryId: categories[8].id,
-      departmentId: departments[7].id,
-      projectId: projects[8].id,
+      departmentId: departments[1].id, // Changed from departments[7] to match Finance budget
+      projectId: projects[1].id, // Changed from projects[8] to match Mobile App Budget
     },
     {
       expenseNumber: 'TEST-EXP-2026-009',
       type: 'PETTY_CASH',
       status: 'APPROVED',
-      submitterId: users[6].id,
+      submitterId: users[6].id, // Matches Employee 1 Budget (employeeId: users[6])
       submittedAt: new Date(today.getTime() - 12 * 86400000),
       vendorName: '[TEST] Various Vendors',
       expenseDate: new Date(today.getTime() - 14 * 86400000),
@@ -781,14 +782,14 @@ async function seedExpenses(
       amount: 22000,
       totalAmount: 22000,
       categoryId: categories[2].id,
-      departmentId: departments[5].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
       voucherId: vouchers[1].id,
     },
     {
       expenseNumber: 'TEST-EXP-2026-010',
       type: 'OUT_OF_POCKET',
       status: 'APPROVED',
-      submitterId: users[7].id,
+      submitterId: users[7].id, // Matches Employee 2 Budget (employeeId: users[7])
       submittedAt: new Date(today.getTime() - 30 * 86400000),
       vendorId: vendors[8].id,
       vendorName: vendors[8].name,
@@ -801,8 +802,8 @@ async function seedExpenses(
       amountInPKR: 41775,
       exchangeRateDate: new Date(today.getTime() - 35 * 86400000),
       categoryId: categories[3].id,
-      departmentId: departments[5].id,
-      projectId: projects[3].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
+      projectId: projects[0].id, // Changed from projects[3] to match Website Project Budget
       budgetId: budgets[0].id,
     },
   ] as const;

@@ -9,11 +9,107 @@ This task file tracks the implementation of fixes for the Budgets feature based 
 
 | Issue | Severity | Component | Status |
 |-------|----------|-----------|--------|
+| **Seed data mismatch - 0% budget utilization** | Critical | Seed Data | [ ] Not Started |
 | No pagination on GET /budgets | Critical | Backend | [ ] Not Started |
 | Missing 8 frontend mutations/queries | Critical | Frontend Service | [ ] Not Started |
 | BudgetUtilization type mismatch | High | Frontend Types | [ ] Not Started |
 | Budget.usedAmount field doesn't exist | High | Frontend Pages | [ ] Not Started |
 | E2E tests only check routing (25 tests) | Medium | Tests | [ ] Not Started |
+
+---
+
+## Phase 0: Seed Data Fix (Budget Utilization Shows 0%)
+
+### Problem Summary
+The Budgets page shows 0% utilization for all budgets despite having [TEST] expenses and [TEST] budgets in the database. The root cause is a **data mismatch** in the seed-test-data.ts file.
+
+### 0.1 Root Cause Analysis
+**File:** `packages/api/prisma/seed-test-data.ts`
+**Status:** [ ] Not Started
+
+```
+Finding 1: Department ID Mismatch
+- Expenses use child departments (indices 5-9):
+  - departments[5] = [TEST] Frontend Team
+  - departments[7] = [TEST] Accounts Payable
+  - departments[8] = [TEST] Digital Marketing
+- Budgets use parent departments (indices 0-4):
+  - departments[0] = [TEST] Engineering
+  - departments[1] = [TEST] Finance
+  - departments[2] = [TEST] Marketing
+
+Finding 2: Budget Matching Logic
+The buildExpenseWhereClause() in budgets.service.ts:873 uses direct ID matching:
+- DEPARTMENT: expense.departmentId = budget.departmentId (no child traversal)
+- PROJECT: expense.projectId = budget.projectId
+- CATEGORY: expense.categoryId = budget.categoryId
+- EMPLOYEE: expense.submitterId = budget.employeeId
+
+Child departments (Frontend Team) don't match parent departments (Engineering), so expenses aren't counted.
+
+Finding 3: Only 2/10 Expenses Have Explicit budgetId
+- TEST-EXP-2026-001 → Travel Category Budget
+- TEST-EXP-2026-010 → Engineering Annual Budget
+
+All other expenses rely on implicit matching which fails due to the department mismatch.
+```
+
+### 0.2 Fix Expense Department IDs
+**File:** `packages/api/prisma/seed-test-data.ts`
+**Status:** [ ] Not Started
+
+```
+Changes to seedExpenses function (starting line 627):
+
+| Expense | Change Required |
+|---------|----------------|
+| TEST-EXP-2026-001 | Keep as-is (has budgetId) |
+| TEST-EXP-2026-002 | Change departmentId: departments[5] → departments[0] |
+| TEST-EXP-2026-003 | DRAFT status - won't count anyway |
+| TEST-EXP-2026-004 | REJECTED status - won't count anyway |
+| TEST-EXP-2026-005 | Change departmentId: departments[5] → departments[0] |
+| TEST-EXP-2026-006 | Change departmentId: departments[5] → departments[0] |
+| TEST-EXP-2026-007 | Change departmentId: departments[8] → departments[2] |
+| TEST-EXP-2026-008 | Change departmentId: departments[7] → departments[1] |
+| TEST-EXP-2026-009 | Change departmentId: departments[5] → departments[0] |
+| TEST-EXP-2026-010 | Keep as-is (has budgetId) |
+```
+
+### 0.3 Add Budget Matching Variety
+**File:** `packages/api/prisma/seed-test-data.ts`
+**Status:** [ ] Not Started
+
+```
+Update some expenses to also match:
+- Project budgets (via projectId matching a budget with that project)
+- Category budgets (via categoryId matching category budgets)
+- Employee budgets (via submitterId matching employee budget's employeeId)
+```
+
+### 0.4 Expected Results After Fix
+```
+With proper matching:
+- Engineering Annual Budget (departments[0]): ~5 expenses should match → non-zero utilization
+- Finance Quarterly Budget (departments[1]): ~1 expense should match
+- Marketing Monthly Budget (departments[2]): ~1 expense should match
+```
+
+### 0.5 Verification Steps
+```bash
+# Reset and re-seed the database:
+npm run db:migrate:reset -w @tpl-expense/api
+npm run db:seed -w @tpl-expense/api
+
+# Start the application and check:
+# - Navigate to /budgets page
+# - Verify utilization percentages are non-zero
+# - Verify "X expenses" counts are non-zero
+
+# Test API directly:
+curl -H "Authorization: Bearer <token>" \
+  http://localhost:3000/api/v1/budgets/summary
+# Should return budgets with utilizationPercentage > 0 and expenseCount > 0
+```
 
 ---
 
@@ -343,6 +439,11 @@ Changes:
 
 ## Implementation Order
 
+0. **Phase 0** - Seed data fix (required for testing all other phases)
+   - 0.2 Fix expense department IDs in seed-test-data.ts
+   - 0.3 Add project/category/employee budget matching variety
+   - 0.5 Verify utilization shows in UI
+
 1. **Phase 1** - Backend pagination (required for Phase 4)
    - 1.1 Update service findAll method
    - 1.2 Update controller with query params
@@ -372,6 +473,11 @@ Changes:
 ---
 
 ## Files to Modify
+
+### Seed Data
+| File | Changes |
+|------|---------|
+| `packages/api/prisma/seed-test-data.ts` | Fix expense departmentId values to match budget departments |
 
 ### Backend
 | File | Changes |
