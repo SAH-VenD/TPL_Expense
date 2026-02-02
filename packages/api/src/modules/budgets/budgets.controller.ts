@@ -65,9 +65,26 @@ export class BudgetsController {
     required: false,
     description: 'Filter by active status',
   })
-  findAll(@Query('type') type?: BudgetType, @Query('activeOnly') activeOnly?: string) {
+  @ApiQuery({ name: 'page', type: Number, required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({
+    name: 'pageSize',
+    type: Number,
+    required: false,
+    description: 'Items per page (default: 10)',
+  })
+  findAll(
+    @Query('type') type?: BudgetType,
+    @Query('activeOnly') activeOnly?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
     const isActiveOnly = activeOnly !== 'false';
-    return this.budgetsService.findAll(type, isActiveOnly);
+    return this.budgetsService.findAll(
+      type,
+      isActiveOnly,
+      page ? Number.parseInt(page, 10) : 1,
+      pageSize ? Number.parseInt(pageSize, 10) : 10,
+    );
   }
 
   @Get('summary')

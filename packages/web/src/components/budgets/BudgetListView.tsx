@@ -58,14 +58,17 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
 }) => {
   const getUtilization = (budget: Budget) => {
     const util = utilizations?.get(budget.id);
-    if (util) return util.utilizationPercent;
-    return (budget.usedAmount / budget.totalAmount) * 100;
+    return util?.utilizationPercentage ?? 0;
+  };
+
+  const getUsedAmount = (budget: Budget) => {
+    const util = utilizations?.get(budget.id);
+    return util ? util.committed + util.spent : 0;
   };
 
   const getRemaining = (budget: Budget) => {
     const util = utilizations?.get(budget.id);
-    if (util) return util.remainingAmount;
-    return budget.totalAmount - budget.usedAmount;
+    return util?.available ?? budget.totalAmount;
   };
 
   const columns: Column<Budget>[] = [
@@ -118,7 +121,7 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
       align: 'right',
       render: (budget) => (
         <span className="text-gray-600">
-          {formatCurrency(budget.usedAmount, budget.currency)}
+          {formatCurrency(getUsedAmount(budget), budget.currency)}
         </span>
       ),
     },

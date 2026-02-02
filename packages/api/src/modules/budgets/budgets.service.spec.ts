@@ -23,6 +23,7 @@ describe('BudgetsService', () => {
       findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      count: jest.fn(),
     },
     expense: {
       findMany: jest.fn(),
@@ -253,10 +254,12 @@ describe('BudgetsService', () => {
   describe('findAll', () => {
     it('should return all active budgets by default', async () => {
       mockPrismaService.budget.findMany.mockResolvedValue([mockBudget]);
+      mockPrismaService.budget.count.mockResolvedValue(1);
 
       const result = await service.findAll();
 
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
+      expect(result.meta.pagination.total).toBe(1);
       expect(mockPrismaService.budget.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { isActive: true },
@@ -266,6 +269,7 @@ describe('BudgetsService', () => {
 
     it('should filter by type when provided', async () => {
       mockPrismaService.budget.findMany.mockResolvedValue([mockBudget]);
+      mockPrismaService.budget.count.mockResolvedValue(1);
 
       await service.findAll(BudgetType.DEPARTMENT);
 
@@ -284,10 +288,12 @@ describe('BudgetsService', () => {
         mockBudget,
         { ...mockBudget, id: 'inactive-budget', isActive: false },
       ]);
+      mockPrismaService.budget.count.mockResolvedValue(2);
 
       const result = await service.findAll(undefined, false);
 
-      expect(result).toHaveLength(2);
+      expect(result.data).toHaveLength(2);
+      expect(result.meta.pagination.total).toBe(2);
       expect(mockPrismaService.budget.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {},

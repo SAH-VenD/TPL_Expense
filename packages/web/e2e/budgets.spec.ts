@@ -422,4 +422,357 @@ test.describe('Budget Management', () => {
       expect(hasError || isOnBudgetsPage).toBeTruthy();
     });
   });
+
+  // ==================== NEW QA TESTS ====================
+
+  test.describe('Budget Utilization Display', () => {
+    test('BUD-26: Detail page shows utilization breakdown (allocated, committed, spent, available)', async ({
+      page,
+    }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for utilization breakdown labels
+        await expect(page.getByText('Allocated')).toBeVisible();
+        await expect(page.getByText('Committed')).toBeVisible();
+        await expect(page.getByText('Spent')).toBeVisible();
+        await expect(page.getByText('Available')).toBeVisible();
+      }
+    });
+
+    test('BUD-27: Budget cards show utilization status badges', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Check for status badges on budget cards
+      const statusBadge = page.locator('text=On Track, text=Warning, text=Over Budget').first();
+      const hasBadge = await statusBadge.isVisible({ timeout: 2000 }).catch(() => false);
+
+      // If budgets exist, they should have status badges
+      const budgetCard = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      const hasBudgets = await budgetCard.isVisible({ timeout: 2000 }).catch(() => false);
+
+      if (hasBudgets) {
+        expect(hasBadge).toBeTruthy();
+      }
+    });
+
+    test('BUD-28: Detail page shows expense and pending counts', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for expense counts in quick stats
+        await expect(page.getByText('Total Expenses')).toBeVisible();
+        await expect(page.getByText('Pending Approval')).toBeVisible();
+      }
+    });
+  });
+
+  test.describe('Budget Status Management', () => {
+    test('BUD-29: Inactive budget shows Activate button', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      // Find any budget and navigate to it
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for status-based buttons (one of these should be visible)
+        const activateButton = page.getByRole('button', { name: /activate budget/i });
+        const closeButton = page.getByRole('button', { name: /close budget/i });
+        const archiveButton = page.getByRole('button', { name: /archive budget/i });
+
+        const hasActivate = await activateButton.isVisible({ timeout: 2000 }).catch(() => false);
+        const hasClose = await closeButton.isVisible({ timeout: 2000 }).catch(() => false);
+        const hasArchive = await archiveButton.isVisible({ timeout: 2000 }).catch(() => false);
+
+        // At least one status management button should be visible
+        expect(hasActivate || hasClose || hasArchive).toBeTruthy();
+      }
+    });
+
+    test('BUD-30: Active budget shows Close button', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check if budget is active (has Close button)
+        const closeButton = page.getByRole('button', { name: /close budget/i });
+        const isActive = await closeButton.isVisible({ timeout: 2000 }).catch(() => false);
+
+        // If active, clicking Close should show confirmation
+        if (isActive) {
+          await closeButton.click();
+          await page.waitForTimeout(500);
+          await expect(page.getByText(/are you sure/i)).toBeVisible({ timeout: 3000 });
+
+          // Cancel the dialog
+          await page.getByRole('button', { name: /^cancel$/i }).click();
+        }
+      }
+    });
+
+    test('BUD-31: Close budget confirmation dialog works', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        const closeButton = page.getByRole('button', { name: /close budget/i });
+        if (await closeButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await closeButton.click();
+          await page.waitForTimeout(500);
+
+          // Check confirmation dialog content
+          await expect(page.getByText(/close budget/i).first()).toBeVisible();
+          await expect(page.getByRole('button', { name: /close budget/i }).last()).toBeVisible();
+          await expect(page.getByRole('button', { name: /^cancel$/i })).toBeVisible();
+
+          // Cancel
+          await page.getByRole('button', { name: /^cancel$/i }).click();
+        }
+      }
+    });
+
+    test('BUD-32: Archive confirmation dialog works', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        const archiveButton = page.getByRole('button', { name: /archive budget/i });
+        if (await archiveButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+          await archiveButton.click();
+          await page.waitForTimeout(500);
+
+          // Check confirmation dialog
+          await expect(page.getByText(/archive/i).first()).toBeVisible();
+
+          // Cancel
+          await page.getByRole('button', { name: /^cancel$/i }).click();
+        }
+      }
+    });
+  });
+
+  test.describe('Budget Summary Stats', () => {
+    test('BUD-33: Budget list page shows summary statistics', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Check for summary stat cards
+      const totalBudgetsCard = page.getByText('Total Budgets');
+      const totalAllocatedCard = page.getByText('Total Allocated');
+
+      // At least some summary stats should be visible if there are budgets
+      const hasTotalBudgets = await totalBudgetsCard.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasTotalAllocated = await totalAllocatedCard
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
+
+      // Check empty state or summary stats
+      const emptyState = await page
+        .getByText('No budgets found')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
+
+      expect(emptyState || hasTotalBudgets || hasTotalAllocated).toBeTruthy();
+    });
+
+    test('BUD-34: Summary shows over threshold count when budgets exceed warning', async ({
+      page,
+    }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Look for over threshold stat
+      const overThresholdCard = page.getByText('Over Threshold');
+      if (await overThresholdCard.isVisible({ timeout: 2000 }).catch(() => false)) {
+        // The card should have a number value
+        const cardContainer = overThresholdCard.locator('..');
+        const hasValue = await cardContainer.locator(/\d+/).isVisible({ timeout: 1000 });
+        expect(hasValue).toBeTruthy();
+      }
+    });
+  });
+
+  test.describe('Budget Card Info', () => {
+    test('BUD-35: Budget cards show expense and pending counts', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Check for expense counts on cards
+      const expenseCount = page.locator(/\d+ expenses/i).first();
+      const pendingCount = page.locator(/\d+ pending/i).first();
+
+      const hasExpenseCount = await expenseCount.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasPendingCount = await pendingCount.isVisible({ timeout: 2000 }).catch(() => false);
+
+      // Check empty state or expense counts
+      const emptyState = await page
+        .getByText('No budgets found')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
+
+      expect(emptyState || hasExpenseCount || hasPendingCount).toBeTruthy();
+    });
+
+    test('BUD-36: Budget cards show period type', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Check for period type on cards (annual, quarterly, monthly, etc.)
+      const periodType = page
+        .locator('text=/annual|quarterly|monthly|project based/i')
+        .first();
+
+      const hasPeriod = await periodType.isVisible({ timeout: 2000 }).catch(() => false);
+      const emptyState = await page
+        .getByText('No budgets found')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
+
+      expect(emptyState || hasPeriod).toBeTruthy();
+    });
+  });
+
+  test.describe('Financial Summary Display', () => {
+    test('BUD-37: Detail page shows committed amount with pending count', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for committed section with pending info
+        await expect(page.getByText('Committed')).toBeVisible();
+        const pendingText = page.locator(/\d+ pending/i);
+        await expect(pendingText.first()).toBeVisible({ timeout: 3000 });
+      }
+    });
+
+    test('BUD-38: Detail page shows spent amount with approved count', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for spent section with approved info
+        await expect(page.getByText('Spent')).toBeVisible();
+        const approvedText = page.locator(/\d+ approved/i);
+        await expect(approvedText.first()).toBeVisible({ timeout: 3000 });
+      }
+    });
+  });
+
+  test.describe('Budget Type Display', () => {
+    test('BUD-39: Budget cards show budget type', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      await page.waitForTimeout(1000);
+
+      // Check for budget type on cards
+      const budgetType = page
+        .locator('text=/department|project|cost center|employee|category/i')
+        .first();
+
+      const hasType = await budgetType.isVisible({ timeout: 2000 }).catch(() => false);
+      const emptyState = await page
+        .getByText('No budgets found')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
+
+      expect(emptyState || hasType).toBeTruthy();
+    });
+
+    test('BUD-40: Detail page shows related entity info', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for entity-related labels
+        const hasType = await page.getByText('Type').isVisible({ timeout: 1000 });
+        const hasPeriod = await page.getByText('Period').isVisible({ timeout: 1000 });
+
+        expect(hasType && hasPeriod).toBeTruthy();
+      }
+    });
+  });
+
+  test.describe('Warning and Alert States', () => {
+    test('BUD-41: Warning threshold information is displayed', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for warning threshold in progress bar area
+        const warningText = page.locator('text=/Warning:.*%/');
+        await expect(warningText.first()).toBeVisible({ timeout: 3000 });
+      }
+    });
+
+    test('BUD-42: Enforcement type is displayed in budget details', async ({ page }) => {
+      await loginAsAdmin(page);
+      await page.goto('/budgets');
+
+      const budgetLink = page.locator('a[href^="/budgets/"]:not([href="/budgets/new"])').first();
+      if (await budgetLink.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await budgetLink.click();
+        await page.waitForTimeout(1000);
+
+        // Check for enforcement type display
+        await expect(page.getByText('Enforcement')).toBeVisible();
+        const enforcementType = page.locator(
+          'text=/hard block|soft warning|auto escalate|none/i'
+        );
+        await expect(enforcementType.first()).toBeVisible({ timeout: 3000 });
+      }
+    });
+  });
 });

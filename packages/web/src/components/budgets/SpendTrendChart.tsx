@@ -22,6 +22,7 @@ export interface SpendTrendDataPoint {
 export interface SpendTrendChartProps {
   budget: Budget;
   data: SpendTrendDataPoint[];
+  usedAmount?: number;
   className?: string;
 }
 
@@ -43,8 +44,10 @@ const formatShortCurrency = (amount: number) => {
 export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
   budget,
   data,
+  usedAmount: usedAmountProp,
   className,
 }) => {
+  const usedAmount = usedAmountProp ?? 0;
   const warningThresholdAmount = (budget.totalAmount * budget.warningThreshold) / 100;
 
   const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) => {
@@ -167,7 +170,7 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500">Current Spend</p>
           <p className="text-sm font-semibold text-gray-900">
-            {formatCurrency(budget.usedAmount, budget.currency)}
+            {formatCurrency(usedAmount, budget.currency)}
           </p>
         </div>
         <div className="text-center p-3 bg-gray-50 rounded-lg">
@@ -175,12 +178,12 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
           <p
             className={clsx(
               'text-sm font-semibold',
-              budget.totalAmount - budget.usedAmount < 0
+              budget.totalAmount - usedAmount < 0
                 ? 'text-red-600'
                 : 'text-green-600'
             )}
           >
-            {formatCurrency(budget.totalAmount - budget.usedAmount, budget.currency)}
+            {formatCurrency(budget.totalAmount - usedAmount, budget.currency)}
           </p>
         </div>
       </div>

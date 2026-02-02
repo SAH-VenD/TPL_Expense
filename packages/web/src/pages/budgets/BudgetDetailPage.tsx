@@ -5,6 +5,9 @@ import {
   PencilIcon,
   TrashIcon,
   ArrowPathIcon,
+  PlayIcon,
+  StopIcon,
+  ArchiveBoxIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
@@ -12,8 +15,12 @@ import { Card, Skeleton, Alert, Modal, ConfirmDialog } from '@/components/ui';
 import { BudgetForm } from '@/components/budgets/BudgetForm';
 import {
   useGetBudgetQuery,
+  useGetBudgetUtilizationQuery,
   useUpdateBudgetMutation,
   useDeleteBudgetMutation,
+  useActivateBudgetMutation,
+  useCloseBudgetMutation,
+  useArchiveBudgetMutation,
   type CreateBudgetDto,
 } from '@/features/budgets/services/budgets.service';
 
@@ -52,10 +59,20 @@ export const BudgetDetailPage: React.FC = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCloseDialogOpen, setIsCloseDialogOpen] = useState(false);
+  const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const { data: budget, isLoading, isError, refetch } = useGetBudgetQuery(id!);
+  const {
+    data: utilization,
+    isLoading: isUtilizationLoading,
+  } = useGetBudgetUtilizationQuery(id!, { skip: !id });
+
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation();
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
+  const [activateBudget, { isLoading: isActivating }] = useActivateBudgetMutation();
+  const [closeBudget, { isLoading: isClosing }] = useCloseBudgetMutation();
+  const [archiveBudget, { isLoading: isArchiving }] = useArchiveBudgetMutation();
 
   const handleUpdate = async (data: CreateBudgetDto) => {
     try {
@@ -86,8 +103,51 @@ export const BudgetDetailPage: React.FC = () => {
     }
   };
 
+  const handleActivate = async () => {
+    try {
+      await activateBudget(id!).unwrap();
+      toast.success('Budget activated successfully');
+    } catch (error) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message || 'Failed to activate budget'
+          : 'Failed to activate budget';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleClose = async () => {
+    try {
+      await closeBudget(id!).unwrap();
+      toast.success('Budget closed successfully');
+      setIsCloseDialogOpen(false);
+    } catch (error) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message || 'Failed to close budget'
+          : 'Failed to close budget';
+      toast.error(errorMessage);
+      setIsCloseDialogOpen(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    try {
+      await archiveBudget(id!).unwrap();
+      toast.success('Budget archived successfully');
+      setIsArchiveDialogOpen(false);
+    } catch (error) {
+      const errorMessage =
+        error && typeof error === 'object' && 'data' in error
+          ? (error as { data?: { message?: string } }).data?.message || 'Failed to archive budget'
+          : 'Failed to archive budget';
+      toast.error(errorMessage);
+      setIsArchiveDialogOpen(false);
+    }
+  };
+
   // Loading state
-  if (isLoading) {
+  if (isLoading || isUtilizationLoading) {
     return (
       <div className="space-y-6">
         <div>
@@ -142,9 +202,7 @@ export const BudgetDetailPage: React.FC = () => {
           </Link>
         </div>
         <Alert variant="error" title="Failed to load budget">
-          <p className="mt-1">
-            We could not retrieve the budget details. Please try again.
-          </p>
+          <p className="mt-1">We could not retrieve the budget details. Please try again.</p>
           <button
             onClick={() => refetch()}
             className="mt-3 inline-flex items-center text-sm font-medium text-red-700 hover:text-red-800"
@@ -157,10 +215,14 @@ export const BudgetDetailPage: React.FC = () => {
     );
   }
 
-  const utilization =
-    budget.totalAmount > 0 ? (budget.usedAmount / budget.totalAmount) * 100 : 0;
-  const cappedUtilization = Math.min(utilization, 100);
-  const remainingAmount = budget.totalAmount - budget.usedAmount;
+  // Calculate utilization from the utilization query
+  const utilizationPercent = utilization?.utilizationPercentage ?? 0;
+  const cappedUtilization = Math.min(utilizationPercent, 100);
+  const remainingAmount = utilization?.available ?? budget.totalAmount;
+
+  // Check if budget can be archived (past end date and inactive)
+  const isPastEndDate = new Date(budget.endDate) < new Date();
+  const canArchive = !budget.isActive && isPastEndDate;
 
   // Prepare initial data for edit form
   const editInitialData: Partial<CreateBudgetDto> = {
@@ -199,9 +261,7 @@ export const BudgetDetailPage: React.FC = () => {
         <span
           className={clsx(
             'px-3 py-1 text-sm font-medium rounded-full',
-            budget.isActive
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-800'
+            budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
           )}
         >
           {budget.isActive ? 'Active' : 'Inactive'}
@@ -213,9 +273,7 @@ export const BudgetDetailPage: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Budget Details */}
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Budget Details
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Budget Details</h2>
             <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-gray-500">Type</dt>
@@ -231,21 +289,15 @@ export const BudgetDetailPage: React.FC = () => {
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Start Date</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {formatDate(budget.startDate)}
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.startDate)}</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">End Date</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {formatDate(budget.endDate)}
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.endDate)}</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Warning Threshold</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {budget.warningThreshold}%
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{budget.warningThreshold}%</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Enforcement</dt>
@@ -256,24 +308,32 @@ export const BudgetDetailPage: React.FC = () => {
               {budget.department && (
                 <div>
                   <dt className="text-sm text-gray-500">Department</dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    {budget.department.name}
-                  </dd>
+                  <dd className="text-sm font-medium text-gray-900">{budget.department.name}</dd>
                 </div>
               )}
               {budget.project && (
                 <div>
                   <dt className="text-sm text-gray-500">Project</dt>
-                  <dd className="text-sm font-medium text-gray-900">
-                    {budget.project.name}
-                  </dd>
+                  <dd className="text-sm font-medium text-gray-900">{budget.project.name}</dd>
                 </div>
               )}
               {budget.category && (
                 <div>
                   <dt className="text-sm text-gray-500">Category</dt>
+                  <dd className="text-sm font-medium text-gray-900">{budget.category.name}</dd>
+                </div>
+              )}
+              {budget.costCenter && (
+                <div>
+                  <dt className="text-sm text-gray-500">Cost Center</dt>
+                  <dd className="text-sm font-medium text-gray-900">{budget.costCenter.name}</dd>
+                </div>
+              )}
+              {budget.employee && (
+                <div>
+                  <dt className="text-sm text-gray-500">Employee</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    {budget.category.name}
+                    {budget.employee.firstName} {budget.employee.lastName}
                   </dd>
                 </div>
               )}
@@ -282,25 +342,35 @@ export const BudgetDetailPage: React.FC = () => {
 
           {/* Financial Summary & Utilization */}
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Financial Summary
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h2>
             <div className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-500">Total Budget</p>
+                  <p className="text-sm text-gray-500">Allocated</p>
                   <p className="text-xl font-semibold text-gray-900">
-                    {formatCurrency(budget.totalAmount, budget.currency)}
+                    {formatCurrency(utilization?.allocated ?? budget.totalAmount, budget.currency)}
+                  </p>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-500">Committed</p>
+                  <p className="text-xl font-semibold text-blue-600">
+                    {formatCurrency(utilization?.committed ?? 0, budget.currency)}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {utilization?.pendingCount ?? 0} pending
+                  </p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-500">Spent</p>
+                  <p className="text-xl font-semibold text-purple-600">
+                    {formatCurrency(utilization?.spent ?? 0, budget.currency)}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {(utilization?.expenseCount ?? 0) - (utilization?.pendingCount ?? 0)} approved
                   </p>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-500">Used</p>
-                  <p className="text-xl font-semibold text-gray-900">
-                    {formatCurrency(budget.usedAmount, budget.currency)}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-500">Remaining</p>
+                  <p className="text-sm text-gray-500">Available</p>
                   <p
                     className={clsx(
                       'text-xl font-semibold',
@@ -315,23 +385,18 @@ export const BudgetDetailPage: React.FC = () => {
               {/* Utilization Progress Bar */}
               <div className="mt-6">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Budget Utilization
-                  </span>
+                  <span className="text-sm font-medium text-gray-700">Budget Utilization</span>
                   <span
-                    className={clsx(
-                      'text-sm font-semibold',
-                      getUtilizationTextColor(utilization)
-                    )}
+                    className={clsx('text-sm font-semibold', getUtilizationTextColor(utilizationPercent))}
                   >
-                    {utilization.toFixed(1)}%
+                    {utilizationPercent.toFixed(1)}%
                   </span>
                 </div>
                 <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className={clsx(
                       'h-full rounded-full transition-all duration-500',
-                      getUtilizationColor(utilization)
+                      getUtilizationColor(utilizationPercent)
                     )}
                     style={{ width: `${cappedUtilization}%` }}
                   />
@@ -340,7 +405,7 @@ export const BudgetDetailPage: React.FC = () => {
                   <span>0%</span>
                   <span
                     className={clsx(
-                      utilization >= budget.warningThreshold && 'text-yellow-600 font-medium'
+                      utilizationPercent >= budget.warningThreshold && 'text-yellow-600 font-medium'
                     )}
                   >
                     Warning: {budget.warningThreshold}%
@@ -350,16 +415,16 @@ export const BudgetDetailPage: React.FC = () => {
               </div>
 
               {/* Warning/Exceeded alerts */}
-              {utilization >= 100 && (
+              {utilization?.isOverBudget && (
                 <Alert variant="error" title="Budget Exceeded">
                   This budget has exceeded its allocated amount by{' '}
                   {formatCurrency(Math.abs(remainingAmount), budget.currency)}.
                 </Alert>
               )}
-              {utilization >= budget.warningThreshold && utilization < 100 && (
+              {utilization?.isAtWarningThreshold && !utilization?.isOverBudget && (
                 <Alert variant="warning" title="Budget Warning">
-                  This budget has reached {utilization.toFixed(1)}% utilization,
-                  exceeding the warning threshold of {budget.warningThreshold}%.
+                  This budget has reached {utilizationPercent.toFixed(1)}% utilization, exceeding the
+                  warning threshold of {budget.warningThreshold}%.
                 </Alert>
               )}
             </div>
@@ -367,21 +432,15 @@ export const BudgetDetailPage: React.FC = () => {
 
           {/* Timestamps */}
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Record Information
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Record Information</h2>
             <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-gray-500">Created</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {formatDate(budget.createdAt)}
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.createdAt)}</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Last Updated</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {formatDate(budget.updatedAt)}
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.updatedAt)}</dd>
               </div>
             </dl>
           </Card>
@@ -399,6 +458,39 @@ export const BudgetDetailPage: React.FC = () => {
                 <PencilIcon className="h-4 w-4" />
                 Edit Budget
               </button>
+
+              {/* Status Management Buttons */}
+              {!budget.isActive && !isPastEndDate && (
+                <button
+                  onClick={handleActivate}
+                  disabled={isActivating}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  <PlayIcon className="h-4 w-4" />
+                  {isActivating ? 'Activating...' : 'Activate Budget'}
+                </button>
+              )}
+
+              {budget.isActive && (
+                <button
+                  onClick={() => setIsCloseDialogOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-yellow-300 text-yellow-700 rounded-lg hover:bg-yellow-50 transition-colors"
+                >
+                  <StopIcon className="h-4 w-4" />
+                  Close Budget
+                </button>
+              )}
+
+              {canArchive && (
+                <button
+                  onClick={() => setIsArchiveDialogOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <ArchiveBoxIcon className="h-4 w-4" />
+                  Archive Budget
+                </button>
+              )}
+
               <button
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
@@ -411,10 +503,20 @@ export const BudgetDetailPage: React.FC = () => {
 
           {/* Quick Stats */}
           <Card>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Quick Stats
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h2>
             <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Total Expenses</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {utilization?.expenseCount ?? 0}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Pending Approval</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {utilization?.pendingCount ?? 0}
+                </span>
+              </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Daily Average</span>
                 <span className="text-sm font-medium text-gray-900">
@@ -446,9 +548,7 @@ export const BudgetDetailPage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">Currency</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {budget.currency}
-                </span>
+                <span className="text-sm font-medium text-gray-900">{budget.currency}</span>
               </div>
             </div>
           </Card>
@@ -482,6 +582,32 @@ export const BudgetDetailPage: React.FC = () => {
         cancelText="Cancel"
         variant="danger"
         isLoading={isDeleting}
+      />
+
+      {/* Close Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isCloseDialogOpen}
+        onClose={() => setIsCloseDialogOpen(false)}
+        onConfirm={handleClose}
+        title="Close Budget"
+        message={`Are you sure you want to close "${budget.name}"? This will mark the budget as inactive and record its final utilization.`}
+        confirmText="Close Budget"
+        cancelText="Cancel"
+        variant="warning"
+        isLoading={isClosing}
+      />
+
+      {/* Archive Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isArchiveDialogOpen}
+        onClose={() => setIsArchiveDialogOpen(false)}
+        onConfirm={handleArchive}
+        title="Archive Budget"
+        message={`Are you sure you want to archive "${budget.name}"? Archived budgets are kept for record-keeping but cannot be reactivated.`}
+        confirmText="Archive"
+        cancelText="Cancel"
+        variant="warning"
+        isLoading={isArchiving}
       />
     </div>
   );

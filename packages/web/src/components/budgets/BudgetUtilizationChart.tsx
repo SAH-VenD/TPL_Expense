@@ -7,17 +7,18 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import type { Budget } from '@/features/budgets/services/budgets.service';
+import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
 
 export interface BudgetUtilizationChartProps {
   budget: Budget;
+  utilization?: BudgetUtilization;
   className?: string;
 }
 
 const COLORS = {
-  used: '#3B82F6',      // blue-500
+  used: '#3B82F6', // blue-500
   remaining: '#10B981', // green-500
-  exceeded: '#EF4444',  // red-500
+  exceeded: '#EF4444', // red-500
 };
 
 const formatCurrency = (amount: number, currency: string = 'PKR') => {
@@ -31,9 +32,11 @@ const formatCurrency = (amount: number, currency: string = 'PKR') => {
 
 export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
   budget,
+  utilization,
   className,
 }) => {
-  const remaining = budget.totalAmount - budget.usedAmount;
+  const usedAmount = utilization ? utilization.committed + utilization.spent : 0;
+  const remaining = utilization?.available ?? budget.totalAmount;
   const isExceeded = remaining < 0;
 
   const data = isExceeded
@@ -42,19 +45,23 @@ export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
         { name: 'Over Budget', value: Math.abs(remaining), color: COLORS.exceeded },
       ]
     : [
-        { name: 'Used', value: budget.usedAmount, color: COLORS.used },
+        { name: 'Used', value: usedAmount, color: COLORS.used },
         { name: 'Remaining', value: remaining, color: COLORS.remaining },
       ];
 
-  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number }> }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ name: string; value: number }>;
+  }) => {
     if (active && payload && payload.length) {
       const item = payload[0];
       return (
         <div className="bg-white border border-gray-200 shadow-lg rounded-lg p-3">
           <p className="font-medium text-gray-900">{item.name}</p>
-          <p className="text-sm text-gray-600">
-            {formatCurrency(item.value, budget.currency)}
-          </p>
+          <p className="text-sm text-gray-600">{formatCurrency(item.value, budget.currency)}</p>
           <p className="text-xs text-gray-500">
             {((item.value / budget.totalAmount) * 100).toFixed(1)}% of total
           </p>
@@ -66,9 +73,7 @@ export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
 
   return (
     <div className={className}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Budget Utilization
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget Utilization</h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -80,9 +85,7 @@ export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
               outerRadius={90}
               paddingAngle={2}
               dataKey="value"
-              label={({ name, percent }) =>
-                `${name}: ${(percent * 100).toFixed(0)}%`
-              }
+              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
               labelLine={false}
             >
               {data.map((entry, index) => (
@@ -93,9 +96,7 @@ export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
             <Legend
               verticalAlign="bottom"
               height={36}
-              formatter={(value: string) => (
-                <span className="text-sm text-gray-600">{value}</span>
-              )}
+              formatter={(value: string) => <span className="text-sm text-gray-600">{value}</span>}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -110,7 +111,7 @@ export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({
         <div>
           <p className="text-sm text-gray-500">Used Amount</p>
           <p className="text-lg font-semibold text-gray-900">
-            {formatCurrency(budget.usedAmount, budget.currency)}
+            {formatCurrency(usedAmount, budget.currency)}
           </p>
         </div>
       </div>

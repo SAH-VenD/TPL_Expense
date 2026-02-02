@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Card } from '@/components/ui/Card';
 import { useGetBudgetsQuery } from '@/features/budgets/services/budgets.service';
-import type { Budget } from '@/features/budgets/services/budgets.service';
+import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
 
 export interface BudgetTransferData {
   sourceBudgetId: string;
@@ -22,6 +22,7 @@ export interface BudgetTransferModalProps {
   isOpen: boolean;
   onClose: () => void;
   sourceBudget: Budget;
+  sourceUtilization?: BudgetUtilization;
   onTransfer: (data: BudgetTransferData) => Promise<void>;
 }
 
@@ -38,11 +39,15 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
   isOpen,
   onClose,
   sourceBudget,
+  sourceUtilization,
   onTransfer,
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const availableToTransfer = sourceBudget.totalAmount - sourceBudget.usedAmount;
+  const sourceUsedAmount = sourceUtilization
+    ? sourceUtilization.committed + sourceUtilization.spent
+    : 0;
+  const availableToTransfer = sourceUtilization?.available ?? sourceBudget.totalAmount;
 
   const transferSchema = z.object({
     targetBudgetId: z.string().min(1, 'Please select a target budget'),
@@ -77,7 +82,7 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
   // Fetch budgets of the same type for transfer
   const { data: budgetsResponse } = useGetBudgetsQuery({
     type: sourceBudget.type,
-    isActive: true,
+    activeOnly: true,
     pageSize: 100,
   });
 
@@ -88,10 +93,7 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
 
   const targetBudgetOptions = eligibleBudgets.map((budget) => ({
     value: budget.id,
-    label: `${budget.name} (Available: ${formatCurrency(
-      budget.totalAmount - budget.usedAmount,
-      budget.currency
-    )})`,
+    label: `${budget.name} (Total: ${formatCurrency(budget.totalAmount, budget.currency)})`,
   }));
 
   const watchedTargetId = watch('targetBudgetId');
@@ -122,8 +124,8 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
 
   // Calculate preview values
   const sourceAfterTransfer = availableToTransfer - (watchedAmount || 0);
-  const targetAfterTransfer = targetBudget
-    ? targetBudget.totalAmount - targetBudget.usedAmount + (watchedAmount || 0)
+  const targetNewTotal = targetBudget
+    ? targetBudget.totalAmount + (watchedAmount || 0)
     : 0;
 
   return (
@@ -153,7 +155,7 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
               <div>
                 <p className="text-gray-500">Used</p>
                 <p className="font-medium">
-                  {formatCurrency(sourceBudget.usedAmount, sourceBudget.currency)}
+                  {formatCurrency(sourceUsedAmount, sourceBudget.currency)}
                 </p>
               </div>
               <div>
@@ -250,16 +252,13 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
                     {targetBudget.name}
                   </p>
                   <p className="text-lg font-semibold text-gray-900">
-                    {formatCurrency(
-                      targetBudget.totalAmount - targetBudget.usedAmount,
-                      targetBudget.currency
-                    )}
+                    {formatCurrency(targetBudget.totalAmount, targetBudget.currency)}
                   </p>
                   <p className="text-sm text-green-600">
                     + {formatCurrency(watchedAmount, targetBudget.currency)}
                   </p>
                   <p className="text-sm font-medium text-gray-900 mt-1 border-t pt-1">
-                    = {formatCurrency(targetAfterTransfer, targetBudget.currency)}
+                    = {formatCurrency(targetNewTotal, targetBudget.currency)}
                   </p>
                 </div>
               </div>
