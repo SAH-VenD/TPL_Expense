@@ -87,7 +87,9 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
             max={maxValue}
             disabled={disabled}
             className={clsx(
-              'input pl-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none',
+              'input pl-10',
+              '[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer',
+              '[&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden',
               error && 'input-error',
               className
             )}
