@@ -30,8 +30,20 @@ export class VouchersController {
   @Get()
   @ApiOperation({ summary: 'Get all vouchers (filtered by user unless admin/finance)' })
   @ApiQuery({ name: 'status', enum: VoucherStatus, required: false })
-  findAll(@Req() req: AuthenticatedRequest, @Query('status') status?: VoucherStatus) {
-    return this.vouchersService.findAll(req.user, status);
+  @ApiQuery({ name: 'page', type: Number, required: false })
+  @ApiQuery({ name: 'pageSize', type: Number, required: false })
+  findAll(
+    @Req() req: AuthenticatedRequest,
+    @Query('status') status?: VoucherStatus,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.vouchersService.findAll(
+      req.user,
+      status,
+      page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : 10,
+    );
   }
 
   @Get('pending-approval')

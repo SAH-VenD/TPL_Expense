@@ -72,30 +72,54 @@ export class VouchersService {
 
   // ==================== QUERY VOUCHERS ====================
 
-  async findAll(user: User, status?: VoucherStatus) {
+  async findAll(
+    user: User,
+    status?: VoucherStatus,
+    page: number = 1,
+    pageSize: number = 10,
+  ) {
     const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
 
-    return this.prisma.voucher.findMany({
-      where: {
-        ...(isAdmin ? {} : { requesterId: user.id }),
-        ...(status && { status }),
-      },
-      include: {
-        requester: {
-          select: { id: true, firstName: true, lastName: true, email: true },
-        },
-        expenses: {
-          take: 5,
-          select: {
-            id: true,
-            expenseNumber: true,
-            totalAmount: true,
-            status: true,
+    const where = {
+      ...(isAdmin ? {} : { requesterId: user.id }),
+      ...(status && { status }),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.voucher.findMany({
+        where,
+        include: {
+          requester: {
+            select: { id: true, firstName: true, lastName: true, email: true },
+          },
+          expenses: {
+            take: 5,
+            select: {
+              id: true,
+              expenseNumber: true,
+              totalAmount: true,
+              status: true,
+            },
           },
         },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.voucher.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
+        },
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    };
   }
 
   async findOne(id: string, user: User) {
