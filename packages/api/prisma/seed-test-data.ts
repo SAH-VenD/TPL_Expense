@@ -642,15 +642,15 @@ async function seedExpenses(
       type: 'OUT_OF_POCKET',
       status: 'APPROVED',
       submitterId: users[6].id,
-      submittedAt: new Date(today.getTime() - 10 * 86400000),
+      submittedAt: new Date(today.getTime() - 4 * 86400000),
       vendorId: vendors[0].id,
       vendorName: vendors[0].name,
-      expenseDate: new Date(today.getTime() - 15 * 86400000),
+      expenseDate: new Date(today.getTime() - 5 * 86400000), // Changed to within monthly budget window
       description: '[TEST] Flight to Karachi for client meeting',
       amount: 45000,
       totalAmount: 45000,
       categoryId: categories[5].id,
-      departmentId: departments[5].id,
+      departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
       projectId: projects[8].id,
       costCenterId: costCenters[0].id,
       budgetId: budgets[6].id,
@@ -683,7 +683,7 @@ async function seedExpenses(
       amount: 8500,
       totalAmount: 8500,
       categoryId: categories[2].id,
-      departmentId: departments[8].id,
+      departmentId: departments[2].id, // Changed from departments[8] to match Marketing budget
     },
     {
       expenseNumber: 'TEST-EXP-2026-004',
@@ -692,12 +692,12 @@ async function seedExpenses(
       submitterId: users[9].id,
       submittedAt: new Date(today.getTime() - 7 * 86400000),
       vendorName: '[TEST] Unknown Vendor',
-      expenseDate: new Date(today.getTime() - 10 * 86400000),
+      expenseDate: new Date(today.getTime() - 8 * 86400000), // Within monthly budget window
       description: '[TEST] Unverified expense',
       amount: 15000,
       totalAmount: 15000,
       categoryId: categories[1].id,
-      departmentId: departments[7].id,
+      departmentId: departments[1].id, // Changed from departments[7] to match Finance budget
       rejectionReason: '[TEST] Missing receipt and vendor verification',
     },
     {
@@ -705,10 +705,10 @@ async function seedExpenses(
       type: 'PETTY_CASH',
       status: 'PAID',
       submitterId: users[6].id,
-      submittedAt: new Date(today.getTime() - 20 * 86400000),
+      submittedAt: new Date(today.getTime() - 4 * 86400000), // Updated to match expense date
       vendorId: vendors[2].id,
       vendorName: vendors[2].name,
-      expenseDate: new Date(today.getTime() - 22 * 86400000),
+      expenseDate: new Date(today.getTime() - 5 * 86400000), // Changed to within monthly budget window
       description: '[TEST] Office supplies',
       amount: 12500,
       totalAmount: 12500,
@@ -775,9 +775,9 @@ async function seedExpenses(
       type: 'PETTY_CASH',
       status: 'APPROVED',
       submitterId: users[6].id, // Matches Employee 1 Budget (employeeId: users[6])
-      submittedAt: new Date(today.getTime() - 12 * 86400000),
+      submittedAt: new Date(today.getTime() - 2 * 86400000), // Updated to match expense date
       vendorName: '[TEST] Various Vendors',
-      expenseDate: new Date(today.getTime() - 14 * 86400000),
+      expenseDate: new Date(today.getTime() - 3 * 86400000), // Changed to within monthly budget window
       description: '[TEST] Event catering expenses',
       amount: 22000,
       totalAmount: 22000,
@@ -790,17 +790,17 @@ async function seedExpenses(
       type: 'OUT_OF_POCKET',
       status: 'APPROVED',
       submitterId: users[7].id, // Matches Employee 2 Budget (employeeId: users[7])
-      submittedAt: new Date(today.getTime() - 30 * 86400000),
+      submittedAt: new Date(today.getTime() - 6 * 86400000), // Updated to match expense date
       vendorId: vendors[8].id,
       vendorName: vendors[8].name,
-      expenseDate: new Date(today.getTime() - 35 * 86400000),
+      expenseDate: new Date(today.getTime() - 7 * 86400000), // Changed to within monthly budget window
       description: '[TEST] AWS cloud services',
       currency: 'USD',
       amount: 150,
       totalAmount: 150,
       exchangeRate: 278.50,
       amountInPKR: 41775,
-      exchangeRateDate: new Date(today.getTime() - 35 * 86400000),
+      exchangeRateDate: new Date(today.getTime() - 7 * 86400000), // Updated to match expense date
       categoryId: categories[3].id,
       departmentId: departments[0].id, // Changed from departments[5] to match Engineering budget
       projectId: projects[0].id, // Changed from projects[3] to match Website Project Budget
