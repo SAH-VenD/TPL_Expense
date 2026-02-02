@@ -78,9 +78,7 @@ export interface VoucherFilters {
 
 export interface CreateVoucherDto {
   requestedAmount: number;
-  currency?: string;
   purpose: string;
-  notes?: string;
   settlementDeadline?: string;
 }
 

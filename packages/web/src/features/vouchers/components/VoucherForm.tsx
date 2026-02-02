@@ -117,8 +117,6 @@ export const VoucherForm: React.FC<VoucherFormProps> = ({
     const submitData: CreateVoucherDto = {
       requestedAmount: data.requestedAmount,
       purpose: data.purpose,
-      currency: 'PKR',
-      notes: data.notes,
       settlementDeadline: data.settlementDeadline,
     };
     await onSubmit(submitData);
