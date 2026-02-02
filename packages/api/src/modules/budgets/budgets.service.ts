@@ -70,26 +70,50 @@ export class BudgetsService {
     });
   }
 
-  async findAll(type?: BudgetType, activeOnly: boolean = true) {
-    return this.prisma.budget.findMany({
-      where: {
-        ...(activeOnly && { isActive: true }),
-        ...(type && { type }),
-      },
-      include: {
-        department: true,
-        project: true,
-        category: true,
-        costCenter: true,
-        employee: {
-          select: { id: true, firstName: true, lastName: true },
+  async findAll(
+    type?: BudgetType,
+    activeOnly: boolean = true,
+    page: number = 1,
+    pageSize: number = 10,
+  ) {
+    const where = {
+      ...(activeOnly && { isActive: true }),
+      ...(type && { type }),
+    };
+
+    const [data, total] = await Promise.all([
+      this.prisma.budget.findMany({
+        where,
+        include: {
+          department: true,
+          project: true,
+          category: true,
+          costCenter: true,
+          employee: {
+            select: { id: true, firstName: true, lastName: true },
+          },
+          owner: {
+            select: { id: true, firstName: true, lastName: true },
+          },
         },
-        owner: {
-          select: { id: true, firstName: true, lastName: true },
+        orderBy: { name: 'asc' },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+      this.prisma.budget.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        pagination: {
+          page,
+          pageSize,
+          total,
+          totalPages: Math.ceil(total / pageSize),
         },
       },
-      orderBy: { name: 'asc' },
-    });
+    };
   }
 
   async findOne(id: string) {

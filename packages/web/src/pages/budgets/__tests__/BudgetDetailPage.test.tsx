@@ -28,24 +28,23 @@ vi.mock('react-hot-toast', async (importOriginal) => {
 });
 
 // Mock data
-const mockBudget = {
+const mockBudget: import('@/features/budgets/services/budgets.service').Budget = {
   id: 'budget-123',
   name: 'Q1 Marketing Budget',
   type: 'DEPARTMENT',
   period: 'QUARTERLY',
   currency: 'PKR',
   totalAmount: 1000000,
-  usedAmount: 750000,
   startDate: '2024-01-01T00:00:00Z',
   endDate: '2024-03-31T00:00:00Z',
   warningThreshold: 75,
   enforcement: 'SOFT_WARNING',
   departmentId: 'dept-1',
   department: { id: 'dept-1', name: 'Marketing' },
-  projectId: null,
-  project: null,
-  categoryId: null,
-  category: null,
+  projectId: undefined,
+  project: undefined,
+  categoryId: undefined,
+  category: undefined,
   isActive: true,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-15T00:00:00Z',
@@ -55,14 +54,12 @@ const mockBudgetExceeded = {
   ...mockBudget,
   id: 'budget-456',
   name: 'Exceeded Budget',
-  usedAmount: 1200000,
 };
 
 const mockBudgetWarning = {
   ...mockBudget,
   id: 'budget-789',
   name: 'Warning Budget',
-  usedAmount: 800000, // 80% - above 75% warning threshold
 };
 
 // Mock query state
@@ -298,12 +295,10 @@ describe('BudgetDetailPage', () => {
     });
 
     it('does not show warning alert when below threshold', () => {
+      // With no utilization data, no warning alerts should appear
       mockQueryState = {
         ...mockQueryState,
-        data: {
-          ...mockBudget,
-          usedAmount: 500000, // 50% - below 75% warning threshold
-        },
+        data: mockBudget,
       };
 
       renderWithProviders(<BudgetDetailPage />);
@@ -557,8 +552,8 @@ describe('BudgetDetailPage', () => {
         data: {
           ...mockBudget,
           type: 'PROJECT',
-          departmentId: null,
-          department: null,
+          departmentId: undefined,
+          department: undefined,
           projectId: 'proj-1',
           project: { id: 'proj-1', name: 'Website Redesign' },
         },
@@ -578,8 +573,8 @@ describe('BudgetDetailPage', () => {
         data: {
           ...mockBudget,
           type: 'CATEGORY',
-          departmentId: null,
-          department: null,
+          departmentId: undefined,
+          department: undefined,
           categoryId: 'cat-1',
           category: { id: 'cat-1', name: 'Travel Expenses' },
         },

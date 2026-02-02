@@ -16,7 +16,6 @@ import {
   formatDate,
   getDaysUntilDeadline,
   calculateSettlementBalance,
-  canUserPerformAction,
 } from '@/features/vouchers/types/vouchers.types';
 import type { LinkedExpense, SettleVoucherDto } from '@/features/vouchers/types/vouchers.types';
 import { useState, useEffect } from 'react';

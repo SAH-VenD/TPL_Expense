@@ -23,6 +23,7 @@ export interface BudgetAlert {
 
 export interface BudgetAlertsDisplayProps {
   budget: Budget;
+  utilizationPercent?: number;
   alerts: BudgetAlert[];
   isAdmin: boolean;
   onThresholdUpdate?: (warningThreshold: number, enforcement: BudgetEnforcement) => Promise<void>;
@@ -86,6 +87,7 @@ const getAlertLabel = (type: string) => {
 
 export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
   budget,
+  utilizationPercent: utilizationPercentProp,
   alerts,
   isAdmin,
   onThresholdUpdate,
@@ -96,7 +98,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [acknowledging, setAcknowledging] = useState<string | null>(null);
 
-  const utilizationPercent = (budget.usedAmount / budget.totalAmount) * 100;
+  const utilizationPercent = utilizationPercentProp ?? 0;
   const isWarning = utilizationPercent >= budget.warningThreshold;
   const isCritical = utilizationPercent >= 90;
   const isExceeded = utilizationPercent > 100;

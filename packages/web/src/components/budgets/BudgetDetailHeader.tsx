@@ -83,12 +83,12 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
   onDelete,
   onTransfer,
 }) => {
-  const utilizationPercent = utilization?.utilizationPercent ??
-    (budget.usedAmount / budget.totalAmount) * 100;
-  const remainingAmount = utilization?.remainingAmount ??
-    (budget.totalAmount - budget.usedAmount);
-  const isWarning = utilization?.isWarning ?? utilizationPercent >= budget.warningThreshold;
-  const isExceeded = utilization?.isExceeded ?? utilizationPercent > 100;
+  // Use utilization data when available
+  const utilizationPercent = utilization?.utilizationPercentage ?? 0;
+  const usedAmount = utilization ? utilization.committed + utilization.spent : 0;
+  const remainingAmount = utilization?.available ?? budget.totalAmount;
+  const isWarning = utilization?.isAtWarningThreshold ?? utilizationPercent >= budget.warningThreshold;
+  const isExceeded = utilization?.isOverBudget ?? utilizationPercent > 100;
 
   const getProgressColor = () => {
     if (isExceeded) return 'bg-red-500';
@@ -116,9 +116,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
               <span
                 className={clsx(
                   'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-                  isExceeded
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-amber-100 text-amber-700'
+                  isExceeded ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                 )}
               >
                 {isExceeded ? (
@@ -159,19 +157,13 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
         {isAdmin && (
           <div className="flex items-center gap-2">
             {onTransfer && (
-              <button
-                onClick={onTransfer}
-                className="btn btn-secondary flex items-center gap-2"
-              >
+              <button onClick={onTransfer} className="btn btn-secondary flex items-center gap-2">
                 <ArrowsRightLeftIcon className="h-4 w-4" />
                 Transfer
               </button>
             )}
             {onEdit && (
-              <button
-                onClick={onEdit}
-                className="btn btn-secondary flex items-center gap-2"
-              >
+              <button onClick={onEdit} className="btn btn-secondary flex items-center gap-2">
                 <PencilIcon className="h-4 w-4" />
                 Edit
               </button>
@@ -200,7 +192,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
         <div className="text-center p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-500 mb-1">Used Amount</p>
           <p className="text-2xl font-bold text-gray-900">
-            {formatCurrency(budget.usedAmount, budget.currency)}
+            {formatCurrency(usedAmount, budget.currency)}
           </p>
         </div>
         <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -246,9 +238,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
         </div>
         <div className="flex justify-between mt-1">
           <span className="text-xs text-gray-500">0%</span>
-          <span className="text-xs text-amber-600">
-            Warning: {budget.warningThreshold}%
-          </span>
+          <span className="text-xs text-amber-600">Warning: {budget.warningThreshold}%</span>
           <span className="text-xs text-gray-500">100%</span>
         </div>
       </div>

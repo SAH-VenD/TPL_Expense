@@ -7,9 +7,7 @@ import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { useGetDepartmentsQuery, useGetCategoriesQuery } from '@/features/admin/services/admin.service';
 import type {
-  BudgetType,
   BudgetPeriod,
-  BudgetEnforcement,
   CreateBudgetDto,
 } from '@/features/budgets/services/budgets.service';
 
@@ -84,6 +82,23 @@ const enforcementOptions = [
   { value: 'AUTO_ESCALATE', label: 'Auto Escalate' },
 ];
 
+const validBudgetTypes = ['DEPARTMENT', 'PROJECT', 'COST_CENTER', 'EMPLOYEE', 'CATEGORY'] as const;
+const validEnforcements = ['HARD_BLOCK', 'SOFT_WARNING', 'AUTO_ESCALATE'] as const;
+
+const getValidBudgetType = (type?: string): typeof validBudgetTypes[number] => {
+  if (type && validBudgetTypes.includes(type as typeof validBudgetTypes[number])) {
+    return type as typeof validBudgetTypes[number];
+  }
+  return 'DEPARTMENT';
+};
+
+const getValidEnforcement = (enforcement?: string): typeof validEnforcements[number] => {
+  if (enforcement && validEnforcements.includes(enforcement as typeof validEnforcements[number])) {
+    return enforcement as typeof validEnforcements[number];
+  }
+  return 'SOFT_WARNING';
+};
+
 export const BudgetForm: React.FC<BudgetFormProps> = ({
   initialData,
   isLoading,
@@ -105,14 +120,14 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     resolver: zodResolver(budgetFormSchema),
     defaultValues: {
       name: initialData?.name || '',
-      type: (initialData?.type as BudgetType) || 'DEPARTMENT',
+      type: getValidBudgetType(initialData?.type),
       period: (initialData?.period as BudgetPeriod) || 'ANNUAL',
       totalAmount: initialData?.totalAmount || 0,
       currency: initialData?.currency || 'PKR',
       startDate: initialData?.startDate || '',
       endDate: initialData?.endDate || '',
       warningThreshold: initialData?.warningThreshold ?? 75,
-      enforcement: (initialData?.enforcement as BudgetEnforcement) || 'SOFT_WARNING',
+      enforcement: getValidEnforcement(initialData?.enforcement),
       departmentId: initialData?.departmentId || undefined,
       projectId: initialData?.projectId || undefined,
       costCenterId: initialData?.costCenterId || undefined,

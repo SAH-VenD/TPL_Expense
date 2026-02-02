@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { Card, CardHeader, CardTitle, Skeleton, EmptyState } from '@/components/ui';
-import { useGetBudgetsQuery, type Budget } from '@/features/budgets/services/budgets.service';
+import { useGetBudgetSummaryQuery, type BudgetUtilization } from '@/features/budgets/services/budgets.service';
 
 export interface BudgetOverviewProps {
   limit?: number;
@@ -46,19 +46,19 @@ const getUtilizationBgColor = (utilization: number): string => {
   return 'bg-gray-200';
 };
 
-const transformBudget = (budget: Budget): BudgetDisplayItem => {
-  const spent = budget.usedAmount;
-  const allocated = budget.totalAmount;
-  const utilization = allocated > 0 ? (spent / allocated) * 100 : 0;
+const transformBudget = (budget: BudgetUtilization): BudgetDisplayItem => {
+  const spent = budget.committed + budget.spent;
+  const allocated = budget.allocated;
+  const utilization = budget.utilizationPercentage;
 
   return {
-    id: budget.id,
-    name: budget.name,
+    id: budget.budgetId,
+    name: budget.budgetName,
     type: budget.type,
     allocated,
     spent,
     utilization,
-    currency: budget.currency,
+    currency: 'PKR', // Default currency since BudgetUtilization doesn't include it
     warningThreshold: budget.warningThreshold || 80,
   };
 };
@@ -144,20 +144,18 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
   className,
 }) => {
   const navigate = useNavigate();
-  const { data, isLoading, isError, refetch } = useGetBudgetsQuery({
-    pageSize: 20,
-    page: 1,
-    isActive: true,
+  const { data, isLoading, isError, refetch } = useGetBudgetSummaryQuery({
+    activeOnly: true,
   });
 
   // Transform and sort budgets by utilization (highest first)
   const budgets: BudgetDisplayItem[] = React.useMemo(() => {
-    if (!data?.data) return [];
-    return data.data
+    if (!data?.budgets) return [];
+    return data.budgets
       .map(transformBudget)
       .sort((a, b) => b.utilization - a.utilization)
       .slice(0, limit);
-  }, [data?.data, limit]);
+  }, [data?.budgets, limit]);
 
   const handleBudgetClick = (budgetId: string) => {
     navigate(`/budgets/${budgetId}`);

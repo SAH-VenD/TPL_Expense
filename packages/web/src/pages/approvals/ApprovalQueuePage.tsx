@@ -335,7 +335,6 @@ export function ApprovalQueuePage() {
               const submitterName = expense.submitter
                 ? `${expense.submitter.firstName} ${expense.submitter.lastName}`
                 : 'Unknown';
-              const department = expense.submitter?.department?.name || '';
 
               return (
                 <tr
@@ -369,9 +368,6 @@ export function ApprovalQueuePage() {
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-medium text-gray-900">{submitterName}</p>
-                      {department && (
-                        <p className="text-sm text-gray-500">{department}</p>
-                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">

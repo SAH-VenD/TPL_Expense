@@ -40,8 +40,12 @@ const voucherFormSchema = z.object({
 
 type VoucherFormSchema = z.infer<typeof voucherFormSchema>;
 
+export interface VoucherFormInitialData extends Partial<CreateVoucherDto> {
+  notes?: string;
+}
+
 export interface VoucherFormProps {
-  initialData?: Partial<CreateVoucherDto>;
+  initialData?: VoucherFormInitialData;
   onSubmit: (data: CreateVoucherDto) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;

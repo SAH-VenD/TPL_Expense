@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { Card, EmptyState, Skeleton, Alert } from '@/components/ui';
-import { useGetBudgetsQuery, type Budget } from '@/features/budgets/services/budgets.service';
+import {
+  useGetBudgetSummaryQuery,
+  type BudgetUtilization,
+} from '@/features/budgets/services/budgets.service';
 import clsx from 'clsx';
 
 const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
@@ -20,41 +23,55 @@ const getUtilizationColor = (utilization: number): string => {
   return 'bg-green-500';
 };
 
-const BudgetCard: React.FC<{ budget: Budget }> = ({ budget }) => {
-  const utilization = budget.totalAmount > 0
-    ? (budget.usedAmount / budget.totalAmount) * 100
-    : 0;
+const getBudgetStatusBadge = (
+  budget: BudgetUtilization
+): { className: string; label: string } => {
+  if (budget.isOverBudget) {
+    return { className: 'bg-red-100 text-red-800', label: 'Over Budget' };
+  }
+  if (budget.isAtWarningThreshold) {
+    return { className: 'bg-yellow-100 text-yellow-800', label: 'Warning' };
+  }
+  return { className: 'bg-green-100 text-green-800', label: 'On Track' };
+};
+
+const BudgetCard: React.FC<{ budget: BudgetUtilization }> = ({ budget }) => {
+  const utilization = budget.utilizationPercentage;
   const cappedUtilization = Math.min(utilization, 100);
+  const usedAmount = budget.committed + budget.spent;
+  const statusBadge = getBudgetStatusBadge(budget);
 
   return (
-    <Link to={`/budgets/${budget.id}`}>
+    <Link to={`/budgets/${budget.budgetId}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer">
         <div className="space-y-4">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-semibold text-gray-900">{budget.name}</h3>
-              <p className="text-sm text-gray-500 capitalize">{budget.type.toLowerCase().replace('_', ' ')}</p>
+              <h3 className="font-semibold text-gray-900">{budget.budgetName}</h3>
+              <p className="text-sm text-gray-500 capitalize">
+                {budget.type.toLowerCase().replace('_', ' ')}
+              </p>
             </div>
-            <span className={clsx(
-              'px-2 py-1 text-xs font-medium rounded-full',
-              budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-            )}>
-              {budget.isActive ? 'Active' : 'Inactive'}
+            <span
+              className={clsx('px-2 py-1 text-xs font-medium rounded-full', statusBadge.className)}
+            >
+              {statusBadge.label}
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-600">
-                {formatCurrency(budget.usedAmount, budget.currency)} used
-              </span>
+              <span className="text-gray-600">{formatCurrency(usedAmount)} used</span>
               <span className="text-gray-900 font-medium">
-                {formatCurrency(budget.totalAmount, budget.currency)}
+                {formatCurrency(budget.allocated)}
               </span>
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className={clsx('h-full rounded-full transition-all', getUtilizationColor(utilization))}
+                className={clsx(
+                  'h-full rounded-full transition-all',
+                  getUtilizationColor(utilization)
+                )}
                 style={{ width: `${cappedUtilization}%` }}
               />
             </div>
@@ -62,6 +79,12 @@ const BudgetCard: React.FC<{ budget: Budget }> = ({ budget }) => {
               <span>{utilization.toFixed(1)}% utilized</span>
               <span>{budget.period.toLowerCase().replace('_', ' ')}</span>
             </div>
+          </div>
+
+          {/* Additional info */}
+          <div className="flex justify-between text-xs text-gray-400 pt-2 border-t">
+            <span>{budget.expenseCount} expenses</span>
+            <span>{budget.pendingCount} pending</span>
           </div>
         </div>
       </Card>
@@ -71,10 +94,18 @@ const BudgetCard: React.FC<{ budget: Budget }> = ({ budget }) => {
 
 export const BudgetListPage: React.FC = () => {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, refetch } = useGetBudgetsQuery({
-    page,
-    pageSize: 12,
+  const pageSize = 12;
+
+  // Use budget summary query which returns utilization data for all budgets
+  const { data, isLoading, isError, refetch } = useGetBudgetSummaryQuery({
+    activeOnly: false,
   });
+
+  // Client-side pagination of the summary results
+  const paginatedBudgets = data?.budgets
+    ? data.budgets.slice((page - 1) * pageSize, page * pageSize)
+    : [];
+  const totalPages = data?.budgets ? Math.ceil(data.budgets.length / pageSize) : 0;
 
   return (
     <div className="space-y-6">
@@ -89,6 +120,39 @@ export const BudgetListPage: React.FC = () => {
           Create Budget
         </Link>
       </div>
+
+      {/* Summary Stats */}
+      {data?.summary && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="!p-4">
+            <p className="text-sm text-gray-500">Total Budgets</p>
+            <p className="text-2xl font-semibold text-gray-900">{data.summary.totalBudgets}</p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-sm text-gray-500">Total Allocated</p>
+            <p className="text-2xl font-semibold text-gray-900">
+              {formatCurrency(data.summary.totalAllocated)}
+            </p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-sm text-gray-500">Overall Utilization</p>
+            <p className="text-2xl font-semibold text-gray-900">
+              {data.summary.overallUtilization.toFixed(1)}%
+            </p>
+          </Card>
+          <Card className="!p-4">
+            <p className="text-sm text-gray-500">Over Threshold</p>
+            <p
+              className={clsx(
+                'text-2xl font-semibold',
+                data.summary.budgetsOverThreshold > 0 ? 'text-yellow-600' : 'text-gray-900'
+              )}
+            >
+              {data.summary.budgetsOverThreshold}
+            </p>
+          </Card>
+        </div>
+      )}
 
       {/* Content */}
       {isLoading ? (
@@ -109,30 +173,30 @@ export const BudgetListPage: React.FC = () => {
             Try again
           </button>
         </Alert>
-      ) : data?.data && data.data.length > 0 ? (
+      ) : paginatedBudgets.length > 0 ? (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.data.map((budget) => (
-              <BudgetCard key={budget.id} budget={budget} />
+            {paginatedBudgets.map((budget) => (
+              <BudgetCard key={budget.budgetId} budget={budget} />
             ))}
           </div>
 
           {/* Pagination */}
-          {data.meta?.pagination && data.meta.pagination.totalPages > 1 && (
+          {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-6">
               <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
                 className="btn btn-secondary"
               >
                 Previous
               </button>
               <span className="text-sm text-gray-600">
-                Page {page} of {data.meta.pagination.totalPages}
+                Page {page} of {totalPages}
               </span>
               <button
-                onClick={() => setPage(p => Math.min(data.meta.pagination.totalPages, p + 1))}
-                disabled={page === data.meta.pagination.totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
                 className="btn btn-secondary"
               >
                 Next

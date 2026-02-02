@@ -49,17 +49,13 @@ const getPeriodLabel = (period: string) => {
   return labels[period] || period;
 };
 
-export const BudgetCard: React.FC<BudgetCardProps> = ({
-  budget,
-  utilization,
-  onClick,
-}) => {
-  const utilizationPercent = utilization?.utilizationPercent ??
-    (budget.usedAmount / budget.totalAmount) * 100;
-  const remainingAmount = utilization?.remainingAmount ??
-    (budget.totalAmount - budget.usedAmount);
-  const isWarning = utilization?.isWarning ?? utilizationPercent >= 75;
-  const isExceeded = utilization?.isExceeded ?? utilizationPercent > 100;
+export const BudgetCard: React.FC<BudgetCardProps> = ({ budget, utilization, onClick }) => {
+  // Use utilization data when available, otherwise compute from budget
+  const utilizationPercent = utilization?.utilizationPercentage ?? 0;
+  const usedAmount = utilization ? utilization.committed + utilization.spent : 0;
+  const remainingAmount = utilization?.available ?? budget.totalAmount;
+  const isWarning = utilization?.isAtWarningThreshold ?? utilizationPercent >= 75;
+  const isExceeded = utilization?.isOverBudget ?? utilizationPercent > 100;
 
   const getProgressColor = () => {
     if (isExceeded) return 'bg-red-500';
@@ -77,21 +73,11 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const entityName = getEntityName();
 
   return (
-    <Card
-      hover
-      onClick={onClick}
-      className="h-full flex flex-col"
-    >
+    <Card hover onClick={onClick} className="h-full flex flex-col">
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base font-semibold text-gray-900 truncate">
-            {budget.name}
-          </h3>
-          {entityName && (
-            <p className="text-sm text-gray-500 truncate mt-0.5">
-              {entityName}
-            </p>
-          )}
+          <h3 className="text-base font-semibold text-gray-900 truncate">{budget.name}</h3>
+          {entityName && <p className="text-sm text-gray-500 truncate mt-0.5">{entityName}</p>}
         </div>
         <div className="flex items-center gap-2 ml-2 flex-shrink-0">
           <Badge variant={getBudgetTypeBadgeVariant(budget.type)} size="sm">
@@ -128,7 +114,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         <div className="flex justify-between text-sm">
           <span className="text-gray-500">Used</span>
           <span className="font-medium text-gray-900">
-            {formatCurrency(budget.usedAmount, budget.currency)}
+            {formatCurrency(usedAmount, budget.currency)}
           </span>
         </div>
         <div className="flex justify-between text-sm">
@@ -140,10 +126,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
         <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
           <span className="text-gray-500">Remaining</span>
           <span
-            className={clsx(
-              'font-medium',
-              remainingAmount < 0 ? 'text-red-600' : 'text-green-600'
-            )}
+            className={clsx('font-medium', remainingAmount < 0 ? 'text-red-600' : 'text-green-600')}
           >
             {remainingAmount >= 0 ? '+' : ''}
             {formatCurrency(remainingAmount, budget.currency)}
