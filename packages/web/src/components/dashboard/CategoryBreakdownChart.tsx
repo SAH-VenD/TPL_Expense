@@ -4,7 +4,6 @@ import {
   Pie,
   Cell,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { ChartPieIcon } from '@heroicons/react/24/outline';
@@ -67,45 +66,6 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload }) => {
       <p className="text-sm text-gray-600 mt-1">{formatCurrency(data.amount)}</p>
       <p className="text-sm text-gray-500">{data.percentage.toFixed(1)}% of total</p>
     </div>
-  );
-};
-
-interface CustomLabelProps {
-  cx: number;
-  cy: number;
-  midAngle: number;
-  innerRadius: number;
-  outerRadius: number;
-  percent: number;
-}
-
-const renderCustomLabel = ({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-}: CustomLabelProps) => {
-  if (percent < 0.05) return null; // Don't show label for small slices
-
-  const RADIAN = Math.PI / 180;
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="white"
-      textAnchor="middle"
-      dominantBaseline="central"
-      fontSize={12}
-      fontWeight={500}
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
   );
 };
 
@@ -184,7 +144,19 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
     }
   };
 
-  const innerRadius = variant === 'donut' ? 60 : 0;
+  const innerRadius = variant === 'donut' ? 55 : 0;
+  const outerRadius = 90;
+
+  // Format total for center display - shorter format for small spaces
+  const formatCompactCurrency = (value: number): string => {
+    if (value >= 1000000) {
+      return `Rs ${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `Rs ${(value / 1000).toFixed(0)}K`;
+    }
+    return formatCurrency(value);
+  };
 
   return (
     <Card padding="none" className={className}>
@@ -214,53 +186,76 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
             description="Start categorizing expenses to see the breakdown."
           />
         ) : (
-          <div className="relative">
-            <ResponsiveContainer width="100%" height={height}>
-              <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={innerRadius}
-                  outerRadius={80}
-                  dataKey="amount"
-                  nameKey="categoryName"
-                  label={renderCustomLabel}
-                  labelLine={false}
-                  onClick={(_, index) => handleClick(chartData[index])}
-                  cursor={onCategoryClick ? 'pointer' : 'default'}
-                  animationDuration={800}
+          <div className="flex items-center gap-4">
+            {/* Chart container with fixed dimensions */}
+            <div className="relative flex-shrink-0" style={{ width: 220, height: height }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={innerRadius}
+                    outerRadius={outerRadius}
+                    dataKey="amount"
+                    nameKey="categoryName"
+                    labelLine={false}
+                    onClick={(_, index) => handleClick(chartData[index])}
+                    cursor={onCategoryClick ? 'pointer' : 'default'}
+                    animationDuration={800}
+                  >
+                    {chartData.map((entry) => (
+                      <Cell
+                        key={entry.categoryId}
+                        fill={entry.color}
+                        stroke="white"
+                        strokeWidth={2}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+              {/* Center text - positioned absolutely within the chart container */}
+              {variant === 'donut' && (
+                <div
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
                 >
-                  {chartData.map((entry) => (
-                    <Cell
-                      key={entry.categoryId}
-                      fill={entry.color}
-                      stroke="white"
-                      strokeWidth={2}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  layout="vertical"
-                  align="right"
-                  verticalAlign="middle"
-                  formatter={(value: string) => (
-                    <span className="text-sm text-gray-600">{value}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            {variant === 'donut' && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="text-center" style={{ marginRight: 100 }}>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(totalAmount)}
-                  </p>
-                  <p className="text-xs text-gray-500">Total</p>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-gray-900 leading-tight">
+                      {formatCompactCurrency(totalAmount)}
+                    </p>
+                    <p className="text-xs text-gray-500">Total</p>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+            {/* Legend with percentages */}
+            <div className="flex-1 space-y-1">
+              {chartData.map((entry) => {
+                const isClickable = entry.categoryId !== 'other' && onCategoryClick;
+                return (
+                  <button
+                    key={entry.categoryId}
+                    type="button"
+                    className="w-full flex items-center justify-between text-sm hover:bg-gray-50 rounded px-2 py-1.5 -mx-2 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1"
+                    onClick={() => isClickable && onCategoryClick(entry.categoryId)}
+                    disabled={!isClickable}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-sm flex-shrink-0"
+                        style={{ backgroundColor: entry.color }}
+                      />
+                      <span className="text-gray-700 truncate">{entry.categoryName}</span>
+                    </div>
+                    <span className="font-medium text-gray-900 ml-2">
+                      {entry.percentage.toFixed(0)}%
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
