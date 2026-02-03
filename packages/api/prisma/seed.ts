@@ -326,6 +326,38 @@ async function main() {
     },
   });
 
+  // CEO user
+  const ceoUser = await prisma.user.upsert({
+    where: { email: 'ceo@tekcellent.com' },
+    update: {},
+    create: {
+      email: 'ceo@tekcellent.com',
+      passwordHash,
+      firstName: 'Chief',
+      lastName: 'Executive',
+      employeeId: 'EMP005',
+      status: UserStatus.ACTIVE,
+      role: RoleType.CEO,
+      departmentId: execDept.id,
+    },
+  });
+
+  // Super Approver / Director user
+  const directorUser = await prisma.user.upsert({
+    where: { email: 'director@tekcellent.com' },
+    update: {},
+    create: {
+      email: 'director@tekcellent.com',
+      passwordHash,
+      firstName: 'Regional',
+      lastName: 'Director',
+      employeeId: 'EMP006',
+      status: UserStatus.ACTIVE,
+      role: RoleType.SUPER_APPROVER,
+      departmentId: execDept.id,
+    },
+  });
+
   // ==================== APPROVAL TIERS ====================
   console.log('Creating approval tiers...');
 
@@ -371,11 +403,23 @@ async function main() {
       update: {},
       create: {
         id: 'tier-4',
-        name: 'Executive (250,001+ PKR)',
+        name: 'High Value (250,001 - 500,000 PKR)',
         tierOrder: 4,
         minAmount: 250001,
+        maxAmount: 500000,
+        approverRole: RoleType.FINANCE,
+      },
+    }),
+    prisma.approvalTier.upsert({
+      where: { id: 'tier-5' },
+      update: {},
+      create: {
+        id: 'tier-5',
+        name: 'Executive (500,001+ PKR)',
+        tierOrder: 5,
+        minAmount: 500001,
         maxAmount: null,
-        approverRole: RoleType.ADMIN,
+        approverRole: RoleType.CEO,
       },
     }),
   ]);
@@ -736,8 +780,8 @@ async function main() {
   console.log('📋 Created:');
   console.log('   - 6 Departments');
   console.log('   - 15 Expense Categories');
-  console.log('   - 4 Users');
-  console.log('   - 4 Approval Tiers');
+  console.log('   - 6 Users');
+  console.log('   - 5 Approval Tiers');
   console.log('   - 3 Projects');
   console.log('   - 3 Cost Centers');
   console.log('   - 3 Sequence Counters');
@@ -747,10 +791,12 @@ async function main() {
   console.log('   - 4 Exchange Rates');
   console.log('');
   console.log('👤 Test Accounts:');
-  console.log('   Admin:    admin@tekcellent.com / Admin@123');
-  console.log('   Finance:  finance@tekcellent.com / Admin@123');
-  console.log('   Manager:  manager@tekcellent.com / Admin@123');
-  console.log('   Employee: employee@tekcellent.com / Employee@123');
+  console.log('   Admin:         admin@tekcellent.com / Admin@123');
+  console.log('   CEO:           ceo@tekcellent.com / Admin@123');
+  console.log('   Director:      director@tekcellent.com / Admin@123 (SUPER_APPROVER)');
+  console.log('   Finance:       finance@tekcellent.com / Admin@123');
+  console.log('   Manager:       manager@tekcellent.com / Admin@123 (APPROVER)');
+  console.log('   Employee:      employee@tekcellent.com / Employee@123');
   console.log('');
 }
 

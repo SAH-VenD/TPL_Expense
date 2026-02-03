@@ -4,15 +4,29 @@ import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import { logout, setUser } from '@/features/auth/store/authSlice';
 import { useLogoutMutation, useGetMeQuery } from '@/features/auth/services/auth.service';
 import { NotificationBell } from '@/components/notifications';
+import {
+  ALL_ROLES,
+  APPROVING_ROLES,
+  BUDGET_MANAGEMENT_ROLES,
+  REPORTING_ROLES,
+  ADMIN_NAV_ROLES,
+} from '@/constants/roles';
+import type { RoleType } from '@/features/auth/types/auth.types';
 import clsx from 'clsx';
 
-const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ['EMPLOYEE', 'APPROVER', 'FINANCE', 'ADMIN'] },
-  { name: 'Expenses', href: '/expenses', icon: CurrencyIcon, roles: ['EMPLOYEE', 'APPROVER', 'FINANCE', 'ADMIN'] },
-  { name: 'Approvals', href: '/approvals', icon: CheckIcon, roles: ['APPROVER', 'FINANCE', 'ADMIN'] },
-  { name: 'Vouchers', href: '/vouchers', icon: TicketIcon, roles: ['EMPLOYEE', 'APPROVER', 'FINANCE', 'ADMIN'] },
-  { name: 'Budgets', href: '/budgets', icon: BudgetIcon, roles: ['FINANCE', 'ADMIN'] },
-  { name: 'Reports', href: '/reports', icon: ChartIcon, roles: ['FINANCE', 'ADMIN'] },
+const navigation: Array<{
+  name: string;
+  href: string;
+  icon: React.FC;
+  roles: RoleType[];
+}> = [
+  { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ALL_ROLES },
+  { name: 'Expenses', href: '/expenses', icon: CurrencyIcon, roles: ALL_ROLES },
+  // ADMIN excluded from Approvals - separation of duties
+  { name: 'Approvals', href: '/approvals', icon: CheckIcon, roles: APPROVING_ROLES },
+  { name: 'Vouchers', href: '/vouchers', icon: TicketIcon, roles: ALL_ROLES },
+  { name: 'Budgets', href: '/budgets', icon: BudgetIcon, roles: BUDGET_MANAGEMENT_ROLES },
+  { name: 'Reports', href: '/reports', icon: ChartIcon, roles: REPORTING_ROLES },
 ];
 
 const adminNavigation = [
@@ -135,7 +149,7 @@ export function MainLayout() {
     (item) => user && item.roles.includes(user.role),
   );
 
-  const showAdminNav = user && ['ADMIN', 'FINANCE'].includes(user.role);
+  const showAdminNav = user && ADMIN_NAV_ROLES.includes(user.role);
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">

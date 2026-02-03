@@ -1,4 +1,4 @@
-export type RoleType = 'EMPLOYEE' | 'APPROVER' | 'FINANCE' | 'ADMIN';
+export type RoleType = 'EMPLOYEE' | 'APPROVER' | 'SUPER_APPROVER' | 'FINANCE' | 'CEO' | 'ADMIN';
 
 export interface User {
   id: string;

@@ -19,7 +19,9 @@ enum UserStatus {
 enum RoleType {
   EMPLOYEE
   APPROVER
+  SUPER_APPROVER
   FINANCE
+  CEO
   ADMIN
 }
 
@@ -560,6 +562,10 @@ model ApprovalHistory {
   wasEscalated   Boolean        @default(false)
   escalatedFromId String?
   delegatedFromId String?
+
+  // Emergency approval tracking
+  isEmergencyApproval  Boolean  @default(false)
+  emergencyReason      String?
 
   createdAt      DateTime       @default(now())
 

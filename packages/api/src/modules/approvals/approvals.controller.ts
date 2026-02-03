@@ -19,7 +19,7 @@ export class ApprovalsController {
   // ==================== PENDING & HISTORY ====================
 
   @Get('pending')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Get pending approvals for current user' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -32,14 +32,20 @@ export class ApprovalsController {
   }
 
   @Get('history')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Get approval history for current user' })
   getHistory(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getApprovalHistory(req.user);
   }
 
   @Get('expenses/:expenseId/history')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN, RoleType.EMPLOYEE)
+  @Roles(
+    RoleType.APPROVER,
+    RoleType.SUPER_APPROVER,
+    RoleType.FINANCE,
+    RoleType.CEO,
+    RoleType.EMPLOYEE,
+  )
   @ApiOperation({ summary: 'Get approval timeline for a specific expense' })
   getExpenseApprovalHistory(@Param('expenseId') expenseId: string) {
     return this.approvalsService.getExpenseApprovalHistory(expenseId);
@@ -48,28 +54,28 @@ export class ApprovalsController {
   // ==================== APPROVAL ACTIONS ====================
 
   @Post('approve')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Approve an expense' })
   approve(@Req() req: AuthenticatedRequest, @Body() approveDto: ApproveDto) {
     return this.approvalsService.approve(req.user, approveDto);
   }
 
   @Post('approve/bulk')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Bulk approve expenses' })
   bulkApprove(@Req() req: AuthenticatedRequest, @Body() bulkApproveDto: BulkApproveDto) {
     return this.approvalsService.bulkApprove(req.user, bulkApproveDto);
   }
 
   @Post('reject')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Reject an expense' })
   reject(@Req() req: AuthenticatedRequest, @Body() rejectDto: RejectDto) {
     return this.approvalsService.reject(req.user, rejectDto);
   }
 
   @Post('clarify')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Request clarification on an expense' })
   requestClarification(@Req() req: AuthenticatedRequest, @Body() clarifyDto: ClarifyDto) {
     return this.approvalsService.requestClarification(req.user, clarifyDto);
@@ -78,14 +84,14 @@ export class ApprovalsController {
   // ==================== DELEGATIONS ====================
 
   @Get('delegations')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Get active delegations for current user' })
   getDelegations(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getDelegations(req.user.id);
   }
 
   @Post('delegations')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Create an approval delegation' })
   createDelegation(
     @Req() req: AuthenticatedRequest,
@@ -95,7 +101,7 @@ export class ApprovalsController {
   }
 
   @Post('delegations/revoke')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Revoke an approval delegation' })
   revokeDelegation(
     @Req() req: AuthenticatedRequest,
@@ -107,7 +113,7 @@ export class ApprovalsController {
   // ==================== APPROVAL TIERS ====================
 
   @Get('tiers')
-  @Roles(RoleType.ADMIN, RoleType.FINANCE)
+  @Roles(RoleType.ADMIN, RoleType.FINANCE, RoleType.CEO)
   @ApiOperation({ summary: 'Get all approval tiers' })
   getApprovalTiers() {
     return this.approvalsService.getApprovalTiers();

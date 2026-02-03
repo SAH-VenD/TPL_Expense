@@ -17,6 +17,7 @@ import {
   ApprovalTier,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { EMERGENCY_APPROVAL_ROLES } from '../../common/constants/roles';
 
 @Injectable()
 export class ApprovalsService {
@@ -116,6 +117,8 @@ export class ApprovalsService {
         comment: h.comment,
         wasDelegated: !!h.delegatedFromId,
         wasEscalated: h.wasEscalated,
+        isEmergencyApproval: h.isEmergencyApproval,
+        emergencyReason: h.emergencyReason,
       })),
     };
   }
@@ -125,6 +128,59 @@ export class ApprovalsService {
   async approve(user: User, dto: ApproveDto) {
     const expense = await this.getExpenseWithValidation(dto.expenseId);
 
+    // Handle emergency approval flow
+    if (dto.isEmergencyApproval) {
+      // Validate user has emergency approval authority
+      if (!EMERGENCY_APPROVAL_ROLES.includes(user.role)) {
+        throw new ForbiddenException(
+          'Only CEO, SUPER_APPROVER, or FINANCE can perform emergency approvals',
+        );
+      }
+
+      // CEO doesn't need to provide reason (implicit authority), others do
+      if (user.role !== RoleType.CEO) {
+        if (!dto.emergencyReason || dto.emergencyReason.length < 20) {
+          throw new BadRequestException(
+            'Emergency approval requires detailed justification (minimum 20 characters)',
+          );
+        }
+      }
+
+      // Emergency approval bypasses tier requirements - approve immediately
+      await this.prisma.$transaction(async (tx) => {
+        // Record emergency approval
+        await tx.approvalHistory.create({
+          data: {
+            expenseId: dto.expenseId,
+            approverId: user.id,
+            action: ApprovalAction.APPROVED,
+            tierLevel: 0, // 0 indicates emergency bypass
+            comment: dto.comments,
+            isEmergencyApproval: true,
+            emergencyReason: dto.emergencyReason || 'CEO emergency approval',
+          },
+        });
+
+        // Mark expense as APPROVED
+        await tx.expense.update({
+          where: { id: dto.expenseId },
+          data: {
+            status: ExpenseStatus.APPROVED,
+          },
+        });
+      });
+
+      // Log emergency approval to audit log for compliance tracking
+      await this.logEmergencyApproval(user, dto.expenseId, dto.emergencyReason);
+
+      return {
+        message: 'Emergency approval granted',
+        isEmergencyApproval: true,
+        approvedBy: `${user.firstName} ${user.lastName} (${user.role})`,
+      };
+    }
+
+    // Standard approval flow
     // Determine current required tier
     const requiredTier = await this.getRequiredApprovalTier(expense);
 
@@ -152,6 +208,7 @@ export class ApprovalsService {
           tierLevel: requiredTier.tierOrder,
           comment: dto.comments,
           delegatedFromId,
+          isEmergencyApproval: false,
         },
       });
 
@@ -188,7 +245,12 @@ export class ApprovalsService {
 
     for (const expenseId of dto.expenseIds) {
       try {
-        await this.approve(user, { expenseId, comments: dto.comments });
+        await this.approve(user, {
+          expenseId,
+          comments: dto.comments,
+          isEmergencyApproval: dto.isEmergencyApproval,
+          emergencyReason: dto.emergencyReason,
+        });
         results.push({ expenseId, success: true });
       } catch (error) {
         results.push({ expenseId, success: false, error: (error as Error).message });
@@ -564,6 +626,25 @@ export class ApprovalsService {
       return { isAuthorized: false };
     }
 
+    // CEO can approve at any tier
+    if (user.role === RoleType.CEO) {
+      return { isAuthorized: true };
+    }
+
+    // SUPER_APPROVER can approve at any tier except CEO-only tiers
+    if (user.role === RoleType.SUPER_APPROVER && requiredTier.approverRole !== RoleType.CEO) {
+      return { isAuthorized: true };
+    }
+
+    // FINANCE can approve at FINANCE and lower tiers
+    if (
+      user.role === RoleType.FINANCE &&
+      (requiredTier.approverRole === RoleType.FINANCE ||
+        requiredTier.approverRole === RoleType.APPROVER)
+    ) {
+      return { isAuthorized: true };
+    }
+
     // Check if user's role matches the required tier
     if (user.role === requiredTier.approverRole) {
       return { isAuthorized: true };
@@ -624,5 +705,30 @@ export class ApprovalsService {
     }
 
     return expensesForUser;
+  }
+
+  /**
+   * Log emergency approval to audit log for compliance tracking.
+   * Emergency approvals bypass normal tier requirements and require additional audit trail.
+   */
+  private async logEmergencyApproval(
+    user: User,
+    expenseId: string,
+    emergencyReason: string | undefined,
+  ): Promise<void> {
+    await this.prisma.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'EMERGENCY_APPROVAL',
+        entityType: 'Expense',
+        entityId: expenseId,
+        newValue: {
+          approverRole: user.role,
+          approverName: `${user.firstName} ${user.lastName}`,
+          emergencyReason: emergencyReason || 'CEO emergency approval (no reason required)',
+          timestamp: new Date().toISOString(),
+        },
+      },
+    });
   }
 }

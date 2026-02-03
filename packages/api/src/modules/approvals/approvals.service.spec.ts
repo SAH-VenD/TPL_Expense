@@ -49,6 +49,9 @@ describe('ApprovalsService', () => {
       create: jest.fn(),
       update: jest.fn(),
     },
+    auditLog: {
+      create: jest.fn(),
+    },
     $transaction: jest.fn(),
   };
 
@@ -334,6 +337,129 @@ describe('ApprovalsService', () => {
       );
     });
 
+    describe('Emergency Approval Flow', () => {
+      const mockCEO: User = {
+        ...mockApprover,
+        id: 'ceo-id',
+        email: 'ceo@tekcellent.com',
+        role: RoleType.CEO,
+      };
+
+      const mockSuperApprover: User = {
+        ...mockApprover,
+        id: 'super-approver-id',
+        email: 'director@tekcellent.com',
+        role: RoleType.SUPER_APPROVER,
+      };
+
+      const mockFinanceUser: User = {
+        ...mockApprover,
+        id: 'finance-id',
+        email: 'finance@tekcellent.com',
+        role: RoleType.FINANCE,
+      };
+
+      const expenseWithHistory = {
+        ...mockExpense,
+        approvalHistory: [],
+        submitter: mockEmployee,
+      };
+
+      beforeEach(() => {
+        mockPrismaService.expense.findUnique.mockResolvedValue(expenseWithHistory);
+      });
+
+      it('should allow CEO to perform emergency approval without reason', async () => {
+        const result = await service.approve(mockCEO, {
+          expenseId: 'expense-id',
+          isEmergencyApproval: true,
+          // No emergencyReason provided - CEO doesn't need it
+        });
+
+        expect(result.message).toContain('Emergency approval granted');
+        expect(result.isEmergencyApproval).toBe(true);
+        expect(result.approvedBy).toContain('CEO');
+        expect(mockPrismaService.$transaction).toHaveBeenCalled();
+      });
+
+      it('should allow SUPER_APPROVER to perform emergency approval with reason', async () => {
+        const result = await service.approve(mockSuperApprover, {
+          expenseId: 'expense-id',
+          isEmergencyApproval: true,
+          emergencyReason: 'Urgent vendor payment deadline - needs immediate approval',
+        });
+
+        expect(result.message).toContain('Emergency approval granted');
+        expect(result.isEmergencyApproval).toBe(true);
+        expect(result.approvedBy).toContain('SUPER_APPROVER');
+      });
+
+      it('should reject SUPER_APPROVER emergency approval without reason', async () => {
+        await expect(
+          service.approve(mockSuperApprover, {
+            expenseId: 'expense-id',
+            isEmergencyApproval: true,
+            // No emergencyReason - required for non-CEO
+          }),
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it('should reject SUPER_APPROVER emergency approval with short reason', async () => {
+        await expect(
+          service.approve(mockSuperApprover, {
+            expenseId: 'expense-id',
+            isEmergencyApproval: true,
+            emergencyReason: 'Too short', // Less than 20 characters
+          }),
+        ).rejects.toThrow(BadRequestException);
+      });
+
+      it('should allow FINANCE to perform emergency approval with reason', async () => {
+        const result = await service.approve(mockFinanceUser, {
+          expenseId: 'expense-id',
+          isEmergencyApproval: true,
+          emergencyReason: 'Quarter-end closing deadline - requires immediate processing',
+        });
+
+        expect(result.message).toContain('Emergency approval granted');
+        expect(result.isEmergencyApproval).toBe(true);
+        expect(result.approvedBy).toContain('FINANCE');
+      });
+
+      it('should reject APPROVER from performing emergency approval', async () => {
+        await expect(
+          service.approve(mockApprover, {
+            expenseId: 'expense-id',
+            isEmergencyApproval: true,
+            emergencyReason: 'This should not work for regular approvers',
+          }),
+        ).rejects.toThrow(ForbiddenException);
+      });
+
+      it('should reject EMPLOYEE from performing emergency approval', async () => {
+        await expect(
+          service.approve(mockEmployee, {
+            expenseId: 'expense-id',
+            isEmergencyApproval: true,
+            emergencyReason: 'This should not work for employees',
+          }),
+        ).rejects.toThrow(ForbiddenException);
+      });
+
+      it('should record emergency approval in history with tier level 0', async () => {
+        await service.approve(mockCEO, {
+          expenseId: 'expense-id',
+          isEmergencyApproval: true,
+          comments: 'Urgent CEO approval',
+        });
+
+        // Verify the transaction was called with the right data
+        expect(mockPrismaService.$transaction).toHaveBeenCalled();
+        const transactionCallback = mockPrismaService.$transaction.mock.calls[0][0];
+        expect(typeof transactionCallback).toBe('function');
+      });
+    });
+
     it('should allow approval through delegation', async () => {
       const expenseWithHistory = {
         ...mockExpense,
@@ -390,6 +516,87 @@ describe('ApprovalsService', () => {
 
       expect(result.summary.total).toBe(2);
       expect(result.results).toHaveLength(2);
+    });
+
+    it('should allow bulk emergency approval by CEO', async () => {
+      const mockCEO: User = {
+        ...mockApprover,
+        id: 'ceo-id',
+        email: 'ceo@tekcellent.com',
+        role: RoleType.CEO,
+      };
+
+      const expenseWithHistory = {
+        ...mockExpense,
+        approvalHistory: [],
+        submitter: mockEmployee,
+      };
+
+      mockPrismaService.expense.findUnique.mockResolvedValue(expenseWithHistory);
+
+      const result = await service.bulkApprove(mockCEO, {
+        expenseIds: ['expense-1', 'expense-2'],
+        comments: 'Bulk emergency approval',
+        isEmergencyApproval: true,
+        // CEO doesn't need emergencyReason
+      });
+
+      expect(result.summary.total).toBe(2);
+      expect(result.summary.successful).toBe(2);
+    });
+
+    it('should allow bulk emergency approval by FINANCE with reason', async () => {
+      const mockFinance: User = {
+        ...mockApprover,
+        id: 'finance-id',
+        email: 'finance@tekcellent.com',
+        role: RoleType.FINANCE,
+      };
+
+      const expenseWithHistory = {
+        ...mockExpense,
+        approvalHistory: [],
+        submitter: mockEmployee,
+      };
+
+      mockPrismaService.expense.findUnique.mockResolvedValue(expenseWithHistory);
+
+      const result = await service.bulkApprove(mockFinance, {
+        expenseIds: ['expense-1', 'expense-2'],
+        comments: 'Year-end processing',
+        isEmergencyApproval: true,
+        emergencyReason: 'Year-end closing deadline - all pending expenses need immediate approval',
+      });
+
+      expect(result.summary.total).toBe(2);
+      expect(result.summary.successful).toBe(2);
+    });
+
+    it('should fail bulk emergency approval by FINANCE without reason', async () => {
+      const mockFinance: User = {
+        ...mockApprover,
+        id: 'finance-id',
+        email: 'finance@tekcellent.com',
+        role: RoleType.FINANCE,
+      };
+
+      const expenseWithHistory = {
+        ...mockExpense,
+        approvalHistory: [],
+        submitter: mockEmployee,
+      };
+
+      mockPrismaService.expense.findUnique.mockResolvedValue(expenseWithHistory);
+
+      const result = await service.bulkApprove(mockFinance, {
+        expenseIds: ['expense-1', 'expense-2'],
+        isEmergencyApproval: true,
+        // Missing emergencyReason - required for non-CEO
+      });
+
+      // All should fail because emergency reason is required for FINANCE
+      expect(result.summary.failed).toBe(2);
+      expect(result.summary.successful).toBe(0);
     });
 
     it('should handle partial failures in bulk approval', async () => {

@@ -48,7 +48,7 @@ export class BudgetsController {
   // ==================== CRUD OPERATIONS ====================
 
   @Post()
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Create a new budget' })
   @ApiResponse({ status: 201, description: 'Budget created successfully' })
   create(@Body() createBudgetDto: CreateBudgetDto, @CurrentUser() user: User) {
@@ -56,7 +56,7 @@ export class BudgetsController {
   }
 
   @Get()
-  @Roles(RoleType.FINANCE, RoleType.ADMIN, RoleType.APPROVER)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN, RoleType.APPROVER, RoleType.SUPER_APPROVER)
   @ApiOperation({ summary: 'Get all budgets' })
   @ApiQuery({ name: 'type', enum: BudgetType, required: false })
   @ApiQuery({
@@ -65,7 +65,12 @@ export class BudgetsController {
     required: false,
     description: 'Filter by active status',
   })
-  @ApiQuery({ name: 'page', type: Number, required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    required: false,
+    description: 'Page number (default: 1)',
+  })
   @ApiQuery({
     name: 'pageSize',
     type: Number,
@@ -88,7 +93,7 @@ export class BudgetsController {
   }
 
   @Get('summary')
-  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Get budget summary report with utilization metrics' })
   @ApiResponse({ status: 200, description: 'Budget summary', type: BudgetSummaryDto })
   getBudgetSummary(@Query() query: BudgetSummaryQueryDto): Promise<BudgetSummaryDto> {
@@ -96,7 +101,7 @@ export class BudgetsController {
   }
 
   @Get('period-dates')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Calculate period dates for a budget period type' })
   @ApiQuery({ name: 'periodType', enum: BudgetPeriod, required: true })
   @ApiQuery({ name: 'fiscalYear', type: Number, required: true })
@@ -118,7 +123,7 @@ export class BudgetsController {
   }
 
   @Get('current-period')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Get current period information for a period type' })
   @ApiQuery({ name: 'periodType', enum: BudgetPeriod, required: true })
   @ApiResponse({ status: 200, description: 'Current period info', type: CurrentPeriodDto })
@@ -127,7 +132,7 @@ export class BudgetsController {
   }
 
   @Get(':id')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN, RoleType.APPROVER)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN, RoleType.APPROVER, RoleType.SUPER_APPROVER)
   @ApiOperation({ summary: 'Get a budget by ID' })
   @ApiParam({ name: 'id', description: 'Budget ID' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
@@ -135,7 +140,7 @@ export class BudgetsController {
   }
 
   @Get(':id/utilization')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN, RoleType.APPROVER)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN, RoleType.APPROVER, RoleType.SUPER_APPROVER)
   @ApiOperation({
     summary: 'Get enhanced budget utilization with committed/spent/available breakdown',
   })
@@ -150,7 +155,7 @@ export class BudgetsController {
   }
 
   @Patch(':id')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Update a budget' })
   @ApiParam({ name: 'id', description: 'Budget ID' })
   update(@Param('id', ParseUUIDPipe) id: string, @Body() updateBudgetDto: UpdateBudgetDto) {
@@ -168,7 +173,7 @@ export class BudgetsController {
   // ==================== BUDGET STATUS MANAGEMENT ====================
 
   @Post(':id/activate')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Activate a draft/closed budget' })
   @ApiParam({ name: 'id', description: 'Budget ID' })
   @ApiResponse({ status: 200, description: 'Budget activated successfully' })
@@ -177,7 +182,7 @@ export class BudgetsController {
   }
 
   @Post(':id/close')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Close an active budget' })
   @ApiParam({ name: 'id', description: 'Budget ID' })
   @ApiResponse({ status: 200, description: 'Budget closed successfully' })
@@ -186,7 +191,7 @@ export class BudgetsController {
   }
 
   @Post(':id/archive')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Archive a closed budget' })
   @ApiParam({ name: 'id', description: 'Budget ID' })
   @ApiResponse({ status: 200, description: 'Budget archived successfully' })
@@ -197,7 +202,7 @@ export class BudgetsController {
   // ==================== BUDGET TRANSFERS ====================
 
   @Post('transfer')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Transfer amount between two budgets' })
   @ApiResponse({
     status: 200,
@@ -214,7 +219,14 @@ export class BudgetsController {
   // ==================== EXPENSE BUDGET CHECK ====================
 
   @Post('check-expense')
-  @Roles(RoleType.EMPLOYEE, RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(
+    RoleType.EMPLOYEE,
+    RoleType.APPROVER,
+    RoleType.SUPER_APPROVER,
+    RoleType.FINANCE,
+    RoleType.CEO,
+    RoleType.ADMIN,
+  )
   @ApiOperation({ summary: 'Check if an expense fits within applicable budgets' })
   @ApiResponse({ status: 200, description: 'Budget check result', type: ExpenseBudgetCheckDto })
   checkExpense(@Body() checkDto: CheckExpenseDto): Promise<ExpenseBudgetCheckDto> {

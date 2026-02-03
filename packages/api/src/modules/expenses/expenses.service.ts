@@ -132,11 +132,34 @@ export class ExpensesService {
     filters: ExpenseFiltersDto,
   ): Prisma.ExpenseWhereInput {
     const { status, dateFrom, dateTo, categoryId, amountMin, amountMax, search } = filters;
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
 
-    const where: Prisma.ExpenseWhereInput = {
-      ...(isAdmin ? {} : { submitterId: user.id }),
-    };
+    // Org-wide visibility roles (can see all expenses)
+    const isOrgWide =
+      user.role === RoleType.ADMIN ||
+      user.role === RoleType.FINANCE ||
+      user.role === RoleType.CEO ||
+      user.role === RoleType.SUPER_APPROVER;
+
+    // Department-scoped visibility (can see own + department expenses)
+    const isDepartmentScoped = user.role === RoleType.APPROVER;
+
+    let where: Prisma.ExpenseWhereInput = {};
+
+    if (isOrgWide) {
+      // Org-wide roles see all expenses
+      where = {};
+    } else if (isDepartmentScoped && user.departmentId) {
+      // APPROVER sees their own expenses + department expenses
+      where = {
+        OR: [
+          { submitterId: user.id }, // Own expenses
+          { submitter: { departmentId: user.departmentId } }, // Department expenses
+        ],
+      };
+    } else {
+      // EMPLOYEE and others see only their own expenses
+      where = { submitterId: user.id };
+    }
 
     // Status filter (single or comma-separated)
     if (status) {
@@ -199,7 +222,7 @@ export class ExpensesService {
         category: true,
         vendor: true,
         submitter: {
-          select: { id: true, firstName: true, lastName: true, email: true },
+          select: { id: true, firstName: true, lastName: true, email: true, departmentId: true },
         },
         receipts: true,
         splits: {
@@ -228,9 +251,24 @@ export class ExpensesService {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
 
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
+    // Org-wide visibility roles (can see all expenses)
+    const isOrgWide =
+      user.role === RoleType.ADMIN ||
+      user.role === RoleType.FINANCE ||
+      user.role === RoleType.CEO ||
+      user.role === RoleType.SUPER_APPROVER;
 
-    if (!isAdmin && expense.submitterId !== user.id) {
+    // Department-scoped visibility (can see own + department expenses)
+    const isDepartmentScoped = user.role === RoleType.APPROVER;
+
+    // Check access
+    const isOwnExpense = expense.submitterId === user.id;
+    const isSameDepartment =
+      isDepartmentScoped &&
+      user.departmentId &&
+      expense.submitter.departmentId === user.departmentId;
+
+    if (!isOrgWide && !isOwnExpense && !isSameDepartment) {
       throw new ForbiddenException('You do not have access to this expense');
     }
 
@@ -362,11 +400,12 @@ export class ExpensesService {
       throw new ForbiddenException('You can only withdraw your own expenses');
     }
 
-    const withdrawableStatuses: ExpenseStatus[] = [ExpenseStatus.SUBMITTED, ExpenseStatus.PENDING_APPROVAL];
+    const withdrawableStatuses: ExpenseStatus[] = [
+      ExpenseStatus.SUBMITTED,
+      ExpenseStatus.PENDING_APPROVAL,
+    ];
     if (!withdrawableStatuses.includes(expense.status)) {
-      throw new BadRequestException(
-        'Only submitted or pending approval expenses can be withdrawn',
-      );
+      throw new BadRequestException('Only submitted or pending approval expenses can be withdrawn');
     }
 
     return this.prisma.expense.update({
@@ -400,9 +439,7 @@ export class ExpensesService {
         throw new ForbiddenException('You can only submit your own expenses');
       }
       if (expense.status !== ExpenseStatus.DRAFT) {
-        throw new BadRequestException(
-          `Expense ${expense.expenseNumber} is not in draft status`,
-        );
+        throw new BadRequestException(`Expense ${expense.expenseNumber} is not in draft status`);
       }
       if (expense.receipts.length === 0) {
         throw new BadRequestException(
@@ -440,9 +477,7 @@ export class ExpensesService {
         throw new ForbiddenException('You can only delete your own expenses');
       }
       if (expense.status !== ExpenseStatus.DRAFT) {
-        throw new BadRequestException(
-          `Expense ${expense.expenseNumber} is not in draft status`,
-        );
+        throw new BadRequestException(`Expense ${expense.expenseNumber} is not in draft status`);
       }
     }
 
@@ -459,6 +494,9 @@ export class ExpensesService {
     const expense = await this.prisma.expense.findUnique({
       where: { id },
       include: {
+        submitter: {
+          select: { id: true, departmentId: true },
+        },
         approvalHistory: {
           include: {
             approver: {
@@ -474,8 +512,24 @@ export class ExpensesService {
       throw new NotFoundException(`Expense with ID ${id} not found`);
     }
 
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
-    if (!isAdmin && expense.submitterId !== user.id) {
+    // Org-wide visibility roles (can see all expenses)
+    const isOrgWide =
+      user.role === RoleType.ADMIN ||
+      user.role === RoleType.FINANCE ||
+      user.role === RoleType.CEO ||
+      user.role === RoleType.SUPER_APPROVER;
+
+    // Department-scoped visibility (can see own + department expenses)
+    const isDepartmentScoped = user.role === RoleType.APPROVER;
+
+    // Check access
+    const isOwnExpense = expense.submitterId === user.id;
+    const isSameDepartment =
+      isDepartmentScoped &&
+      user.departmentId &&
+      expense.submitter.departmentId === user.departmentId;
+
+    if (!isOrgWide && !isOwnExpense && !isSameDepartment) {
       throw new ForbiddenException('You do not have access to this expense');
     }
 
