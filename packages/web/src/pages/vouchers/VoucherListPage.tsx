@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   PlusIcon,
@@ -14,12 +14,39 @@ import { Badge } from '@/components/ui/Badge';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Alert } from '@/components/ui/Alert';
+import { ViewToggle, type ViewType } from '@/components/expenses/ViewToggle';
+import { VoucherTable } from '@/components/vouchers/VoucherTable';
 import { useAppSelector } from '@/store/hooks';
 import { useGetVouchersQuery } from '@/features/vouchers/services/vouchers.service';
 import { VoucherCard, VoucherCardSkeleton } from '@/features/vouchers/components/VoucherCard';
 import { VoucherFilters, type VoucherFilterOptions } from '@/features/vouchers/components/VoucherFilters';
 import type { VoucherStatus } from '@/features/vouchers/types/vouchers.types';
 import { VOUCHER_STATUS_CONFIG, VOUCHER_ROUTES } from '@/features/vouchers/types/vouchers.types';
+
+// Local storage key for voucher view preference
+const VOUCHERS_VIEW_KEY = 'vouchers_view';
+
+// Hook for voucher view preference with localStorage persistence
+const useVoucherViewPreference = (defaultView: ViewType = 'grid'): [ViewType, (view: ViewType) => void] => {
+  const [view, setView] = useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(VOUCHERS_VIEW_KEY);
+      if (stored === 'list' || stored === 'grid') {
+        return stored;
+      }
+    }
+    return defaultView;
+  });
+
+  const handleViewChange = useCallback((newView: ViewType) => {
+    setView(newView);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(VOUCHERS_VIEW_KEY, newView);
+    }
+  }, []);
+
+  return [view, handleViewChange];
+};
 
 interface TabConfig {
   id: VoucherStatus | 'ALL';
@@ -58,6 +85,7 @@ export function VoucherListPage() {
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [filters, setFilters] = useState<VoucherFilterOptions>({});
+  const [view, setView] = useVoucherViewPreference('grid');
 
   // Build query params
   const queryParams = useMemo(
@@ -83,6 +111,20 @@ export function VoucherListPage() {
   const pagination = vouchersResponse?.meta?.pagination;
   const totalPages = pagination?.totalPages || 1;
   const totalItems = pagination?.total || 0;
+  const statusCounts: Record<string, number> = vouchersResponse?.statusCounts || {};
+
+  // Calculate total count for "ALL" tab from all individual status counts
+  const totalStatusCount = useMemo(() => {
+    return Object.values(statusCounts).reduce((sum: number, count: number) => sum + (count || 0), 0);
+  }, [statusCounts]);
+
+  // Get count for a specific status tab
+  const getStatusCount = (tabId: VoucherStatus | 'ALL'): number => {
+    if (tabId === 'ALL') {
+      return totalStatusCount;
+    }
+    return statusCounts[tabId] || 0;
+  };
 
   // Update URL when state changes
   const updateUrlParams = (newParams: Record<string, string | undefined>) => {
@@ -172,13 +214,16 @@ export function VoucherListPage() {
           <Breadcrumb items={breadcrumbItems} className="mb-2" />
           <h1 className="text-2xl font-bold text-gray-900">Petty Cash Vouchers</h1>
         </div>
-        <button
-          onClick={handleRequestVoucher}
-          className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Request Voucher
-        </button>
+        <div className="flex items-center gap-3">
+          <ViewToggle value={view} onChange={setView} gridLabel="Cards" />
+          <button
+            onClick={handleRequestVoucher}
+            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Request Voucher
+          </button>
+        </div>
       </div>
 
       {/* Status Tabs */}
@@ -205,16 +250,13 @@ export function VoucherListPage() {
               >
                 <span className="mr-2">{tab.icon}</span>
                 {tab.label}
-                {statusConfig && (
-                  <Badge
-                    variant={isActive ? 'default' : statusConfig.variant}
-                    size="sm"
-                    className="ml-2"
-                  >
-                    {/* Count would come from API statusCounts */}
-                    {vouchers.filter((v) => v.status === tab.id).length}
-                  </Badge>
-                )}
+                <Badge
+                  variant={isActive ? 'default' : (statusConfig?.variant || 'default')}
+                  size="sm"
+                  className="ml-2"
+                >
+                  {getStatusCount(tab.id)}
+                </Badge>
               </button>
             );
           })}
@@ -261,13 +303,17 @@ export function VoucherListPage() {
         </div>
       </div>
 
-      {/* Voucher Cards Grid */}
+      {/* Voucher List/Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <VoucherCardSkeleton key={i} />
-          ))}
-        </div>
+        view === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <VoucherCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : (
+          <VoucherTable vouchers={[]} isLoading={true} onRowClick={() => {}} />
+        )
       ) : vouchers.length === 0 ? (
         <EmptyState
           title="No vouchers found"
@@ -288,15 +334,23 @@ export function VoucherListPage() {
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {vouchers.map((voucher) => (
-              <VoucherCard
-                key={voucher.id}
-                voucher={voucher}
-                onClick={handleVoucherClick}
-              />
-            ))}
-          </div>
+          {view === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {vouchers.map((voucher) => (
+                <VoucherCard
+                  key={voucher.id}
+                  voucher={voucher}
+                  onClick={handleVoucherClick}
+                />
+              ))}
+            </div>
+          ) : (
+            <VoucherTable
+              vouchers={vouchers}
+              isLoading={false}
+              onRowClick={(voucher) => handleVoucherClick(voucher.id)}
+            />
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (

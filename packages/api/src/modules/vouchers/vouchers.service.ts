@@ -72,20 +72,19 @@ export class VouchersService {
 
   // ==================== QUERY VOUCHERS ====================
 
-  async findAll(
-    user: User,
-    status?: VoucherStatus,
-    page: number = 1,
-    pageSize: number = 10,
-  ) {
+  async findAll(user: User, status?: VoucherStatus, page: number = 1, pageSize: number = 10) {
     const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
 
+    // Base where clause for user access (without status filter)
+    const baseWhere = isAdmin ? {} : { requesterId: user.id };
+
+    // Where clause with status filter for paginated results
     const where = {
-      ...(isAdmin ? {} : { requesterId: user.id }),
+      ...baseWhere,
       ...(status && { status }),
     };
 
-    const [data, total] = await Promise.all([
+    const [data, total, statusCountsRaw] = await Promise.all([
       this.prisma.voucher.findMany({
         where,
         include: {
@@ -107,7 +106,19 @@ export class VouchersService {
         take: pageSize,
       }),
       this.prisma.voucher.count({ where }),
+      // Get status counts for ALL vouchers (without status filter)
+      this.prisma.voucher.groupBy({
+        by: ['status'],
+        _count: { status: true },
+        where: baseWhere,
+      }),
     ]);
+
+    // Convert status counts to a simple object
+    const statusCounts: Record<string, number> = {};
+    for (const item of statusCountsRaw) {
+      statusCounts[item.status] = item._count.status;
+    }
 
     return {
       data,
@@ -119,6 +130,7 @@ export class VouchersService {
           totalPages: Math.ceil(total / pageSize),
         },
       },
+      statusCounts,
     };
   }
 
