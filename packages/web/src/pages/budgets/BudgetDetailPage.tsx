@@ -76,7 +76,10 @@ export const BudgetDetailPage: React.FC = () => {
 
   const handleUpdate = async (data: CreateBudgetDto) => {
     try {
-      await updateBudget({ id: id!, data }).unwrap();
+      // Remove fields that the backend UpdateBudgetDto doesn't accept
+      // type is explicitly omitted, currency is not in the DTO
+      const { type: _type, currency: _currency, ...updateData } = data;
+      await updateBudget({ id: id!, data: updateData }).unwrap();
       toast.success('Budget updated successfully');
       setIsEditModalOpen(false);
     } catch (error) {

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
@@ -8,9 +9,11 @@ import {
   useResubmitExpenseMutation,
   useGetExpenseApprovalsQuery,
 } from '@/features/expenses/services/expenses.service';
+import type { Receipt } from '@/features/expenses/services/expenses.service';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { Alert } from '@/components/ui/Alert';
 import { showToast } from '@/components/ui';
+import { ReceiptViewerModal } from '@/components/expenses/ReceiptViewerModal';
 
 export function ExpenseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -37,6 +40,20 @@ export function ExpenseDetailPage() {
   const [resubmitExpense, { isLoading: isResubmitting }] = useResubmitExpenseMutation();
 
   const isActionLoading = isSubmitting || isWithdrawing || isDeleting || isResubmitting;
+
+  // Receipt viewer modal state
+  const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+
+  const handleViewReceipt = (receipt: Receipt) => {
+    setSelectedReceipt(receipt);
+    setIsReceiptModalOpen(true);
+  };
+
+  const handleCloseReceiptModal = () => {
+    setIsReceiptModalOpen(false);
+    setSelectedReceipt(null);
+  };
 
   const handleSubmit = async () => {
     if (!id) return;
@@ -214,6 +231,12 @@ export function ExpenseDetailPage() {
                 </dd>
               </div>
               <div>
+                <dt className="text-sm text-gray-500">Invoice Number</dt>
+                <dd className="text-sm font-medium text-gray-900">
+                  {expense.invoiceNumber || '-'}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-sm text-gray-500">Submitted By</dt>
                 <dd className="text-sm font-medium text-gray-900">
                   {expense.submitter?.firstName} {expense.submitter?.lastName}
@@ -272,7 +295,12 @@ export function ExpenseDetailPage() {
                         </p>
                       </div>
                     </div>
-                    <button className="text-blue-600 hover:text-blue-800">View</button>
+                    <button
+                      onClick={() => handleViewReceipt(receipt)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      View
+                    </button>
                   </div>
                 ))}
               </div>
@@ -397,6 +425,13 @@ export function ExpenseDetailPage() {
 
         </div>
       </div>
+
+      {/* Receipt Viewer Modal */}
+      <ReceiptViewerModal
+        isOpen={isReceiptModalOpen}
+        onClose={handleCloseReceiptModal}
+        receipt={selectedReceipt}
+      />
     </div>
   );
 }

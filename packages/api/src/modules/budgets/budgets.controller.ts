@@ -88,7 +88,7 @@ export class BudgetsController {
   }
 
   @Get('summary')
-  @Roles(RoleType.FINANCE, RoleType.ADMIN)
+  @Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
   @ApiOperation({ summary: 'Get budget summary report with utilization metrics' })
   @ApiResponse({ status: 200, description: 'Budget summary', type: BudgetSummaryDto })
   getBudgetSummary(@Query() query: BudgetSummaryQueryDto): Promise<BudgetSummaryDto> {

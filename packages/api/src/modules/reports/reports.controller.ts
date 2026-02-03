@@ -34,7 +34,7 @@ import { RoleType } from '@prisma/client';
 @ApiTags('Reports')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(RoleType.FINANCE, RoleType.ADMIN)
+@Roles(RoleType.APPROVER, RoleType.FINANCE, RoleType.ADMIN)
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}

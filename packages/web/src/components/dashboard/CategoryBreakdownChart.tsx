@@ -17,6 +17,7 @@ export interface CategoryBreakdownChartProps {
   height?: number;
   onCategoryClick?: (categoryId: string) => void;
   className?: string;
+  departmentId?: string;
 }
 
 const CATEGORY_COLORS = [
@@ -82,15 +83,19 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
   height = 300,
   onCategoryClick,
   className,
+  departmentId,
 }) => {
   const filters = React.useMemo(() => {
-    const result: { dateFrom?: string; dateTo?: string } = {};
+    const result: { dateFrom?: string; dateTo?: string; departmentId?: string } = {};
     if (dateRange) {
       result.dateFrom = dateRange.start.toISOString().split('T')[0];
       result.dateTo = dateRange.end.toISOString().split('T')[0];
     }
+    if (departmentId) {
+      result.departmentId = departmentId;
+    }
     return result;
-  }, [dateRange]);
+  }, [dateRange, departmentId]);
 
   const { data, isLoading, isError, refetch } = useGetSpendByCategoryQuery(filters);
 

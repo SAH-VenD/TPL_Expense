@@ -127,17 +127,23 @@ export const reportsApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['DashboardSummary', 'MonthlyTrend', 'SpendByCategory'],
   endpoints: (builder) => ({
-    getDashboardSummary: builder.query<DashboardSummaryResponse, { days?: number }>({
-      query: ({ days = 30 } = {}) => ({
+    getDashboardSummary: builder.query<DashboardSummaryResponse, { days?: number; departmentId?: string }>({
+      query: ({ days = 30, departmentId } = {}) => ({
         url: '/reports/dashboard-summary',
-        params: { periodDays: days },
+        params: {
+          periodDays: days,
+          ...(departmentId && { departmentId }),
+        },
       }),
       providesTags: ['DashboardSummary'],
     }),
-    getMonthlyTrend: builder.query<MonthlyTrendResponse, { year?: number }>({
-      query: ({ year } = {}) => ({
+    getMonthlyTrend: builder.query<MonthlyTrendResponse, { year?: number; departmentId?: string }>({
+      query: ({ year, departmentId } = {}) => ({
         url: '/reports/monthly-trend',
-        params: year ? { year } : undefined,
+        params: {
+          ...(year && { year }),
+          ...(departmentId && { departmentId }),
+        },
       }),
       providesTags: ['MonthlyTrend'],
     }),

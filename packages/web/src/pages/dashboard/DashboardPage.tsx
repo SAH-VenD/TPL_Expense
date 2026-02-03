@@ -12,11 +12,27 @@ import { BudgetOverview } from '@/components/dashboard/BudgetOverview';
 import { SpendTrendChart } from '@/components/dashboard/SpendTrendChart';
 import { CategoryBreakdownChart } from '@/components/dashboard/CategoryBreakdownChart';
 import { useGetDashboardSummaryQuery } from '@/features/reports/services/reports.service';
+import { useGetPendingApprovalsQuery } from '@/features/approvals/services/approvals.service';
+import { useDashboardContext } from '@/hooks/useDashboardContext';
 import { Alert } from '@/components/ui/Alert';
 
 export function DashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
-  const { data: summary, isLoading, isError, refetch } = useGetDashboardSummaryQuery({ days: 30 });
+  const { departmentId, scopeLabel, isDepartmentScoped, canViewOrgWide } = useDashboardContext();
+
+  // Pass departmentId for role-based filtering
+  const { data: summary, isLoading, isError, refetch } = useGetDashboardSummaryQuery({
+    days: 30,
+    departmentId,
+  });
+
+  // Get actual pending count from user's approval queue (for APPROVER role)
+  const { data: pendingApprovalsData } = useGetPendingApprovalsQuery(
+    { page: 1, pageSize: 1 },
+    { skip: canViewOrgWide }
+  );
+
+  const myPendingCount = pendingApprovalsData?.meta?.pagination?.total ?? 0;
 
   const isApprover = user?.role === 'APPROVER' || user?.role === 'ADMIN';
   const isFinance = user?.role === 'FINANCE' || user?.role === 'ADMIN';
@@ -29,7 +45,11 @@ export function DashboardPage() {
           Welcome back, {user?.firstName}!
         </h1>
         <p className="text-gray-600">
-          Here's what's happening with your expenses today.
+          {isDepartmentScoped ? (
+            <>Showing metrics for <span className="font-medium">{scopeLabel}</span></>
+          ) : (
+            "Here's what's happening across the organization."
+          )}
         </p>
       </div>
 
@@ -70,12 +90,14 @@ export function DashboardPage() {
           variant="expanded"
         />
         <StatCard
-          label="Pending Approval"
-          value={summary?.expenses.pending.value ?? 0}
+          label={isDepartmentScoped ? "My Pending Approvals" : "Pending Approval"}
+          value={isDepartmentScoped ? myPendingCount : (summary?.expenses.pending.value ?? 0)}
           format="number"
-          subtitle={summary?.approvals.pendingCount
-            ? `${summary.approvals.pendingCount} awaiting review`
-            : undefined
+          subtitle={isDepartmentScoped
+            ? (myPendingCount > 0 ? `${myPendingCount} awaiting your review` : undefined)
+            : (summary?.approvals.pendingCount
+              ? `${summary.approvals.pendingCount} awaiting review`
+              : undefined)
           }
           icon={<ClockIcon className="h-6 w-6" />}
           loading={isLoading}
@@ -99,8 +121,8 @@ export function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SpendTrendChart showComparison={false} />
-        <CategoryBreakdownChart variant="donut" />
+        <SpendTrendChart showComparison={false} departmentId={departmentId} />
+        <CategoryBreakdownChart variant="donut" departmentId={departmentId} />
       </div>
 
       {/* Activity Row */}
@@ -110,7 +132,7 @@ export function DashboardPage() {
       </div>
 
       {/* Budget Overview - Full Width */}
-      <BudgetOverview limit={5} />
+      <BudgetOverview limit={5} departmentId={departmentId} />
 
       {/* Quick Stats for Finance Users */}
       {isFinance && summary && (
