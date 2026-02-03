@@ -19,6 +19,7 @@ export interface SpendTrendChartProps {
   showComparison?: boolean;
   height?: number;
   className?: string;
+  departmentId?: string;
 }
 
 interface ChartDataPoint {
@@ -91,15 +92,17 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
   showComparison = false,
   height = 300,
   className,
+  departmentId,
 }) => {
   const currentYear = year || new Date().getFullYear();
 
   const { data, isLoading, isError, refetch } = useGetMonthlyTrendQuery({
     year: currentYear,
+    departmentId,
   });
 
   const { data: previousYearData } = useGetMonthlyTrendQuery(
-    { year: currentYear - 1 },
+    { year: currentYear - 1, departmentId },
     { skip: !showComparison }
   );
 

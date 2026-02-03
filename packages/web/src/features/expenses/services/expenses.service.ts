@@ -62,6 +62,7 @@ export interface Expense {
   description?: string;
   notes?: string;
   referenceNumber?: string;
+  invoiceNumber?: string;
   receipts?: Receipt[];
   splits?: ExpenseSplit[];
   approvalTier?: number;
@@ -74,7 +75,8 @@ export interface Expense {
 export interface Receipt {
   id: string;
   fileName: string;
-  fileType: string;
+  originalName?: string;
+  mimeType: string;
   fileSize: number;
   s3Key: string;
   url?: string;
@@ -149,6 +151,7 @@ export interface CreateExpenseDto {
   description?: string;
   notes?: string;
   referenceNumber?: string;
+  invoiceNumber?: string;
   projectId?: string;
   costCenterId?: string;
   status?: 'DRAFT' | 'SUBMITTED';
@@ -168,6 +171,7 @@ export interface UpdateExpenseDto {
   description?: string;
   notes?: string;
   referenceNumber?: string;
+  invoiceNumber?: string;
   projectId?: string;
   costCenterId?: string;
   status?: 'DRAFT' | 'SUBMITTED';
@@ -190,6 +194,13 @@ export interface UploadReceiptResponse {
   fileSize: number;
   s3Key: string;
   url?: string;
+}
+
+export interface ReceiptDownloadUrlResponse {
+  url: string;
+  expiresIn: number;
+  filename: string;
+  mimeType: string;
 }
 
 export const expensesApi = createApi({
@@ -322,6 +333,11 @@ export const expensesApi = createApi({
       invalidatesTags: ['Receipt', 'Expense'],
     }),
 
+    // Get receipt download URL (signed S3 URL)
+    getReceiptDownloadUrl: builder.query<ReceiptDownloadUrlResponse, string>({
+      query: (receiptId) => `/receipts/${receiptId}/download`,
+    }),
+
     // Bulk submit expenses
     bulkSubmitExpenses: builder.mutation<{ submitted: number }, string[]>({
       query: (expenseIds) => ({
@@ -361,6 +377,7 @@ export const {
   useResubmitExpenseMutation,
   useUploadReceiptMutation,
   useDeleteReceiptMutation,
+  useLazyGetReceiptDownloadUrlQuery,
   useBulkSubmitExpensesMutation,
   useBulkDeleteExpensesMutation,
   useGetExpenseApprovalsQuery,

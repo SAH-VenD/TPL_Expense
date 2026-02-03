@@ -16,6 +16,30 @@ export class ExpensesService {
 
   async create(userId: string, createExpenseDto: CreateExpenseDto) {
     const expenseNumber = await this.generateExpenseNumber();
+    const totalAmount = createExpenseDto.amount + (createExpenseDto.taxAmount || 0);
+
+    // Calculate amountInPKR for approval tier matching
+    let amountInPKR: number | undefined;
+    let exchangeRate = createExpenseDto.exchangeRate;
+    let exchangeRateDate: Date | undefined;
+
+    if (createExpenseDto.currency === 'PKR') {
+      amountInPKR = totalAmount;
+    } else {
+      // Get exchange rate if not provided
+      if (!exchangeRate) {
+        const rate = await this.getExchangeRate(createExpenseDto.currency, 'PKR');
+        if (rate) {
+          exchangeRate = rate;
+          exchangeRateDate = new Date();
+        }
+      }
+
+      if (exchangeRate) {
+        amountInPKR = totalAmount * exchangeRate;
+        exchangeRateDate = exchangeRateDate || new Date();
+      }
+    }
 
     return this.prisma.expense.create({
       data: {
@@ -28,9 +52,11 @@ export class ExpensesService {
         costCenterId: createExpenseDto.costCenterId,
         description: createExpenseDto.description,
         amount: createExpenseDto.amount,
-        totalAmount: createExpenseDto.amount + (createExpenseDto.taxAmount || 0),
+        totalAmount,
         currency: createExpenseDto.currency,
-        exchangeRate: createExpenseDto.exchangeRate,
+        exchangeRate,
+        exchangeRateDate,
+        amountInPKR,
         taxAmount: createExpenseDto.taxAmount || 0,
         expenseDate: new Date(createExpenseDto.expenseDate),
         invoiceNumber: createExpenseDto.invoiceNumber,
@@ -43,6 +69,27 @@ export class ExpensesService {
         receipts: true,
       },
     });
+  }
+
+  /**
+   * Get the latest exchange rate for currency conversion
+   */
+  private async getExchangeRate(fromCurrency: string, toCurrency: string): Promise<number | null> {
+    if (fromCurrency === toCurrency) return 1;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const rate = await this.prisma.exchangeRate.findFirst({
+      where: {
+        fromCurrency: fromCurrency as any,
+        toCurrency: toCurrency as any,
+        effectiveDate: { lte: today },
+      },
+      orderBy: { effectiveDate: 'desc' },
+    });
+
+    return rate ? rate.rate.toNumber() : null;
   }
 
   async findAll(user: User, filters: ExpenseFiltersDto) {

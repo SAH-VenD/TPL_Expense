@@ -16,6 +16,7 @@ import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { ExpenseListPage } from './pages/expenses/ExpenseListPage';
 import { ExpenseCreatePage } from './pages/expenses/ExpenseCreatePage';
 import { ExpenseDetailPage } from './pages/expenses/ExpenseDetailPage';
+import { ExpenseEditPage } from './pages/expenses/ExpenseEditPage';
 import { ApprovalQueuePage } from './pages/approvals/ApprovalQueuePage';
 import { VoucherListPage } from './pages/vouchers/VoucherListPage';
 import { VoucherRequestPage } from './pages/vouchers/VoucherRequestPage';
@@ -66,6 +67,7 @@ function App() {
         <Route path="/expenses" element={<ExpenseListPage />} />
         <Route path="/expenses/new" element={<ExpenseCreatePage />} />
         <Route path="/expenses/:id" element={<ExpenseDetailPage />} />
+        <Route path="/expenses/:id/edit" element={<ExpenseEditPage />} />
         <Route path="/approvals" element={<ApprovalQueuePage />} />
         <Route path="/vouchers" element={<VoucherListPage />} />
         <Route path="/vouchers/request" element={<VoucherRequestPage />} />

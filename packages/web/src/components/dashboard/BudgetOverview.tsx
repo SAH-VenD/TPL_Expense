@@ -12,6 +12,7 @@ import { useGetBudgetSummaryQuery, type BudgetUtilization } from '@/features/bud
 export interface BudgetOverviewProps {
   limit?: number;
   className?: string;
+  departmentId?: string;
 }
 
 interface BudgetDisplayItem {
@@ -142,10 +143,12 @@ const BudgetRowSkeleton: React.FC = () => (
 export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
   limit = 3,
   className,
+  departmentId,
 }) => {
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useGetBudgetSummaryQuery({
     activeOnly: true,
+    departmentId,
   });
 
   // Transform and sort budgets by utilization (highest first)

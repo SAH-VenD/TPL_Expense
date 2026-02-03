@@ -62,6 +62,7 @@ export function ExpenseCreatePage() {
         currency: formData.currency,
         expenseDate: formData.expenseDate,
         vendorId: formData.vendorId || undefined,
+        invoiceNumber: formData.invoiceNumber || undefined,
       }).unwrap();
 
       // Step 2: Upload receipts
