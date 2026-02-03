@@ -529,6 +529,210 @@ git commit -m "feat(budgets): add Budgets menu item to sidebar navigation
 
 ---
 
+## Story 6B.6: Budget List View Toggle and Filters Integration
+
+**Status:** 🔄 IN PROGRESS
+**Priority:** P1 (User requested)
+**Agent:** frontend-engineer
+
+### User Request
+User wants to see budgets in list view (table) as well as the existing card/grid view, with filters similar to the expenses page.
+
+### Current State Analysis
+**EXISTING COMPONENTS (not yet integrated):**
+- `BudgetFilters.tsx` - Full filter component with search, type, period, status filters
+- `BudgetListView.tsx` - Table view using DataTable (expects `Budget[]` type)
+- `ViewToggle.tsx` - Reusable toggle component from expenses
+
+**CURRENT BudgetListPage.tsx:**
+- Only shows grid view (3-column cards using BudgetCard)
+- NO filters
+- Client-side pagination of summary results
+- Uses `BudgetUtilization[]` type from summary endpoint
+
+### Context to Load
+```
+packages/web/src/pages/budgets/BudgetListPage.tsx
+packages/web/src/components/budgets/BudgetFilters.tsx
+packages/web/src/components/budgets/BudgetListView.tsx
+packages/web/src/components/expenses/ViewToggle.tsx
+```
+
+### Tasks
+
+#### Task 6B.6.1: Add View Toggle Hook to BudgetListPage
+**File:** `packages/web/src/pages/budgets/BudgetListPage.tsx`
+
+**Acceptance Criteria:**
+- [ ] Add budget-specific view preference hook (localStorage key: `budgets_view`)
+- [ ] Import ViewToggle component from `@/components/expenses/ViewToggle`
+- [ ] Default view should be `grid` to match current behavior
+- [ ] View toggle positioned next to "Create Budget" button
+- [ ] View preference persists across page refreshes
+
+**Code Pattern:**
+```typescript
+import { ViewToggle, type ViewType } from '@/components/expenses/ViewToggle';
+
+const BUDGETS_VIEW_KEY = 'budgets_view';
+
+const useBudgetViewPreference = (defaultView: ViewType = 'grid'): [ViewType, (view: ViewType) => void] => {
+  const [view, setView] = React.useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(BUDGETS_VIEW_KEY);
+      if (stored === 'list' || stored === 'grid') return stored;
+    }
+    return defaultView;
+  });
+
+  const handleViewChange = React.useCallback((newView: ViewType) => {
+    setView(newView);
+    localStorage.setItem(BUDGETS_VIEW_KEY, newView);
+  }, []);
+
+  return [view, handleViewChange];
+};
+```
+
+#### Task 6B.6.2: Integrate BudgetFilters Component
+**File:** `packages/web/src/pages/budgets/BudgetListPage.tsx`
+
+**Acceptance Criteria:**
+- [ ] Import existing `BudgetFilters` component from `@/components/budgets/BudgetFilters`
+- [ ] Add filter state management (type, period, status, searchQuery)
+- [ ] Position filters below header, above content
+- [ ] Client-side filtering of `data.budgets` based on filter values
+- [ ] Reset to page 1 when filters change
+- [ ] Show active filter count
+
+**Filter Logic:**
+```typescript
+// Filter state
+const [filterType, setFilterType] = useState<BudgetType | undefined>();
+const [filterPeriod, setFilterPeriod] = useState<BudgetPeriod | undefined>();
+const [filterStatus, setFilterStatus] = useState<'active' | 'exhausted' | undefined>();
+const [searchQuery, setSearchQuery] = useState<string | undefined>();
+
+// Client-side filtering
+const filteredBudgets = React.useMemo(() => {
+  if (!data?.budgets) return [];
+  return data.budgets.filter((budget) => {
+    if (filterType && budget.type !== filterType) return false;
+    if (filterPeriod && budget.period !== filterPeriod) return false;
+    if (filterStatus === 'active' && budget.isOverBudget) return false;
+    if (filterStatus === 'exhausted' && !budget.isOverBudget) return false;
+    if (searchQuery) {
+      return budget.budgetName.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    return true;
+  });
+}, [data?.budgets, filterType, filterPeriod, filterStatus, searchQuery]);
+```
+
+#### Task 6B.6.3: Create BudgetUtilizationTable Component
+**File:** `packages/web/src/components/budgets/BudgetUtilizationTable.tsx` (NEW)
+
+**Acceptance Criteria:**
+- [ ] Table component that accepts `BudgetUtilization[]` directly
+- [ ] Columns: Name, Type, Period, Allocated, Used, Remaining, Progress, Expenses
+- [ ] Progress bar with color coding (green < 70%, yellow 70-90%, red > 90%)
+- [ ] Row click handler for navigation
+- [ ] Loading state support
+- [ ] Empty state message
+
+**Component Interface:**
+```typescript
+interface BudgetUtilizationTableProps {
+  budgets: BudgetUtilization[];
+  isLoading: boolean;
+  onRowClick: (budget: BudgetUtilization) => void;
+}
+```
+
+#### Task 6B.6.4: Add Conditional Rendering
+**File:** `packages/web/src/pages/budgets/BudgetListPage.tsx`
+
+**Acceptance Criteria:**
+- [ ] Render grid view when `view === 'grid'`
+- [ ] Render table view when `view === 'list'`
+- [ ] Pagination works in both views
+- [ ] Selection state preserved when switching views
+
+### Visual Layout
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Budgets                                    [List│Cards] [+] │
+│  Manage and track your budgets                                │
+├──────────────────────────────────────────────────────────────┤
+│  [Total: 9] [Allocated: Rs 2.5M] [Util: 45%] [Over: 2]       │
+├──────────────────────────────────────────────────────────────┤
+│  🔍 Search...  [Type ▼] [Period ▼] [Status ▼] [Clear all]    │
+├──────────────────────────────────────────────────────────────┤
+│  LIST VIEW:                                                   │
+│  ┌─────────┬──────┬────────┬─────────┬──────┬────────────┐   │
+│  │ Name    │ Type │ Period │ Allocat │ Used │ Progress   │   │
+│  │ IT Dept │ Dept │ Annual │ Rs 500K │ 250K │ ████ 50%   │   │
+│  │ Travel  │ Cat  │ Monthly│ Rs 100K │ 80K  │ ██████ 80% │   │
+│  └─────────┴──────┴────────┴─────────┴──────┴────────────┘   │
+│                                                               │
+│  GRID VIEW:                                                   │
+│  ┌────────┐ ┌────────┐ ┌────────┐                            │
+│  │ Card 1 │ │ Card 2 │ │ Card 3 │                            │
+│  └────────┘ └────────┘ └────────┘                            │
+├──────────────────────────────────────────────────────────────┤
+│  [Previous] Page 1 of 1 [Next]                               │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Files to Modify/Create
+
+| File | Change |
+|------|--------|
+| `packages/web/src/pages/budgets/BudgetListPage.tsx` | Add ViewToggle, filters, conditional rendering |
+| `packages/web/src/components/budgets/BudgetUtilizationTable.tsx` | **NEW** - Table for BudgetUtilization data |
+
+### Definition of Done
+- [ ] View toggle shows List/Cards options
+- [ ] View preference persists in localStorage
+- [ ] Filters component renders below summary stats
+- [ ] Search filters budgets by name
+- [ ] Type dropdown filters by budget type
+- [ ] Period dropdown filters by budget period
+- [ ] Status dropdown filters by over/under budget
+- [ ] Clear all filters button works
+- [ ] List view shows table with all columns
+- [ ] Grid view shows cards (existing behavior)
+- [ ] Pagination works in both views
+- [ ] Row click navigates to budget detail
+- [ ] No TypeScript errors
+- [ ] Responsive on mobile/tablet/desktop
+
+### Verification Steps
+1. Navigate to Budgets page
+2. Verify toggle shows (List / Cards) next to Create Budget button
+3. Click "List" → table view with all budget columns
+4. Click "Cards" → original grid view
+5. Refresh page → preference persisted in localStorage
+6. Use search filter → budgets filter by name
+7. Use type dropdown → budgets filter by type
+8. Use period dropdown → budgets filter by period
+9. Use status dropdown → filter active/exhausted
+10. Click "Clear all filters" → resets all filters
+11. Click row in list view → navigates to budget detail
+
+### Commits
+```bash
+git commit -m "feat(budgets): add view toggle and filters to BudgetListPage
+
+- Add list/grid view toggle with localStorage persistence
+- Integrate existing BudgetFilters component
+- Create BudgetUtilizationTable component for table view
+- Add client-side filtering by type, period, status, search
+- Story 6B.6"
+```
+
+---
+
 ## Related Documentation
 
 - [Epic 6: Budget Management](./epic-06-budgets.md) - Full budget epic

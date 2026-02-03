@@ -9,12 +9,59 @@ This task file tracks the implementation of fixes for the Approvals feature base
 
 | Issue | Severity | Component | Status |
 |-------|----------|-----------|--------|
+| **Test tier data pollution** | **Critical** | **Database** | [ ] Not Started |
 | ApprovalQueuePage uses mock data | Critical | Frontend | [x] Completed |
 | Bulk approve endpoint mismatch | Critical | Frontend Service | [x] Completed |
 | Revoke delegation endpoint mismatch | Critical | Frontend Service | [x] Completed |
 | Clarification DTO field mismatch | High | Frontend Service | [x] Completed |
 | ApprovalTimeline type mismatch | Medium | Component | [x] Completed |
 | E2E tests only check routing | High | Tests | [x] Completed (5 → 24 tests)
+
+---
+
+## Phase 0: Database Data Cleanup (Critical)
+
+### 0.1 Deactivate Test Approval Tiers
+**Status:** [ ] Not Started
+
+**Issue Discovered (2026-02-03):** The database contains **14 active approval tiers** instead of the expected 4 production tiers. Test tiers with `[TEST]` prefix are polluting the tier matching logic.
+
+**Root Cause Analysis:**
+- `[TEST] Self Approval` tier (Tier 0, 0-5000 PKR) requires **EMPLOYEE** role
+- Small expenses (< 5000 PKR) match this tier first due to `tierOrder: 0`
+- Managers with **APPROVER** role cannot approve these expenses
+- Result: Pending approvals page shows empty for managers
+
+**Affected Expenses:**
+| Expense | Amount | Matched Tier | Required Role | Expected Tier |
+|---------|--------|--------------|---------------|---------------|
+| TEST-EXP-2026-007 | 3,500 PKR | [TEST] Self Approval | EMPLOYEE | Low Value (APPROVER) |
+| EXP-2026-00001 | 25,000 PKR | [TEST] Team Lead | APPROVER | Low Value (APPROVER) |
+
+**Fix - Deactivate test tiers:**
+```sql
+UPDATE "ApprovalTier"
+SET "isActive" = false
+WHERE "name" LIKE '[TEST]%';
+```
+
+**Verification:**
+```bash
+npx ts-node scripts/check-pending-approvals.ts
+```
+Should show only 4 production tiers after fix.
+
+### 0.2 Backfill amountInPKR for Existing Expenses
+**Status:** [ ] Not Started
+
+**Issue:** Existing PKR expenses have NULL `amountInPKR` field, causing inconsistent tier matching.
+
+**Fix:**
+```sql
+UPDATE "Expense"
+SET "amountInPKR" = "totalAmount"
+WHERE currency = 'PKR' AND "amountInPKR" IS NULL;
+```
 
 ---
 
@@ -232,6 +279,10 @@ Fix: Use database-level filtering where possible
 ---
 
 ## Implementation Order
+
+0. **Phase 0** - Database data cleanup (CRITICAL - do this first!)
+   - 0.1 Deactivate test approval tiers ✗
+   - 0.2 Backfill amountInPKR for PKR expenses ✗
 
 1. **Phase 2** - Fix frontend service endpoints first (required for Phase 1)
    - 2.1 Bulk approve path ✗
