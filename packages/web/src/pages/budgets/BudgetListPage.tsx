@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { PlusIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import { Card, EmptyState, Skeleton, Alert } from '@/components/ui';
+import { ViewToggle, type ViewType } from '@/components/expenses/ViewToggle';
+import { BudgetFilters } from '@/components/budgets/BudgetFilters';
+import { BudgetUtilizationTable } from '@/components/budgets/BudgetUtilizationTable';
 import {
   useGetBudgetSummaryQuery,
   type BudgetUtilization,
+  type BudgetType,
+  type BudgetPeriod,
 } from '@/features/budgets/services/budgets.service';
 import clsx from 'clsx';
+
+// Budget-specific view preference hook
+const BUDGETS_VIEW_KEY = 'budgets_view';
+
+const useBudgetViewPreference = (
+  defaultView: ViewType = 'grid'
+): [ViewType, (view: ViewType) => void] => {
+  const [view, setView] = useState<ViewType>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(BUDGETS_VIEW_KEY);
+      if (stored === 'list' || stored === 'grid') {
+        return stored;
+      }
+    }
+    return defaultView;
+  });
+
+  const handleViewChange = useCallback((newView: ViewType) => {
+    setView(newView);
+    localStorage.setItem(BUDGETS_VIEW_KEY, newView);
+  }, []);
+
+  return [view, handleViewChange];
+};
 
 const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
   return new Intl.NumberFormat('en-PK', {
@@ -93,32 +122,79 @@ const BudgetCard: React.FC<{ budget: BudgetUtilization }> = ({ budget }) => {
 };
 
 export const BudgetListPage: React.FC = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const pageSize = 12;
+
+  // View toggle state
+  const [view, setView] = useBudgetViewPreference('grid');
+
+  // Filter state
+  const [filterType, setFilterType] = useState<BudgetType | undefined>();
+  const [filterPeriod, setFilterPeriod] = useState<BudgetPeriod | undefined>();
+  const [filterStatus, setFilterStatus] = useState<'active' | 'exhausted' | undefined>();
+  const [searchQuery, setSearchQuery] = useState<string | undefined>();
 
   // Use budget summary query which returns utilization data for all budgets
   const { data, isLoading, isError, refetch } = useGetBudgetSummaryQuery({
     activeOnly: false,
   });
 
-  // Client-side pagination of the summary results
-  const paginatedBudgets = data?.budgets
-    ? data.budgets.slice((page - 1) * pageSize, page * pageSize)
-    : [];
-  const totalPages = data?.budgets ? Math.ceil(data.budgets.length / pageSize) : 0;
+  // Client-side filtering
+  const filteredBudgets = useMemo(() => {
+    if (!data?.budgets) return [];
+    return data.budgets.filter((budget) => {
+      // Type filter
+      if (filterType && budget.type !== filterType) return false;
+      // Period filter
+      if (filterPeriod && budget.period !== filterPeriod) return false;
+      // Status filter (active = under budget, exhausted = over budget)
+      if (filterStatus === 'active' && budget.isOverBudget) return false;
+      if (filterStatus === 'exhausted' && !budget.isOverBudget) return false;
+      // Search filter
+      if (searchQuery) {
+        return budget.budgetName.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return true;
+    });
+  }, [data?.budgets, filterType, filterPeriod, filterStatus, searchQuery]);
+
+  // Client-side pagination of the filtered results
+  const paginatedBudgets = filteredBudgets.slice((page - 1) * pageSize, page * pageSize);
+  const totalPages = Math.ceil(filteredBudgets.length / pageSize);
+
+  // Reset to page 1 when filters change
+  const handleClearFilters = useCallback(() => {
+    setFilterType(undefined);
+    setFilterPeriod(undefined);
+    setFilterStatus(undefined);
+    setSearchQuery(undefined);
+    setPage(1);
+  }, []);
+
+  // Handle row click in table view
+  const handleRowClick = useCallback(
+    (budget: BudgetUtilization) => {
+      navigate(`/budgets/${budget.budgetId}`);
+    },
+    [navigate]
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Budgets</h1>
           <p className="text-gray-600 mt-1">Manage and track your budgets</p>
         </div>
-        <Link to="/budgets/new" className="btn btn-primary flex items-center gap-2">
-          <PlusIcon className="h-5 w-5" />
-          Create Budget
-        </Link>
+        <div className="flex items-center gap-3">
+          <ViewToggle value={view} onChange={setView} listLabel="List" gridLabel="Cards" />
+          <Link to="/budgets/new" className="btn btn-primary flex items-center gap-2">
+            <PlusIcon className="h-5 w-5" />
+            Create Budget
+          </Link>
+        </div>
       </div>
 
       {/* Summary Stats */}
@@ -154,6 +230,31 @@ export const BudgetListPage: React.FC = () => {
         </div>
       )}
 
+      {/* Filters */}
+      <BudgetFilters
+        type={filterType}
+        period={filterPeriod}
+        status={filterStatus}
+        searchQuery={searchQuery}
+        onTypeChange={(type) => {
+          setFilterType(type);
+          setPage(1);
+        }}
+        onPeriodChange={(period) => {
+          setFilterPeriod(period);
+          setPage(1);
+        }}
+        onStatusChange={(status) => {
+          setFilterStatus(status);
+          setPage(1);
+        }}
+        onSearchChange={(query) => {
+          setSearchQuery(query);
+          setPage(1);
+        }}
+        onClearAll={handleClearFilters}
+      />
+
       {/* Content */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -175,11 +276,19 @@ export const BudgetListPage: React.FC = () => {
         </Alert>
       ) : paginatedBudgets.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedBudgets.map((budget) => (
-              <BudgetCard key={budget.budgetId} budget={budget} />
-            ))}
-          </div>
+          {view === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedBudgets.map((budget) => (
+                <BudgetCard key={budget.budgetId} budget={budget} />
+              ))}
+            </div>
+          ) : (
+            <BudgetUtilizationTable
+              budgets={paginatedBudgets}
+              isLoading={isLoading}
+              onRowClick={handleRowClick}
+            />
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (
@@ -209,11 +318,21 @@ export const BudgetListPage: React.FC = () => {
           <EmptyState
             icon={<BanknotesIcon className="h-12 w-12 text-gray-400" />}
             title="No budgets found"
-            description="Create your first budget to start tracking spending."
+            description={
+              filterType || filterPeriod || filterStatus || searchQuery
+                ? 'Try adjusting your filters to find what you are looking for.'
+                : 'Create your first budget to start tracking spending.'
+            }
             action={
-              <Link to="/budgets/new" className="btn btn-primary">
-                Create Budget
-              </Link>
+              filterType || filterPeriod || filterStatus || searchQuery ? (
+                <button onClick={handleClearFilters} className="btn btn-secondary">
+                  Clear Filters
+                </button>
+              ) : (
+                <Link to="/budgets/new" className="btn btn-primary">
+                  Create Budget
+                </Link>
+              )
             }
           />
         </Card>
