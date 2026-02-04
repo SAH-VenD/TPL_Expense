@@ -12,7 +12,7 @@ import {
 import type { Receipt } from '@/features/expenses/services/expenses.service';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 import { Alert } from '@/components/ui/Alert';
-import { showToast } from '@/components/ui';
+import { showToast, PageHeader } from '@/components/ui';
 import { ReceiptViewerModal } from '@/components/expenses/ReceiptViewerModal';
 
 export function ExpenseDetailPage() {
@@ -126,6 +126,13 @@ export function ExpenseDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <PageHeader
+          title="Loading..."
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: 'Details' },
+          ]}
+        />
         <SkeletonCard />
         <SkeletonCard />
       </div>
@@ -136,9 +143,13 @@ export function ExpenseDetailPage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <Link to="/expenses" className="text-blue-600 hover:text-blue-800 text-sm">
-          ← Back to Expenses
-        </Link>
+        <PageHeader
+          title="Error"
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: 'Details' },
+          ]}
+        />
         <Alert variant="error" title="Failed to load expense">
           {(error as { message?: string })?.message || 'An error occurred while loading the expense.'}
           <button
@@ -157,9 +168,13 @@ export function ExpenseDetailPage() {
   if (!expense) {
     return (
       <div className="space-y-6">
-        <Link to="/expenses" className="text-blue-600 hover:text-blue-800 text-sm">
-          ← Back to Expenses
-        </Link>
+        <PageHeader
+          title="Not Found"
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: 'Details' },
+          ]}
+        />
         <Alert variant="warning" title="Expense not found">
           The expense you are looking for does not exist or you do not have permission to view it.
         </Alert>
@@ -178,21 +193,23 @@ export function ExpenseDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <Link to="/expenses" className="text-blue-600 hover:text-blue-800 text-sm">
-            ← Back to Expenses
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-2">{expense.expenseNumber}</h1>
-        </div>
-        <span
-          className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-            statusColors[expense.status] || 'bg-gray-100 text-gray-800'
-          }`}
-        >
-          {statusLabels[expense.status] || expense.status}
-        </span>
-      </div>
+      <PageHeader
+        title={expense.expenseNumber}
+        subtitle={expense.description}
+        breadcrumbs={[
+          { label: 'Expenses', href: '/expenses' },
+          { label: expense.expenseNumber },
+        ]}
+        actions={
+          <span
+            className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
+              statusColors[expense.status] || 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            {statusLabels[expense.status] || expense.status}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Details */}

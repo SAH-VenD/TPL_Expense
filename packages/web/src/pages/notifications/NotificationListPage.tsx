@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import clsx from 'clsx';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Card } from '@/components/ui/Card';
-import { Spinner } from '@/components/ui/Spinner';
-import { Badge } from '@/components/ui/Badge';
-import { Pagination } from '@/components/ui/Pagination';
+import { Card, Spinner, Badge, Pagination, PageHeader } from '@/components/ui';
 import { NotificationItem } from '@/components/notifications/NotificationItem';
 import {
   useGetNotificationsQuery,
@@ -62,11 +58,6 @@ function FilterIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
-const breadcrumbItems = [
-  { label: 'Dashboard', href: '/' },
-  { label: 'Notifications' },
-];
 
 type FilterTab = 'all' | 'unread' | 'read';
 
@@ -156,53 +147,48 @@ export const NotificationListPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Breadcrumb */}
-      <Breadcrumb items={breadcrumbItems} className="mb-6" />
-
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {pagination ? `${pagination.total} total notifications` : 'Manage your notifications'}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllAsRead}
-              disabled={isMarkingAllRead}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {isMarkingAllRead ? (
-                <Spinner size="xs" />
-              ) : (
-                <CheckIcon className="w-4 h-4" />
-              )}
-              Mark all as read
-            </button>
-          )}
-          {notifications.length > 0 && (
-            <button
-              onClick={handleClearAll}
-              disabled={isClearing}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {isClearing ? (
-                <Spinner size="xs" />
-              ) : (
-                <TrashIcon className="w-4 h-4" />
-              )}
-              Clear all
-            </button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Notifications"
+        subtitle={pagination ? `${pagination.total} total notifications` : 'Manage your notifications'}
+        breadcrumbs={[{ label: 'Notifications' }]}
+        actions={
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllAsRead}
+                disabled={isMarkingAllRead}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isMarkingAllRead ? (
+                  <Spinner size="xs" />
+                ) : (
+                  <CheckIcon className="w-4 h-4" />
+                )}
+                Mark all as read
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                disabled={isClearing}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isClearing ? (
+                  <Spinner size="xs" />
+                ) : (
+                  <TrashIcon className="w-4 h-4" />
+                )}
+                Clear all
+              </button>
+            )}
+          </div>
+        }
+      />
 
       {/* Filters */}
-      <Card className="mb-6">
+      <Card>
         <div className="p-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             {/* Tab filters */}

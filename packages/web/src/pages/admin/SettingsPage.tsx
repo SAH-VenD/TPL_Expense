@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '@/components/ui';
 
 interface ApprovalTier {
   id: string;
@@ -63,7 +64,11 @@ export function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
+      <PageHeader
+        title="System Settings"
+        subtitle="Configure application settings and preferences"
+        breadcrumbs={[{ label: 'Admin', href: '/admin/users' }, { label: 'Settings' }]}
+      />
 
       {/* Tabs */}
       <div className="border-b border-gray-200">

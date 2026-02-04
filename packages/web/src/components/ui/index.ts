@@ -27,5 +27,8 @@ export { Dropdown, DropdownButton, type DropdownProps, type DropdownItem } from 
 export { Breadcrumb, type BreadcrumbProps, type BreadcrumbItem } from './Breadcrumb';
 export { Pagination, type PaginationProps } from './Pagination';
 
+// Layout Components
+export { PageHeader, type PageHeaderProps } from './PageHeader';
+
 // Error Handling
 export { ErrorBoundary, withErrorBoundary, type ErrorBoundaryProps } from './ErrorBoundary';

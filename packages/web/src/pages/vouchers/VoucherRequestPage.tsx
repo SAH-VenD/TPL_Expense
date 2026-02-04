@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { VoucherForm } from '@/features/vouchers/components/VoucherForm';
 import {
   useCreateVoucherMutation,
@@ -7,7 +6,7 @@ import {
 } from '@/features/vouchers/services/vouchers.service';
 import type { CreateVoucherDto } from '@/features/vouchers/types/vouchers.types';
 import { VOUCHER_ROUTES } from '@/features/vouchers/types/vouchers.types';
-import { showToast } from '@/components/ui';
+import { showToast, PageHeader } from '@/components/ui';
 
 export function VoucherRequestPage() {
   const navigate = useNavigate();
@@ -31,20 +30,22 @@ export function VoucherRequestPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={handleCancel}
-          className="p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Request Petty Cash</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Submit a request for petty cash disbursement
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Request Petty Cash"
+        subtitle="Submit a request for petty cash disbursement"
+        breadcrumbs={[
+          { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
+          { label: 'New Request' },
+        ]}
+        actions={
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        }
+      />
 
       {/* Form Card */}
       <div className="card p-6">

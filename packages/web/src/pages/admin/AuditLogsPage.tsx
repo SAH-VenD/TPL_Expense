@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '@/components/ui';
 
 interface AuditLog {
   id: string;
@@ -79,12 +80,16 @@ export function AuditLogsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
-        <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-          Export Logs
-        </button>
-      </div>
+      <PageHeader
+        title="Audit Logs"
+        subtitle="View system activity and user actions"
+        breadcrumbs={[{ label: 'Admin', href: '/admin/users' }, { label: 'Audit Logs' }]}
+        actions={
+          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+            Export Logs
+          </button>
+        }
+      />
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">

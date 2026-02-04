@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeftIcon,
   PencilIcon,
   TrashIcon,
   ArrowPathIcon,
@@ -11,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import clsx from 'clsx';
-import { Card, Skeleton, Alert, Modal, ConfirmDialog } from '@/components/ui';
+import { Card, Skeleton, Alert, Modal, ConfirmDialog, PageHeader } from '@/components/ui';
 import { BudgetForm } from '@/components/budgets/BudgetForm';
 import {
   useGetBudgetQuery,
@@ -153,10 +152,13 @@ export const BudgetDetailPage: React.FC = () => {
   if (isLoading || isUtilizationLoading) {
     return (
       <div className="space-y-6">
-        <div>
-          <Skeleton height={20} width={120} />
-          <Skeleton height={32} width={200} className="mt-2" />
-        </div>
+        <PageHeader
+          title="Loading..."
+          breadcrumbs={[
+            { label: 'Budgets', href: '/budgets' },
+            { label: 'Details' },
+          ]}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Card>
@@ -195,15 +197,13 @@ export const BudgetDetailPage: React.FC = () => {
   if (isError || !budget) {
     return (
       <div className="space-y-6">
-        <div>
-          <Link
-            to="/budgets"
-            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-          >
-            <ArrowLeftIcon className="h-4 w-4 mr-1" />
-            Back to Budgets
-          </Link>
-        </div>
+        <PageHeader
+          title="Error"
+          breadcrumbs={[
+            { label: 'Budgets', href: '/budgets' },
+            { label: 'Details' },
+          ]}
+        />
         <Alert variant="error" title="Failed to load budget">
           <p className="mt-1">We could not retrieve the budget details. Please try again.</p>
           <button
@@ -246,30 +246,24 @@ export const BudgetDetailPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <Link
-            to="/budgets"
-            className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+      <PageHeader
+        title={budget.name}
+        subtitle={`${budget.type.toLowerCase().replace('_', ' ')} Budget - ${budget.period.toLowerCase().replace('_', ' ')}`}
+        breadcrumbs={[
+          { label: 'Budgets', href: '/budgets' },
+          { label: budget.name },
+        ]}
+        actions={
+          <span
+            className={clsx(
+              'px-3 py-1 text-sm font-medium rounded-full',
+              budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+            )}
           >
-            <ArrowLeftIcon className="h-4 w-4 mr-1" />
-            Back to Budgets
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-2">{budget.name}</h1>
-          <p className="text-gray-500 mt-1 capitalize">
-            {budget.type.toLowerCase().replace('_', ' ')} Budget -{' '}
-            {budget.period.toLowerCase().replace('_', ' ')}
-          </p>
-        </div>
-        <span
-          className={clsx(
-            'px-3 py-1 text-sm font-medium rounded-full',
-            budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-          )}
-        >
-          {budget.isActive ? 'Active' : 'Inactive'}
-        </span>
-      </div>
+            {budget.isActive ? 'Active' : 'Inactive'}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}

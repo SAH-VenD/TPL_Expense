@@ -9,11 +9,7 @@ import {
   DocumentCheckIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
-import { Badge } from '@/components/ui/Badge';
-import { Pagination } from '@/components/ui/Pagination';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { Alert } from '@/components/ui/Alert';
+import { Badge, Pagination, EmptyState, Alert, PageHeader } from '@/components/ui';
 import { ViewToggle, type ViewType } from '@/components/expenses/ViewToggle';
 import { VoucherTable } from '@/components/vouchers/VoucherTable';
 import { useAppSelector } from '@/store/hooks';
@@ -183,16 +179,15 @@ export function VoucherListPage() {
     navigate(VOUCHER_ROUTES.REQUEST);
   };
 
-  const breadcrumbItems = [
-    { label: 'Dashboard', href: '/' },
-    { label: 'Petty Cash Vouchers' },
-  ];
-
   // Error state
   if (error) {
     return (
       <div className="space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
+        <PageHeader
+          title="Petty Cash Vouchers"
+          subtitle="Manage petty cash requests and settlements"
+          breadcrumbs={[{ label: 'Vouchers' }]}
+        />
         <Alert variant="error" title="Error loading vouchers">
           <p>Failed to load vouchers. Please try again.</p>
           <button
@@ -209,22 +204,23 @@ export function VoucherListPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <Breadcrumb items={breadcrumbItems} className="mb-2" />
-          <h1 className="text-2xl font-bold text-gray-900">Petty Cash Vouchers</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <ViewToggle value={view} onChange={setView} gridLabel="Cards" />
-          <button
-            onClick={handleRequestVoucher}
-            className="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5 mr-2" />
-            Request Voucher
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Petty Cash Vouchers"
+        subtitle="Manage petty cash requests and settlements"
+        breadcrumbs={[{ label: 'Vouchers' }]}
+        actions={
+          <>
+            <ViewToggle value={view} onChange={setView} />
+            <button
+              onClick={handleRequestVoucher}
+              className="btn btn-primary flex items-center gap-2"
+            >
+              <PlusIcon className="h-5 w-5" />
+              Request Voucher
+            </button>
+          </>
+        }
+      />
 
       {/* Status Tabs */}
       <div className="card p-2 overflow-x-auto">

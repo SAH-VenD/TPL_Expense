@@ -1,12 +1,12 @@
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon, ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useAppSelector } from '@/store/hooks';
 import {
   useGetVoucherQuery,
   useSettleVoucherMutation,
 } from '@/features/vouchers/services/vouchers.service';
 import { VoucherActions } from '@/features/vouchers/components/VoucherActions';
-import { Skeleton, Alert, showToast, Modal, ModalBody, ModalFooter } from '@/components/ui';
+import { Skeleton, Alert, showToast, Modal, ModalBody, ModalFooter, PageHeader } from '@/components/ui';
 import { Textarea } from '@/components/ui/Textarea';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
@@ -91,13 +91,13 @@ export function VoucherDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Skeleton width={40} height={40} variant="circular" />
-          <div>
-            <Skeleton width={200} height={28} />
-            <Skeleton width={150} height={16} className="mt-1" />
-          </div>
-        </div>
+        <PageHeader
+          title="Loading..."
+          breadcrumbs={[
+            { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
+            { label: 'Details' },
+          ]}
+        />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             <Skeleton height={200} />
@@ -117,13 +117,13 @@ export function VoucherDetailPage() {
   if (isError || !voucher) {
     return (
       <div className="space-y-6">
-        <Link
-          to={VOUCHER_ROUTES.LIST}
-          className="inline-flex items-center text-primary-600 hover:text-primary-700"
-        >
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Vouchers
-        </Link>
+        <PageHeader
+          title="Error"
+          breadcrumbs={[
+            { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
+            { label: 'Details' },
+          ]}
+        />
         <Alert variant="error" title="Failed to load voucher">
           <p>Unable to load voucher details. Please try again.</p>
           <button
@@ -146,38 +146,31 @@ export function VoucherDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <Link
-            to={VOUCHER_ROUTES.LIST}
-            className="p-2 -ml-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+      <PageHeader
+        title={voucher.voucherNumber}
+        subtitle={`Requested by ${voucher.requester.firstName} ${voucher.requester.lastName}${voucher.requester.department ? ` • ${voucher.requester.department.name}` : ''}`}
+        breadcrumbs={[
+          { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
+          { label: voucher.voucherNumber },
+        ]}
+        actions={
+          <span
+            className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
+              statusConfig.variant === 'success'
+                ? 'bg-green-100 text-green-800'
+                : statusConfig.variant === 'danger'
+                ? 'bg-red-100 text-red-800'
+                : statusConfig.variant === 'warning'
+                ? 'bg-yellow-100 text-yellow-800'
+                : statusConfig.variant === 'primary'
+                ? 'bg-purple-100 text-purple-800'
+                : 'bg-blue-100 text-blue-800'
+            }`}
           >
-            <ArrowLeftIcon className="h-5 w-5" />
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{voucher.voucherNumber}</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Requested by {voucher.requester.firstName} {voucher.requester.lastName}
-              {voucher.requester.department && ` • ${voucher.requester.department.name}`}
-            </p>
-          </div>
-        </div>
-        <span
-          className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
-            statusConfig.variant === 'success'
-              ? 'bg-green-100 text-green-800'
-              : statusConfig.variant === 'danger'
-              ? 'bg-red-100 text-red-800'
-              : statusConfig.variant === 'warning'
-              ? 'bg-yellow-100 text-yellow-800'
-              : statusConfig.variant === 'primary'
-              ? 'bg-purple-100 text-purple-800'
-              : 'bg-blue-100 text-blue-800'
-          }`}
-        >
-          {statusConfig.label}
-        </span>
-      </div>
+            {statusConfig.label}
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Details */}

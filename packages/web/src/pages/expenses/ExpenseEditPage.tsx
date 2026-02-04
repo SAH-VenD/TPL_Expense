@@ -8,7 +8,7 @@ import {
   useDeleteReceiptMutation,
 } from '@/features/expenses/services/expenses.service';
 import type { Currency, ExpenseType, Receipt } from '@/features/expenses/services/expenses.service';
-import { showToast } from '@/components/ui';
+import { showToast, PageHeader } from '@/components/ui';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { Spinner } from '@/components/ui/Spinner';
 import { Alert } from '@/components/ui/Alert';
@@ -147,56 +147,76 @@ export function ExpenseEditPage() {
 
   if (expenseLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-        <span className="ml-3 text-gray-600">Loading expense...</span>
+      <div className="max-w-3xl mx-auto space-y-6">
+        <PageHeader
+          title="Loading..."
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: 'Edit' },
+          ]}
+        />
+        <div className="flex items-center justify-center h-64">
+          <Spinner size="lg" />
+          <span className="ml-3 text-gray-600">Loading expense...</span>
+        </div>
       </div>
     );
   }
 
   if (expenseError || !expense) {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <PageHeader
+          title="Error"
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: 'Edit' },
+          ]}
+        />
         <Alert variant="error" title="Failed to load expense">
           The expense could not be found or you don&apos;t have permission to view it.
         </Alert>
-        <button
-          onClick={() => navigate('/expenses')}
-          className="mt-4 text-blue-600 hover:text-blue-800"
-        >
-          &larr; Back to Expenses
-        </button>
       </div>
     );
   }
 
   if (!canEdit) {
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto space-y-6">
+        <PageHeader
+          title="Cannot Edit"
+          breadcrumbs={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: expense.expenseNumber, href: `/expenses/${id}` },
+            { label: 'Edit' },
+          ]}
+        />
         <Alert variant="warning" title="Cannot edit expense">
           This expense cannot be edited because it has been submitted for approval or is in a non-editable status ({expense.status}).
         </Alert>
-        <button
-          onClick={() => navigate(`/expenses/${id}`)}
-          className="mt-4 text-blue-600 hover:text-blue-800"
-        >
-          &larr; Back to Expense Details
-        </button>
       </div>
     );
   }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Edit Expense</h1>
-        <button
-          onClick={() => navigate(`/expenses/${id}`)}
-          className="text-gray-600 hover:text-gray-900"
-        >
-          Cancel
-        </button>
-      </div>
+      <PageHeader
+        title="Edit Expense"
+        subtitle={expense.expenseNumber}
+        breadcrumbs={[
+          { label: 'Expenses', href: '/expenses' },
+          { label: expense.expenseNumber, href: `/expenses/${id}` },
+          { label: 'Edit' },
+        ]}
+        actions={
+          <button
+            onClick={() => navigate(`/expenses/${id}`)}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        }
+      />
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
         {/* Expense Type (read-only for editing) */}

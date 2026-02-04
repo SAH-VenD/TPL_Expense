@@ -15,7 +15,7 @@ import {
   useBulkApproveMutation,
   useRequestClarificationMutation,
 } from '@/features/approvals/services/approvals.service';
-import { Skeleton, ConfirmDialog, showToast } from '@/components/ui';
+import { Skeleton, ConfirmDialog, showToast, PageHeader } from '@/components/ui';
 import { useRolePermissions } from '@/hooks';
 import type { Expense } from '@/features/expenses/services/expenses.service';
 
@@ -197,10 +197,11 @@ export function ApprovalQueuePage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <Skeleton width={200} height={32} />
-          <Skeleton width={150} height={20} />
-        </div>
+        <PageHeader
+          title="Pending Approvals"
+          subtitle="Review and approve expense submissions"
+          breadcrumbs={[{ label: 'Approvals' }]}
+        />
         <div className="card overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -237,9 +238,11 @@ export function ApprovalQueuePage() {
   if (isError) {
     return (
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
-        </div>
+        <PageHeader
+          title="Pending Approvals"
+          subtitle="Review and approve expense submissions"
+          breadcrumbs={[{ label: 'Approvals' }]}
+        />
         <div className="card p-8 text-center">
           <p className="text-red-600 mb-4">Failed to load pending approvals</p>
           <button
@@ -256,22 +259,26 @@ export function ApprovalQueuePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Pending Approvals</h1>
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
-            title="Refresh"
-          >
-            <ArrowPathIcon className={clsx('h-5 w-5', isFetching && 'animate-spin')} />
-          </button>
-          <span className="text-sm text-gray-500">
-            {totalItems} expense(s) {canApprove ? 'awaiting your approval' : 'pending approval'}
-          </span>
-        </div>
-      </div>
+      <PageHeader
+        title="Pending Approvals"
+        subtitle="Review and approve expense submissions"
+        breadcrumbs={[{ label: 'Approvals' }]}
+        actions={
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => refetch()}
+              disabled={isFetching}
+              className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              title="Refresh"
+            >
+              <ArrowPathIcon className={clsx('h-5 w-5', isFetching && 'animate-spin')} />
+            </button>
+            <span className="text-sm text-gray-500">
+              {totalItems} expense(s) {canApprove ? 'awaiting your approval' : 'pending approval'}
+            </span>
+          </div>
+        }
+      />
 
       {/* Bulk Actions - Only shown for users who can approve */}
       {canApprove && selectedIds.length > 0 && (

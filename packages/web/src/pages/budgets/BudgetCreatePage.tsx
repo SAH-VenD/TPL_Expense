@@ -1,7 +1,7 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { PageHeader } from '@/components/ui';
 import { BudgetForm } from '@/components/budgets/BudgetForm';
 import {
   useCreateBudgetMutation,
@@ -33,19 +33,22 @@ export const BudgetCreatePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <Link
-          to="/budgets"
-          className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
-        >
-          <ArrowLeftIcon className="h-4 w-4 mr-1" />
-          Back to Budgets
-        </Link>
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">Create Budget</h1>
-        <p className="text-gray-600 mt-1">
-          Set up a new budget to track and control spending
-        </p>
-      </div>
+      <PageHeader
+        title="Create Budget"
+        subtitle="Set up a new budget to track and control spending"
+        breadcrumbs={[
+          { label: 'Budgets', href: '/budgets' },
+          { label: 'New Budget' },
+        ]}
+        actions={
+          <button
+            onClick={handleCancel}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        }
+      />
 
       {/* Form */}
       <BudgetForm
