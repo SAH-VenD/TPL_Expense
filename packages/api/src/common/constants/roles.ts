@@ -13,7 +13,7 @@
 import { RoleType } from '@prisma/client';
 
 /**
- * Roles that can approve expenses.
+ * Roles that can approve expenses (write actions).
  * ADMIN is excluded for separation of duties compliance.
  */
 export const APPROVING_ROLES: RoleType[] = [
@@ -21,6 +21,18 @@ export const APPROVING_ROLES: RoleType[] = [
   RoleType.SUPER_APPROVER,
   RoleType.FINANCE,
   RoleType.CEO,
+];
+
+/**
+ * Roles that can view approval data (read-only access).
+ * Includes ADMIN for audit visibility without approval authority.
+ */
+export const APPROVAL_READ_ROLES: RoleType[] = [
+  RoleType.APPROVER,
+  RoleType.SUPER_APPROVER,
+  RoleType.FINANCE,
+  RoleType.CEO,
+  RoleType.ADMIN,
 ];
 
 /**

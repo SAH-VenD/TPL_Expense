@@ -25,10 +25,16 @@ export const ALL_ROLES: RoleType[] = [
 ];
 
 /**
- * Roles that can approve expenses.
+ * Roles that can approve expenses (write actions).
  * ADMIN is excluded for separation of duties compliance.
  */
 export const APPROVING_ROLES: RoleType[] = ['APPROVER', 'SUPER_APPROVER', 'FINANCE', 'CEO'];
+
+/**
+ * Roles that can view approval data (read-only access).
+ * Includes ADMIN for audit visibility without approval authority.
+ */
+export const APPROVAL_READ_ROLES: RoleType[] = ['APPROVER', 'SUPER_APPROVER', 'FINANCE', 'CEO', 'ADMIN'];
 
 /**
  * Roles that can perform emergency approvals (bypass tier requirements).

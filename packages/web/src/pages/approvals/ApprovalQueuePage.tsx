@@ -16,6 +16,7 @@ import {
   useRequestClarificationMutation,
 } from '@/features/approvals/services/approvals.service';
 import { Skeleton, ConfirmDialog, showToast } from '@/components/ui';
+import { useRolePermissions } from '@/hooks';
 import type { Expense } from '@/features/expenses/services/expenses.service';
 
 const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
@@ -37,6 +38,7 @@ const formatRelativeDate = (dateString: string): string => {
 
 export function ApprovalQueuePage() {
   const navigate = useNavigate();
+  const { canApprove } = useRolePermissions();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -266,13 +268,13 @@ export function ApprovalQueuePage() {
             <ArrowPathIcon className={clsx('h-5 w-5', isFetching && 'animate-spin')} />
           </button>
           <span className="text-sm text-gray-500">
-            {totalItems} expense(s) awaiting your approval
+            {totalItems} expense(s) {canApprove ? 'awaiting your approval' : 'pending approval'}
           </span>
         </div>
       </div>
 
-      {/* Bulk Actions */}
-      {selectedIds.length > 0 && (
+      {/* Bulk Actions - Only shown for users who can approve */}
+      {canApprove && selectedIds.length > 0 && (
         <div className="bg-primary-50 rounded-lg p-4 flex items-center justify-between">
           <span className="text-primary-800 font-medium">
             {selectedIds.length} expense(s) selected
@@ -301,15 +303,17 @@ export function ApprovalQueuePage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left">
-                <input
-                  type="checkbox"
-                  checked={pendingApprovals.length > 0 && selectedIds.length === pendingApprovals.length}
-                  onChange={handleSelectAll}
-                  disabled={pendingApprovals.length === 0}
-                  className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                />
-              </th>
+              {canApprove && (
+                <th className="px-6 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={pendingApprovals.length > 0 && selectedIds.length === pendingApprovals.length}
+                    onChange={handleSelectAll}
+                    disabled={pendingApprovals.length === 0}
+                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Expense
               </th>
@@ -325,9 +329,11 @@ export function ApprovalQueuePage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Submitted
               </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
+              {canApprove && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -342,14 +348,16 @@ export function ApprovalQueuePage() {
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleRowClick(expense.id)}
                 >
-                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.includes(expense.id)}
-                      onChange={() => handleSelect(expense.id)}
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                  </td>
+                  {canApprove && (
+                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(expense.id)}
+                        onChange={() => handleSelect(expense.id)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </td>
+                  )}
                   <td className="px-6 py-4">
                     <div>
                       <p className="font-medium text-primary-600">
@@ -383,37 +391,39 @@ export function ApprovalQueuePage() {
                       ? formatRelativeDate(expense.submittedAt)
                       : formatRelativeDate(expense.createdAt)}
                   </td>
-                  <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end space-x-2">
-                      <button
-                        onClick={() => handleApprove(expense.id)}
-                        disabled={isActionInProgress}
-                        className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 inline-flex items-center"
-                        title="Approve"
-                      >
-                        <CheckIcon className="h-4 w-4 mr-1" />
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleRejectClick(expense.id)}
-                        disabled={isActionInProgress}
-                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 inline-flex items-center"
-                        title="Reject"
-                      >
-                        <XMarkIcon className="h-4 w-4 mr-1" />
-                        Reject
-                      </button>
-                      <button
-                        onClick={() => handleClarifyClick(expense.id)}
-                        disabled={isActionInProgress}
-                        className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 inline-flex items-center"
-                        title="Request Clarification"
-                      >
-                        <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
-                        Clarify
-                      </button>
-                    </div>
-                  </td>
+                  {canApprove && (
+                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex justify-end space-x-2">
+                        <button
+                          onClick={() => handleApprove(expense.id)}
+                          disabled={isActionInProgress}
+                          className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 inline-flex items-center"
+                          title="Approve"
+                        >
+                          <CheckIcon className="h-4 w-4 mr-1" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectClick(expense.id)}
+                          disabled={isActionInProgress}
+                          className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 inline-flex items-center"
+                          title="Reject"
+                        >
+                          <XMarkIcon className="h-4 w-4 mr-1" />
+                          Reject
+                        </button>
+                        <button
+                          onClick={() => handleClarifyClick(expense.id)}
+                          disabled={isActionInProgress}
+                          className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 inline-flex items-center"
+                          title="Request Clarification"
+                        >
+                          <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
+                          Clarify
+                        </button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               );
             })}

@@ -8,6 +8,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RoleType } from '@prisma/client';
 import { AuthenticatedRequest } from '../../common/types/request';
+import { APPROVAL_READ_ROLES, APPROVING_ROLES } from '../../common/constants/roles';
 
 @ApiTags('Approvals')
 @ApiBearerAuth('JWT-auth')
@@ -19,7 +20,7 @@ export class ApprovalsController {
   // ==================== PENDING & HISTORY ====================
 
   @Get('pending')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVAL_READ_ROLES)
   @ApiOperation({ summary: 'Get pending approvals for current user' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
@@ -32,7 +33,7 @@ export class ApprovalsController {
   }
 
   @Get('history')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVAL_READ_ROLES)
   @ApiOperation({ summary: 'Get approval history for current user' })
   getHistory(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getApprovalHistory(req.user);
@@ -44,6 +45,7 @@ export class ApprovalsController {
     RoleType.SUPER_APPROVER,
     RoleType.FINANCE,
     RoleType.CEO,
+    RoleType.ADMIN,
     RoleType.EMPLOYEE,
   )
   @ApiOperation({ summary: 'Get approval timeline for a specific expense' })
@@ -54,28 +56,28 @@ export class ApprovalsController {
   // ==================== APPROVAL ACTIONS ====================
 
   @Post('approve')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Approve an expense' })
   approve(@Req() req: AuthenticatedRequest, @Body() approveDto: ApproveDto) {
     return this.approvalsService.approve(req.user, approveDto);
   }
 
   @Post('approve/bulk')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Bulk approve expenses' })
   bulkApprove(@Req() req: AuthenticatedRequest, @Body() bulkApproveDto: BulkApproveDto) {
     return this.approvalsService.bulkApprove(req.user, bulkApproveDto);
   }
 
   @Post('reject')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Reject an expense' })
   reject(@Req() req: AuthenticatedRequest, @Body() rejectDto: RejectDto) {
     return this.approvalsService.reject(req.user, rejectDto);
   }
 
   @Post('clarify')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Request clarification on an expense' })
   requestClarification(@Req() req: AuthenticatedRequest, @Body() clarifyDto: ClarifyDto) {
     return this.approvalsService.requestClarification(req.user, clarifyDto);
@@ -84,14 +86,14 @@ export class ApprovalsController {
   // ==================== DELEGATIONS ====================
 
   @Get('delegations')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVAL_READ_ROLES)
   @ApiOperation({ summary: 'Get active delegations for current user' })
   getDelegations(@Req() req: AuthenticatedRequest) {
     return this.approvalsService.getDelegations(req.user.id);
   }
 
   @Post('delegations')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Create an approval delegation' })
   createDelegation(
     @Req() req: AuthenticatedRequest,
@@ -101,7 +103,7 @@ export class ApprovalsController {
   }
 
   @Post('delegations/revoke')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO)
+  @Roles(...APPROVING_ROLES)
   @ApiOperation({ summary: 'Revoke an approval delegation' })
   revokeDelegation(
     @Req() req: AuthenticatedRequest,
