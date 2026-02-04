@@ -66,8 +66,8 @@ export function DashboardPage() {
         </Alert>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Grid - Equal Height Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
         <StatCard
           label="Total Expenses (30 days)"
           value={summary?.expenses.total.value ?? 0}
@@ -120,20 +120,11 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Charts Row */}
+      {/* Row 2: Spending Trend + Budget Overview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SpendTrendChart showComparison={false} departmentId={departmentId} />
-        <CategoryBreakdownChart variant="donut" departmentId={departmentId} />
+        <BudgetOverview limit={5} departmentId={departmentId} />
       </div>
-
-      {/* Activity Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentExpenses limit={5} />
-        {canApprove && <PendingApprovals limit={5} />}
-      </div>
-
-      {/* Budget Overview - Full Width */}
-      <BudgetOverview limit={5} departmentId={departmentId} />
 
       {/* Quick Stats for Finance Users */}
       {showFinanceStats && summary && (
@@ -142,6 +133,17 @@ export function DashboardPage() {
             <h3 className="text-sm font-medium text-gray-600">Budget Utilization</h3>
             <p className="mt-2 text-3xl font-bold text-gray-900">
               {summary.budgetUtilization.overallUtilization.toFixed(1)}%
+            </p>
+            <p className="mt-1 text-sm text-gray-500">
+              {new Intl.NumberFormat('en-PK', {
+                style: 'currency',
+                currency: 'PKR',
+                minimumFractionDigits: 0,
+              }).format(summary.budgetUtilization.totalSpent)} of {new Intl.NumberFormat('en-PK', {
+                style: 'currency',
+                currency: 'PKR',
+                minimumFractionDigits: 0,
+              }).format(summary.budgetUtilization.totalAllocated)}
             </p>
             <div className="mt-2 flex items-center gap-4 text-sm">
               {summary.budgetUtilization.budgetsAtWarning > 0 && (
@@ -182,11 +184,22 @@ export function DashboardPage() {
             </p>
             {summary.approvals.oldestPendingDays > 0 && (
               <p className="mt-2 text-sm text-gray-500">
-                Oldest pending: {summary.approvals.oldestPendingDays} days
+                Oldest pending: {Math.round(summary.approvals.oldestPendingDays)} days
               </p>
             )}
           </div>
         </div>
+      )}
+
+      {/* Row 3: Category Breakdown + Recent Expenses */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <CategoryBreakdownChart variant="donut" departmentId={departmentId} />
+        <RecentExpenses limit={5} />
+      </div>
+
+      {/* Pending Approvals - Only shown for approvers */}
+      {canApprove && (
+        <PendingApprovals limit={5} />
       )}
     </div>
   );

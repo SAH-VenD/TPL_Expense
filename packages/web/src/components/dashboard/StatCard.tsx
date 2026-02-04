@@ -130,7 +130,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       hover={!!onClick || !!href}
       onClick={onClick}
       className={clsx(
-        'relative overflow-hidden',
+        'relative overflow-hidden h-full',
         (onClick || href) && 'cursor-pointer',
         className
       )}

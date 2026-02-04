@@ -128,14 +128,16 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
   return (
     <Card padding="none" className={className}>
       <div className="p-6 border-b border-gray-200">
-        <CardHeader className="mb-0">
-          <CardTitle>Spending Trend</CardTitle>
-          {data && (
-            <span className="text-sm text-gray-500 ml-2">
+        <CardHeader
+          className="mb-0"
+          action={data && (
+            <span className="text-sm text-gray-500">
               {currentYear}
               {showComparison && ` vs ${currentYear - 1}`}
             </span>
           )}
+        >
+          <CardTitle>Spending Trend</CardTitle>
         </CardHeader>
       </div>
       <div className="p-4">

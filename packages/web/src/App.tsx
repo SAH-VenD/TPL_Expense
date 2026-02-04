@@ -82,7 +82,7 @@ function App() {
         <Route
           path="/admin/users"
           element={
-            <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <RoleBasedRoute allowedRoles={['ADMIN', 'FINANCE']}>
               <UsersPage />
             </RoleBasedRoute>
           }
@@ -90,7 +90,7 @@ function App() {
         <Route
           path="/admin/categories"
           element={
-            <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <RoleBasedRoute allowedRoles={['ADMIN', 'FINANCE']}>
               <CategoriesPage />
             </RoleBasedRoute>
           }
@@ -98,7 +98,7 @@ function App() {
         <Route
           path="/admin/settings"
           element={
-            <RoleBasedRoute allowedRoles={['ADMIN']}>
+            <RoleBasedRoute allowedRoles={['ADMIN', 'FINANCE']}>
               <SettingsPage />
             </RoleBasedRoute>
           }
