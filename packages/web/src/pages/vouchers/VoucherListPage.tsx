@@ -25,7 +25,7 @@ const VOUCHERS_VIEW_KEY = 'vouchers_view';
 // Hook for voucher view preference with localStorage persistence
 const useVoucherViewPreference = (defaultView: ViewType = 'grid'): [ViewType, (view: ViewType) => void] => {
   const [view, setView] = useState<ViewType>(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       const stored = localStorage.getItem(VOUCHERS_VIEW_KEY);
       if (stored === 'list' || stored === 'grid') {
         return stored;
@@ -36,7 +36,7 @@ const useVoucherViewPreference = (defaultView: ViewType = 'grid'): [ViewType, (v
 
   const handleViewChange = useCallback((newView: ViewType) => {
     setView(newView);
-    if (typeof window !== 'undefined') {
+    if (typeof globalThis.window !== 'undefined') {
       localStorage.setItem(VOUCHERS_VIEW_KEY, newView);
     }
   }, []);
@@ -71,8 +71,8 @@ export function VoucherListPage() {
 
   // Read state from URL params
   const initialStatus = (searchParams.get('status') as VoucherStatus | 'ALL') || 'ALL';
-  const initialPage = parseInt(searchParams.get('page') || '1', 10);
-  const initialPageSize = parseInt(
+  const initialPage = Number.parseInt(searchParams.get('page') || '1', 10);
+  const initialPageSize = Number.parseInt(
     searchParams.get('pageSize') || DEFAULT_PAGE_SIZE.toString(),
     10
   );
@@ -139,7 +139,7 @@ export function VoucherListPage() {
     setSelectedStatus(status);
     setPage(1);
     updateUrlParams({
-      status: status !== 'ALL' ? status : undefined,
+      status: status === 'ALL' ? undefined : status,
       page: '1',
     });
   };
@@ -150,7 +150,7 @@ export function VoucherListPage() {
   };
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newPageSize = parseInt(e.target.value, 10);
+    const newPageSize = Number.parseInt(e.target.value, 10);
     setPageSize(newPageSize);
     setPage(1);
     updateUrlParams({ pageSize: newPageSize.toString(), page: '1' });
@@ -228,7 +228,7 @@ export function VoucherListPage() {
           {TABS.map((tab) => {
             const isActive = selectedStatus === tab.id;
             const statusConfig =
-              tab.id !== 'ALL' ? VOUCHER_STATUS_CONFIG[tab.id] : null;
+              tab.id === 'ALL' ? null : VOUCHER_STATUS_CONFIG[tab.id];
 
             return (
               <button
@@ -303,8 +303,8 @@ export function VoucherListPage() {
       {isLoading ? (
         view === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <VoucherCardSkeleton key={i} />
+            {Array.from({ length: 6 }).map((_, i) => (
+              <VoucherCardSkeleton key={`skeleton-${i}`} />
             ))}
           </div>
         ) : (
@@ -316,7 +316,7 @@ export function VoucherListPage() {
           description={
             selectedStatus === 'ALL'
               ? "You haven't created any petty cash vouchers yet."
-              : `No vouchers with status "${VOUCHER_STATUS_CONFIG[selectedStatus as VoucherStatus]?.label || selectedStatus}".`
+              : `No vouchers with status "${VOUCHER_STATUS_CONFIG[selectedStatus]?.label || selectedStatus}".`
           }
           action={
             <button

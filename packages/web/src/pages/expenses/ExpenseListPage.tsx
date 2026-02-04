@@ -65,8 +65,8 @@ export function ExpenseListPage() {
   const [selectedExpenses, setSelectedExpenses] = React.useState<Set<string>>(new Set());
 
   // Parse pagination from URL
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(searchParams.get('pageSize') || '10', 10);
+  const page = Number.parseInt(searchParams.get('page') || '1', 10);
+  const pageSize = Number.parseInt(searchParams.get('pageSize') || '10', 10);
 
   // Filters state (parsed from URL in ExpenseFilters component)
   const [filters, setFilters] = React.useState<ExpenseFiltersType>(() => {

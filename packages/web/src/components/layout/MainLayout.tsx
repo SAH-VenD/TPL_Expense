@@ -147,8 +147,10 @@ export function MainLayout() {
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden cursor-default"
           onClick={() => setSidebarOpen(false)}
         />
       )}
