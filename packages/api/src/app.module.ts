@@ -1,7 +1,9 @@
 import { Module, Injectable, ExecutionContext } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { APP_GUARD } from '@nestjs/core';
+import { join } from 'node:path';
 
 import { PrismaModule } from './common/prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -46,6 +48,20 @@ class ConditionalThrottlerGuard extends ThrottlerGuard {
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+
+    // Static file serving for local storage development (only when STORAGE_TYPE is not 's3')
+    ...(process.env.STORAGE_TYPE === 's3'
+      ? []
+      : [
+          ServeStaticModule.forRoot({
+            rootPath: join(process.cwd(), 'uploads'),
+            serveRoot: '/uploads',
+            serveStaticOptions: {
+              index: false,
+              fallthrough: false,
+            },
+          }),
+        ]),
 
     // Rate limiting - only active in production
     ThrottlerModule.forRoot([
