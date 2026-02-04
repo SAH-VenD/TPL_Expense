@@ -216,7 +216,7 @@ export function VoucherListPage() {
               className="btn btn-primary flex items-center gap-2"
             >
               <PlusIcon className="h-5 w-5" />
-              Request Voucher
+              Voucher
             </button>
           </>
         }

@@ -292,7 +292,7 @@ export function ExpenseListPage() {
               className="btn btn-primary flex items-center gap-2"
             >
               <PlusIcon className="h-5 w-5" />
-              New Expense
+              Expense
             </Link>
           </>
         }

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { logout, setUser } from '@/features/auth/store/authSlice';
-import { useLogoutMutation, useGetMeQuery } from '@/features/auth/services/auth.service';
+import { setUser } from '@/features/auth/store/authSlice';
+import { useGetMeQuery } from '@/features/auth/services/auth.service';
 import { NotificationBell } from '@/components/notifications';
+import { CreateNewDropdown } from './CreateNewDropdown';
+import { UserMenuDropdown } from './UserMenuDropdown';
 import {
   ALL_ROLES,
   APPROVAL_READ_ROLES,
@@ -119,10 +121,8 @@ function BudgetIcon() {
 
 export function MainLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { user, refreshToken, accessToken } = useAppSelector((state) => state.auth);
-  const [logoutApi] = useLogoutMutation();
+  const { user, accessToken } = useAppSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch user data if we have a token but no user data
@@ -136,14 +136,6 @@ export function MainLayout() {
       dispatch(setUser(userData));
     }
   }, [userData, user, dispatch]);
-
-  const handleLogout = async () => {
-    if (refreshToken) {
-      await logoutApi(refreshToken);
-    }
-    dispatch(logout());
-    navigate('/login');
-  };
 
   const filteredNavigation = navigation.filter(
     (item) => user && item.roles.includes(user.role),
@@ -227,29 +219,6 @@ export function MainLayout() {
             )}
           </nav>
 
-          {/* User menu */}
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 font-medium">
-                  {user?.firstName?.[0]}
-                  {user?.lastName?.[0]}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {user?.firstName} {user?.lastName}
-                </p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-              </div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="mt-3 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              Sign out
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -272,16 +241,15 @@ export function MainLayout() {
               </svg>
             </button>
 
-            <div className="flex items-center gap-4 ml-auto">
+            <div className="flex items-center gap-3 ml-auto">
+              {/* Create New Dropdown */}
+              <CreateNewDropdown />
+
               {/* Notification Bell */}
               <NotificationBell position="header" />
 
-              <Link
-                to="/expenses/new"
-                className="btn-primary hidden sm:inline-flex"
-              >
-                + New Expense
-              </Link>
+              {/* User Menu */}
+              <UserMenuDropdown />
             </div>
           </div>
         </header>

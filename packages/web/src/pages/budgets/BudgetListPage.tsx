@@ -192,7 +192,7 @@ export const BudgetListPage: React.FC = () => {
             <ViewToggle value={view} onChange={setView} />
             <Link to="/budgets/new" className="btn btn-primary flex items-center gap-2">
               <PlusIcon className="h-5 w-5" />
-              Create Budget
+              Budget
             </Link>
           </>
         }

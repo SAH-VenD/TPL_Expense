@@ -35,6 +35,9 @@ import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 // Notification pages
 import { NotificationListPage } from './pages/notifications/NotificationListPage';
 
+// Profile page
+import { ProfilePage } from './pages/profile/ProfilePage';
+
 function App() {
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -77,6 +80,7 @@ function App() {
         <Route path="/budgets/:id" element={<BudgetDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/notifications" element={<NotificationListPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
         {/* Admin routes */}
         <Route
