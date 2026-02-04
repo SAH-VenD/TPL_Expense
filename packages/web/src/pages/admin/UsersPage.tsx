@@ -10,16 +10,24 @@ import {
   useGetDepartmentsQuery,
   type User,
 } from '@/features/admin/services/admin.service';
-import { DataTable, type Column } from '@/components/ui/DataTable';
-import { Modal, ModalBody, ModalFooter } from '@/components/ui/Modal';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { Badge, getStatusVariant } from '@/components/ui/Badge';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Card } from '@/components/ui/Card';
-import { Alert } from '@/components/ui/Alert';
-import { Spinner, LoadingContent } from '@/components/ui/Spinner';
-import { EmptyState } from '@/components/ui/EmptyState';
+import {
+  DataTable,
+  type Column,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ConfirmDialog,
+  Badge,
+  getStatusVariant,
+  Input,
+  Select,
+  Card,
+  Alert,
+  Spinner,
+  LoadingContent,
+  EmptyState,
+  PageHeader,
+} from '@/components/ui';
 import { MagnifyingGlassIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 type UserStatus = 'PENDING_APPROVAL' | 'ACTIVE' | 'INACTIVE' | 'LOCKED';
@@ -378,21 +386,25 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-        <div className="space-x-3">
-          <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-            Import CSV
-          </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 inline-flex items-center"
-          >
-            <UserPlusIcon className="h-5 w-5 mr-2" />
-            Add User
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="User Management"
+        subtitle="Manage user accounts and permissions"
+        breadcrumbs={[{ label: 'Admin', href: '/admin/users' }, { label: 'Users' }]}
+        actions={
+          <>
+            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+              Import CSV
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 inline-flex items-center"
+            >
+              <UserPlusIcon className="h-5 w-5 mr-2" />
+              Add User
+            </button>
+          </>
+        }
+      />
 
       {/* Search and Filters */}
       <Card padding="sm">

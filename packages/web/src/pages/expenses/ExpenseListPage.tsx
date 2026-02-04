@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
-import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { PageHeader } from '@/components/ui';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Pagination } from '@/components/ui/Pagination';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -279,28 +279,24 @@ export function ExpenseListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <Breadcrumb items={[{ label: 'Expenses' }]} />
-
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Expenses</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage and track your expense submissions
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ViewToggle value={view} onChange={setView} />
-          <Link
-            to="/expenses/new"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <PlusIcon className="h-5 w-5" />
-            New Expense
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="My Expenses"
+        subtitle="Manage and track your expense submissions"
+        breadcrumbs={[{ label: 'Expenses' }]}
+        actions={
+          <>
+            <ViewToggle value={view} onChange={setView} />
+            <Link
+              to="/expenses/new"
+              className="btn btn-primary flex items-center gap-2"
+            >
+              <PlusIcon className="h-5 w-5" />
+              New Expense
+            </Link>
+          </>
+        }
+      />
 
       {/* Filters */}
       <ExpenseFilters onFiltersChange={handleFiltersChange} loading={isLoading} />

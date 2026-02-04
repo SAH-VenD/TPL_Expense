@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PlusIcon, BanknotesIcon } from '@heroicons/react/24/outline';
-import { Card, EmptyState, Skeleton, Alert } from '@/components/ui';
+import { Card, EmptyState, Skeleton, Alert, PageHeader } from '@/components/ui';
 import { ViewToggle, type ViewType } from '@/components/expenses/ViewToggle';
 import { BudgetFilters } from '@/components/budgets/BudgetFilters';
 import { BudgetUtilizationTable } from '@/components/budgets/BudgetUtilizationTable';
@@ -183,19 +183,20 @@ export const BudgetListPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Budgets</h1>
-          <p className="text-gray-600 mt-1">Manage and track your budgets</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ViewToggle value={view} onChange={setView} listLabel="List" gridLabel="Cards" />
-          <Link to="/budgets/new" className="btn btn-primary flex items-center gap-2">
-            <PlusIcon className="h-5 w-5" />
-            Create Budget
-          </Link>
-        </div>
-      </div>
+      <PageHeader
+        title="Budgets"
+        subtitle="Manage and track your budgets"
+        breadcrumbs={[{ label: 'Budgets' }]}
+        actions={
+          <>
+            <ViewToggle value={view} onChange={setView} />
+            <Link to="/budgets/new" className="btn btn-primary flex items-center gap-2">
+              <PlusIcon className="h-5 w-5" />
+              Create Budget
+            </Link>
+          </>
+        }
+      />
 
       {/* Summary Stats */}
       {data?.summary && (

@@ -7,7 +7,7 @@ import {
   useUploadReceiptMutation,
 } from '@/features/expenses/services/expenses.service';
 import type { Currency, ExpenseType } from '@/features/expenses/services/expenses.service';
-import { showToast } from '@/components/ui';
+import { showToast, PageHeader } from '@/components/ui';
 import { DatePicker } from '@/components/ui/DatePicker';
 
 interface ExpenseFormData {
@@ -115,15 +115,22 @@ export function ExpenseCreatePage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Create Expense</h1>
-        <button
-          onClick={() => navigate('/expenses')}
-          className="text-gray-600 hover:text-gray-900"
-        >
-          Cancel
-        </button>
-      </div>
+      <PageHeader
+        title="Create Expense"
+        subtitle="Submit a new expense for reimbursement"
+        breadcrumbs={[
+          { label: 'Expenses', href: '/expenses' },
+          { label: 'New Expense' },
+        ]}
+        actions={
+          <button
+            onClick={() => navigate('/expenses')}
+            className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+        }
+      />
 
       {/* Progress Steps */}
       <div className="flex items-center justify-center space-x-4">

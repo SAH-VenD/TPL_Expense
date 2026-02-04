@@ -6,7 +6,7 @@ import { useLogoutMutation, useGetMeQuery } from '@/features/auth/services/auth.
 import { NotificationBell } from '@/components/notifications';
 import {
   ALL_ROLES,
-  APPROVING_ROLES,
+  APPROVAL_READ_ROLES,
   BUDGET_MANAGEMENT_ROLES,
   REPORTING_ROLES,
   ADMIN_NAV_ROLES,
@@ -22,8 +22,8 @@ const navigation: Array<{
 }> = [
   { name: 'Dashboard', href: '/', icon: HomeIcon, roles: ALL_ROLES },
   { name: 'Expenses', href: '/expenses', icon: CurrencyIcon, roles: ALL_ROLES },
-  // ADMIN excluded from Approvals - separation of duties
-  { name: 'Approvals', href: '/approvals', icon: CheckIcon, roles: APPROVING_ROLES },
+  // ADMIN has read-only access to Approvals (can view but not approve/reject)
+  { name: 'Approvals', href: '/approvals', icon: CheckIcon, roles: APPROVAL_READ_ROLES },
   { name: 'Vouchers', href: '/vouchers', icon: TicketIcon, roles: ALL_ROLES },
   { name: 'Budgets', href: '/budgets', icon: BudgetIcon, roles: BUDGET_MANAGEMENT_ROLES },
   { name: 'Reports', href: '/reports', icon: ChartIcon, roles: REPORTING_ROLES },

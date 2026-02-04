@@ -39,7 +39,7 @@ export const ViewToggle: React.FC<ViewToggleProps> = ({
   value,
   onChange,
   listLabel = 'List',
-  gridLabel = 'Grid',
+  gridLabel = 'Cards',
   className,
 }) => {
   return (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PageHeader } from '@/components/ui';
 
 interface Category {
   id: string;
@@ -68,15 +69,19 @@ export function CategoriesPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Expense Categories</h1>
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Add Category
-        </button>
-      </div>
+      <PageHeader
+        title="Expense Categories"
+        subtitle="Manage expense categories and subcategories"
+        breadcrumbs={[{ label: 'Admin', href: '/admin/users' }, { label: 'Categories' }]}
+        actions={
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+          >
+            Add Category
+          </button>
+        }
+      />
 
       {/* Category Tree/List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

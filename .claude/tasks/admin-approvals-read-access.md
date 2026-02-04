@@ -1,7 +1,8 @@
 # Task: Add Admin Read-Only Access to Approvals Page
 
 **Created**: 2026-02-04
-**Status**: Pending
+**Status**: Complete
+**Completed**: 2026-02-04
 
 ---
 
@@ -158,9 +159,10 @@ const { canApprove } = useRolePermissions();
 
 ## Progress
 
-- [ ] Commit and push existing dashboard/finance changes
-- [ ] Add `APPROVAL_READ_ROLES` and `APPROVAL_WRITE_ROLES` to backend constants
-- [ ] Update approvals controller GET endpoints
-- [ ] Add constants to frontend
-- [ ] Update ApprovalQueuePage UI
-- [ ] Test with Admin, Approver, and Finance users
+- [x] Commit and push existing dashboard/finance changes
+- [x] Add `APPROVAL_READ_ROLES` and `APPROVAL_WRITE_ROLES` to backend constants
+- [x] Update approvals controller GET endpoints
+- [x] Add constants to frontend
+- [x] Update ApprovalQueuePage UI
+- [x] Update MainLayout navigation to use `APPROVAL_READ_ROLES` for Approvals menu
+- [ ] Test with Admin, Approver, and Finance users (manual verification needed)
