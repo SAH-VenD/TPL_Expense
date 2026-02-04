@@ -20,7 +20,7 @@ interface DashboardContext {
 /**
  * Hook to provide role-based dashboard filtering context.
  *
- * - FINANCE and ADMIN users see organization-wide data
+ * - CEO, SUPER_APPROVER, FINANCE, and ADMIN users see organization-wide data
  * - APPROVER and EMPLOYEE users see department-scoped data
  */
 export function useDashboardContext(): DashboardContext {
@@ -31,8 +31,8 @@ export function useDashboardContext(): DashboardContext {
     const departmentId = user?.departmentId;
     const departmentName = user?.departmentName;
 
-    // FINANCE and ADMIN see org-wide data
-    const canViewOrgWide = role === 'FINANCE' || role === 'ADMIN';
+    // CEO, SUPER_APPROVER, FINANCE, and ADMIN see org-wide data
+    const canViewOrgWide = role === 'CEO' || role === 'SUPER_APPROVER' || role === 'FINANCE' || role === 'ADMIN';
 
     // APPROVER and EMPLOYEE see department-scoped data (if they have a department)
     const isDepartmentScoped = !canViewOrgWide && !!departmentId;

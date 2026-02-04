@@ -106,7 +106,7 @@ function App() {
         <Route
           path="/admin/audit-logs"
           element={
-            <RoleBasedRoute allowedRoles={['ADMIN', 'FINANCE']}>
+            <RoleBasedRoute allowedRoles={['ADMIN', 'FINANCE', 'CEO']}>
               <AuditLogsPage />
             </RoleBasedRoute>
           }

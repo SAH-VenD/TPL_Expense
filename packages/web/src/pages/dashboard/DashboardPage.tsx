@@ -13,12 +13,13 @@ import { SpendTrendChart } from '@/components/dashboard/SpendTrendChart';
 import { CategoryBreakdownChart } from '@/components/dashboard/CategoryBreakdownChart';
 import { useGetDashboardSummaryQuery } from '@/features/reports/services/reports.service';
 import { useGetPendingApprovalsQuery } from '@/features/approvals/services/approvals.service';
-import { useDashboardContext } from '@/hooks/useDashboardContext';
+import { useDashboardContext, useRolePermissions } from '@/hooks';
 import { Alert } from '@/components/ui/Alert';
 
 export function DashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
   const { departmentId, scopeLabel, isDepartmentScoped, canViewOrgWide } = useDashboardContext();
+  const { canApprove, isFinance, isCEO, isAdmin } = useRolePermissions();
 
   // Pass departmentId for role-based filtering
   const { data: summary, isLoading, isError, refetch } = useGetDashboardSummaryQuery({
@@ -34,8 +35,8 @@ export function DashboardPage() {
 
   const myPendingCount = pendingApprovalsData?.meta?.pagination?.total ?? 0;
 
-  const isApprover = user?.role === 'APPROVER' || user?.role === 'ADMIN';
-  const isFinance = user?.role === 'FINANCE' || user?.role === 'ADMIN';
+  // Show finance stats for FINANCE, CEO, or ADMIN (for budget visibility)
+  const showFinanceStats = isFinance || isCEO || isAdmin;
 
   return (
     <div className="space-y-6">
@@ -128,14 +129,14 @@ export function DashboardPage() {
       {/* Activity Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RecentExpenses limit={5} />
-        {isApprover && <PendingApprovals limit={5} />}
+        {canApprove && <PendingApprovals limit={5} />}
       </div>
 
       {/* Budget Overview - Full Width */}
       <BudgetOverview limit={5} departmentId={departmentId} />
 
       {/* Quick Stats for Finance Users */}
-      {isFinance && summary && (
+      {showFinanceStats && summary && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="card p-6">
             <h3 className="text-sm font-medium text-gray-600">Budget Utilization</h3>

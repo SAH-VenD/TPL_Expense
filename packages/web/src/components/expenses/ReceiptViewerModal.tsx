@@ -27,8 +27,29 @@ export const ReceiptViewerModal: React.FC<ReceiptViewerModalProps> = ({
     }
   }, [isOpen, receipt, getDownloadUrl]);
 
-  const isImage = receipt?.mimeType?.startsWith('image/');
-  const isPdf = receipt?.mimeType === 'application/pdf';
+  // Determine file type from mimeType or filename extension
+  const getMimeTypeFromFilename = (filename: string): string | null => {
+    const ext = filename.toLowerCase().split('.').pop();
+    const mimeTypes: Record<string, string> = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+      'heic': 'image/heic',
+      'pdf': 'application/pdf',
+    };
+    return ext ? mimeTypes[ext] || null : null;
+  };
+
+  // Use mimeType from download response first, then receipt, then infer from filename
+  const effectiveMimeType =
+    data?.mimeType ||
+    receipt?.mimeType ||
+    getMimeTypeFromFilename(receipt?.originalName || receipt?.fileName || '');
+
+  const isImage = effectiveMimeType?.startsWith('image/');
+  const isPdf = effectiveMimeType === 'application/pdf';
 
   const handleDownload = () => {
     if (data?.url) {
@@ -70,6 +91,18 @@ export const ReceiptViewerModal: React.FC<ReceiptViewerModalProps> = ({
                 className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-md"
                 onError={() => setImageError(true)}
               />
+            ) : isImage && imageError ? (
+              <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-lg w-full">
+                <span className="text-6xl mb-4">🖼️</span>
+                <p className="text-gray-600 font-medium">Image failed to load</p>
+                <button
+                  onClick={handleDownload}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  <ArrowDownTrayIcon className="h-5 w-5" />
+                  Download instead
+                </button>
+              </div>
             ) : isPdf ? (
               <iframe
                 src={data.url}
@@ -89,20 +122,6 @@ export const ReceiptViewerModal: React.FC<ReceiptViewerModalProps> = ({
                 >
                   <ArrowDownTrayIcon className="h-5 w-5" />
                   Download to view
-                </button>
-              </div>
-            )}
-
-            {imageError && (
-              <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-lg w-full">
-                <span className="text-6xl mb-4">🖼️</span>
-                <p className="text-gray-600 font-medium">Image failed to load</p>
-                <button
-                  onClick={handleDownload}
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  <ArrowDownTrayIcon className="h-5 w-5" />
-                  Download instead
                 </button>
               </div>
             )}
