@@ -204,6 +204,7 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
                     outerRadius={outerRadius}
                     dataKey="amount"
                     nameKey="categoryName"
+                    label={false}
                     labelLine={false}
                     onClick={(_, index) => handleClick(chartData[index])}
                     cursor={onCategoryClick ? 'pointer' : 'default'}
@@ -221,13 +222,17 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
                   <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
-              {/* Center text - positioned absolutely within the chart container */}
+              {/* Center text - positioned absolutely within the donut hole */}
               {variant === 'donut' && (
                 <div
                   className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  style={{
+                    // Constrain to the inner radius area to prevent overflow
+                    padding: `${(height - innerRadius * 2) / 2}px ${(220 - innerRadius * 2) / 2}px`,
+                  }}
                 >
-                  <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 leading-tight">
+                  <div className="text-center max-w-full overflow-hidden">
+                    <p className="text-sm font-bold text-gray-900 leading-tight truncate">
                       {formatCompactCurrency(totalAmount)}
                     </p>
                     <p className="text-xs text-gray-500">Total</p>
@@ -236,7 +241,7 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
               )}
             </div>
             {/* Legend with percentages */}
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 min-w-0 space-y-1 overflow-hidden">
               {chartData.map((entry) => {
                 const isClickable = entry.categoryId !== 'other' && onCategoryClick;
                 return (
@@ -247,14 +252,14 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
                     onClick={() => isClickable && onCategoryClick(entry.categoryId)}
                     disabled={!isClickable}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <div
                         className="w-3 h-3 rounded-sm flex-shrink-0"
                         style={{ backgroundColor: entry.color }}
                       />
                       <span className="text-gray-700 truncate">{entry.categoryName}</span>
                     </div>
-                    <span className="font-medium text-gray-900 ml-2">
+                    <span className="font-medium text-gray-900 ml-2 flex-shrink-0">
                       {entry.percentage.toFixed(0)}%
                     </span>
                   </button>
