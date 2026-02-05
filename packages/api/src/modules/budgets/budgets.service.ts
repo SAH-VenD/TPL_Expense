@@ -16,7 +16,7 @@ import {
   EnforcementAction,
   BudgetStatus,
 } from './dto/budget-responses.dto';
-import { BudgetType, BudgetPeriod, BudgetEnforcement, ExpenseStatus, Budget } from '@prisma/client';
+import { BudgetType, BudgetPeriod, BudgetEnforcement, ExpenseStatus, Budget, User, RoleType } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
@@ -750,7 +750,11 @@ export class BudgetsService {
 
   // ==================== BUDGET SUMMARY/REPORTS ====================
 
-  async getBudgetSummary(query: BudgetSummaryQueryDto): Promise<BudgetSummaryDto> {
+  /**
+   * Get budget summary
+   * For EMPLOYEE role, only shows budgets for their department
+   */
+  async getBudgetSummary(query: BudgetSummaryQueryDto, user?: User): Promise<BudgetSummaryDto> {
     const where: any = {};
 
     if (query.activeOnly !== false) {
@@ -765,7 +769,10 @@ export class BudgetsService {
       where.period = query.periodType;
     }
 
-    if (query.departmentId) {
+    // EMPLOYEE users only see their department's budgets
+    if (user?.role === RoleType.EMPLOYEE && user.departmentId) {
+      where.departmentId = user.departmentId;
+    } else if (query.departmentId) {
       where.departmentId = query.departmentId;
     }
 

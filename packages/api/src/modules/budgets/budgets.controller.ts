@@ -93,11 +93,11 @@ export class BudgetsController {
   }
 
   @Get('summary')
-  @Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
+  @Roles(RoleType.EMPLOYEE, RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
   @ApiOperation({ summary: 'Get budget summary report with utilization metrics' })
   @ApiResponse({ status: 200, description: 'Budget summary', type: BudgetSummaryDto })
-  getBudgetSummary(@Query() query: BudgetSummaryQueryDto): Promise<BudgetSummaryDto> {
-    return this.budgetsService.getBudgetSummary(query);
+  getBudgetSummary(@Query() query: BudgetSummaryQueryDto, @CurrentUser() user?: User): Promise<BudgetSummaryDto> {
+    return this.budgetsService.getBudgetSummary(query, user);
   }
 
   @Get('period-dates')

@@ -29,12 +29,13 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { RoleType } from '@prisma/client';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { RoleType, User } from '@prisma/client';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
+@Roles(RoleType.EMPLOYEE, RoleType.APPROVER, RoleType.SUPER_APPROVER, RoleType.FINANCE, RoleType.CEO, RoleType.ADMIN)
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
@@ -55,8 +56,12 @@ export class ReportsController {
   @ApiQuery({ name: 'startDate', required: false, description: 'Start date (ISO format)' })
   @ApiQuery({ name: 'endDate', required: false, description: 'End date (ISO format)' })
   @ApiResponse({ status: 200, description: 'Spend by category data' })
-  getSpendByCategory(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
-    return this.reportsService.getSpendByCategory(startDate, endDate);
+  getSpendByCategory(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @CurrentUser() user?: User,
+  ) {
+    return this.reportsService.getSpendByCategory(startDate, endDate, user);
   }
 
   @Get('spend-by-vendor')
@@ -116,8 +121,11 @@ export class ReportsController {
   @Get('monthly-trend')
   @ApiOperation({ summary: 'Get monthly expense trend report' })
   @ApiOkResponse({ type: MonthlyTrendReportDto, description: 'Monthly expense trend data' })
-  getMonthlyTrend(@Query() query: MonthlyTrendQueryDto): Promise<MonthlyTrendReportDto> {
-    return this.reportsService.getMonthlyTrend(query);
+  getMonthlyTrend(
+    @Query() query: MonthlyTrendQueryDto,
+    @CurrentUser() user?: User,
+  ): Promise<MonthlyTrendReportDto> {
+    return this.reportsService.getMonthlyTrend(query, user);
   }
 
   @Get('approval-turnaround')
@@ -150,8 +158,11 @@ export class ReportsController {
     type: DashboardSummaryReportDto,
     description: 'Key metrics for executive dashboard',
   })
-  getDashboardSummary(@Query() query: DashboardQueryDto): Promise<DashboardSummaryReportDto> {
-    return this.reportsService.getDashboardSummary(query);
+  getDashboardSummary(
+    @Query() query: DashboardQueryDto,
+    @CurrentUser() user?: User,
+  ): Promise<DashboardSummaryReportDto> {
+    return this.reportsService.getDashboardSummary(query, user);
   }
 
   // ==================== EXPORT ====================

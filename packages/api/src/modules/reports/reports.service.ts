@@ -20,7 +20,7 @@ import {
   DashboardSummaryReportDto,
   DashboardMetricDto,
 } from './dto/report-responses.dto';
-import { ExpenseStatus, VoucherStatus, ApprovalAction } from '@prisma/client';
+import { ExpenseStatus, VoucherStatus, ApprovalAction, RoleType, User } from '@prisma/client';
 import * as ExcelJS from 'exceljs';
 
 /**
@@ -89,16 +89,25 @@ export class ReportsService {
 
   /**
    * Get spend breakdown by category
+   * For EMPLOYEE role, only shows their own expenses
    */
-  async getSpendByCategory(startDate?: string, endDate?: string) {
+  async getSpendByCategory(startDate?: string, endDate?: string, user?: User) {
     const dateFilter = this.getDateFilter(startDate, endDate);
+
+    // Build where clause - filter by submitterId for EMPLOYEE role
+    const whereClause: Record<string, unknown> = {
+      status: { in: APPROVED_STATUSES },
+      ...dateFilter,
+    };
+
+    // EMPLOYEE users only see their own data
+    if (user?.role === RoleType.EMPLOYEE) {
+      whereClause.submitterId = user.id;
+    }
 
     const result = await this.prisma.expense.groupBy({
       by: ['categoryId'],
-      where: {
-        status: { in: APPROVED_STATUSES },
-        ...dateFilter,
-      },
+      where: whereClause,
       _sum: {
         totalAmount: true,
       },
@@ -531,8 +540,9 @@ export class ReportsService {
 
   /**
    * Get monthly trend report
+   * For EMPLOYEE role, only shows their own expenses
    */
-  async getMonthlyTrend(query: MonthlyTrendQueryDto): Promise<MonthlyTrendReportDto> {
+  async getMonthlyTrend(query: MonthlyTrendQueryDto, user?: User): Promise<MonthlyTrendReportDto> {
     const year = query.year || new Date().getFullYear();
     const startDate = new Date(year, 0, 1);
     const endDate = new Date(year, 11, 31, 23, 59, 59);
@@ -545,9 +555,13 @@ export class ReportsService {
       },
     };
 
-    if (query.departmentId) {
+    // EMPLOYEE users only see their own data
+    if (user?.role === RoleType.EMPLOYEE) {
+      where.submitterId = user.id;
+    } else if (query.departmentId) {
       where.submitter = { departmentId: query.departmentId };
     }
+
     if (query.projectId) {
       where.projectId = query.projectId;
     }
@@ -813,8 +827,9 @@ export class ReportsService {
 
   /**
    * Get dashboard summary with key metrics
+   * For EMPLOYEE role, only shows their own expenses
    */
-  async getDashboardSummary(query: DashboardQueryDto): Promise<DashboardSummaryReportDto> {
+  async getDashboardSummary(query: DashboardQueryDto, user?: User): Promise<DashboardSummaryReportDto> {
     const periodDays = query.periodDays || 30;
     const endDate = new Date();
     const startDate = new Date();
@@ -826,7 +841,11 @@ export class ReportsService {
     previousStartDate.setDate(previousStartDate.getDate() - periodDays);
 
     const baseWhere: Record<string, unknown> = {};
-    if (query.departmentId) {
+
+    // EMPLOYEE users only see their own data
+    if (user?.role === RoleType.EMPLOYEE) {
+      baseWhere.submitterId = user.id;
+    } else if (query.departmentId) {
       baseWhere.submitter = { departmentId: query.departmentId };
     }
 
@@ -857,17 +876,21 @@ export class ReportsService {
       return diffMs / (1000 * 60 * 60 * 24);
     });
 
-    // Voucher metrics
-    const voucherMetrics = await this.getVoucherMetrics(query.departmentId);
+    // Voucher metrics - EMPLOYEE sees only their own vouchers
+    const voucherMetrics = await this.getVoucherMetrics(
+      user?.role === RoleType.EMPLOYEE ? undefined : query.departmentId,
+      user?.role === RoleType.EMPLOYEE ? user.id : undefined,
+    );
 
-    // Budget utilization
-    const budgetMetrics = await this.getBudgetMetrics(query.departmentId);
+    // Budget utilization - EMPLOYEE sees their department's budgets
+    const budgetDepartmentId = user?.role === RoleType.EMPLOYEE ? user.departmentId : query.departmentId;
+    const budgetMetrics = await this.getBudgetMetrics(budgetDepartmentId ?? undefined);
 
     // Top categories
     const topCategories = await this.getTopCategories(startDate, endDate, baseWhere, 5);
 
-    // Top departments (if not filtering by department)
-    const topDepartments = query.departmentId
+    // Top departments (if not filtering by department or user is EMPLOYEE)
+    const topDepartments = (query.departmentId || user?.role === RoleType.EMPLOYEE)
       ? undefined
       : await this.getTopDepartments(startDate, endDate, 5);
 
@@ -1084,10 +1107,14 @@ export class ReportsService {
 
   /**
    * Get voucher metrics
+   * For EMPLOYEE role, filter by requesterId
    */
-  private async getVoucherMetrics(departmentId?: string) {
+  private async getVoucherMetrics(departmentId?: string, userId?: string) {
     const baseWhere: Record<string, unknown> = {};
-    if (departmentId) {
+    if (userId) {
+      // EMPLOYEE users only see their own vouchers
+      baseWhere.requesterId = userId;
+    } else if (departmentId) {
       baseWhere.requester = { departmentId };
     }
 
