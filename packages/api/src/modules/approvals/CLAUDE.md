@@ -6,6 +6,7 @@ Multi-tier expense approval workflow with delegation support, history tracking, 
 ## Status: COMPLETE
 - Completed: 2026-01-30
 - Tests: 35 unit tests, 31 E2E tests
+- QA Update: 2026-02-02 (API connections, delegate modal fixes)
 
 ## Key Files
 - `approvals.service.ts` - Core approval logic with tier-based workflow

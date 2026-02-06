@@ -1,19 +1,24 @@
 # TPL Expense - API Modules
 
+**Phase 1 Complete:** All backend modules implemented (2026-02-01)
+**Total Test Coverage:** 280+ unit tests, 100+ E2E tests
+
 ## Module Index
 
-| Module | Path | Status | Description |
-|--------|------|--------|-------------|
-| auth | `./auth/` | Complete | JWT authentication |
-| users | `./users/` | Complete | User management |
-| categories | `./categories/` | Complete | Expense categories (hierarchical) |
-| departments | `./departments/` | Complete | Organizational units (hierarchical) |
-| expenses | `./expenses/` | Placeholder | Core expense records |
-| receipts | `./receipts/` | Placeholder | Receipt uploads & OCR |
-| approvals | `./approvals/` | Placeholder | Approval workflow |
-| vouchers | `./vouchers/` | Placeholder | Petty cash vouchers |
-| budgets | `./budgets/` | Placeholder | Budget tracking |
-| pre-approvals | `./pre-approvals/` | Placeholder | Pre-approval requests |
+| Module | Path | Status | Tests | Description |
+|--------|------|--------|-------|-------------|
+| auth | `./auth/` | Complete | Unit | JWT authentication (access/refresh tokens) |
+| users | `./users/` | Complete | Unit | User management with role-based access |
+| categories | `./categories/` | Complete | Unit | Expense categories (hierarchical tree) |
+| departments | `./departments/` | Complete | Unit | Organizational units (hierarchical tree) |
+| storage | `./storage/` | Complete | Unit | S3/LocalStorage file management |
+| expenses | `./expenses/` | Complete | Unit | Core expense records with splits |
+| receipts | `./receipts/` | Complete | Unit | Receipt uploads & OCR preparation |
+| approvals | `./approvals/` | Complete | 35 unit, 31 E2E | Multi-tier approval workflow with delegation |
+| vouchers | `./vouchers/` | Complete | 114 unit, 24 E2E | Petty cash voucher lifecycle |
+| budgets | `./budgets/` | Complete | 85 unit | Budget tracking with enforcement |
+| reports | `./reports/` | Complete | 52 unit, 70+ E2E | Analytics, dashboards, exports |
+| pre-approvals | `./pre-approvals/` | Pending | - | Pre-approval workflow (Phase 3) |
 
 ## Standard Module Structure
 ```

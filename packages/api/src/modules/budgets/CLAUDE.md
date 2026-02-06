@@ -5,7 +5,7 @@ Comprehensive budget tracking with utilization calculation, enforcement actions,
 
 ## Status: COMPLETE
 - Completed: 2026-01-30
-- Tests: 85 unit tests, E2E tests
+- Tests: 85 unit tests
 
 ## Key Files
 - `budgets.service.ts` - Budget management and utilization calculation

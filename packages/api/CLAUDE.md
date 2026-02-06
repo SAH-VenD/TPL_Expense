@@ -1,10 +1,13 @@
 # TPL Expense - API Package
 
+**PHASE 1 COMPLETE** (2026-02-01) - All backend modules implemented
+
 ## Quick Reference
 - **Framework**: NestJS 10 + TypeScript
 - **Database**: PostgreSQL 15 via Prisma ORM
 - **Auth**: JWT (RS256) with refresh tokens
 - **Port**: 3000
+- **Test Coverage**: 280+ unit tests, 100+ E2E tests
 
 ## Project Structure
 ```
@@ -70,13 +73,16 @@ See `.env.example` for required variables. Key ones:
 - `AWS_ENDPOINT` - LocalStack URL for dev
 
 ## Implemented Modules
-| Module | Status | Notes |
-|--------|--------|-------|
-| auth | Complete | JWT login/register/refresh |
-| users | Complete | CRUD + approval workflow |
-| categories | Complete | Hierarchical CRUD |
-| departments | Complete | Hierarchical CRUD |
-| expenses | Placeholder | Day 3 |
-| receipts | Placeholder | Day 3 |
-| approvals | Placeholder | Day 4 |
-| vouchers | Placeholder | Day 5 |
+| Module | Status | Tests | Notes |
+|--------|--------|-------|-------|
+| auth | Complete | Unit | JWT login/register/refresh |
+| users | Complete | Unit | CRUD + role-based access |
+| categories | Complete | Unit | Hierarchical CRUD (tree) |
+| departments | Complete | Unit | Hierarchical CRUD (tree) |
+| storage | Complete | Unit | S3/LocalStorage providers |
+| expenses | Complete | Unit | Expense CRUD with splits |
+| receipts | Complete | Unit | File uploads, OCR prep |
+| approvals | Complete | 35 unit, 31 E2E | Multi-tier workflow, delegation |
+| vouchers | Complete | 114 unit, 24 E2E | Petty cash lifecycle |
+| budgets | Complete | 85 unit | Utilization, enforcement |
+| reports | Complete | 52 unit, 70+ E2E | Analytics, dashboards, exports |

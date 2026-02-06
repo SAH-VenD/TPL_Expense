@@ -7,22 +7,31 @@ This folder contains task planning documents for the TPL Expense project. This C
 ## Quick Reference
 
 ### Current Active Work
-- **Phase 2**: Frontend Implementation
+- **Phase 2**: Frontend Implementation (~80% complete)
 - **Master Plan**: [phase2-overview.md](./phase2-overview.md)
+- **Active Task**: [employee-dashboard-widget-visibility.md](./employee-dashboard-widget-visibility.md)
 
-### Epic WBS Files (Per-Feature Branches)
+### Epic Status & WBS Files
 
-| Epic | Priority | Branch | WBS File |
+| Epic | Priority | Status | WBS File |
 |------|----------|--------|----------|
-| 1. UI Components | P0 | `feature/epic-01-ui-components` | [epic-01-ui-components.md](./epic-01-ui-components.md) |
-| 2. Dashboard | P1 | `feature/epic-02-dashboard` | [epic-02-dashboard.md](./epic-02-dashboard.md) |
-| 3. Expenses | P1 | `feature/epic-03-expenses` | [epic-03-expenses.md](./epic-03-expenses.md) |
-| 4. Approvals | P1 | `feature/epic-04-approvals` | [epic-04-approvals.md](./epic-04-approvals.md) |
-| 5. Vouchers | P2 | `feature/epic-05-vouchers` | [epic-05-vouchers.md](./epic-05-vouchers.md) |
-| 6. Budgets | P2 | `feature/epic-06-budgets` | [epic-06-budgets.md](./epic-06-budgets.md) |
-| 7. Reports | P2 | `feature/epic-07-reports` | [epic-07-reports.md](./epic-07-reports.md) |
-| 8. Admin | P2 | `feature/epic-08-admin` | [epic-08-admin.md](./epic-08-admin.md) |
-| 9-11. Advanced | P3 | various | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
+| 1. UI Components | P0 | Complete | [epic-01-ui-components.md](./epic-01-ui-components.md) |
+| 2. Dashboard | P1 | Complete | [epic-02-dashboard.md](./epic-02-dashboard.md) |
+| 3. Expenses | P1 | Complete | [epic-03-expenses.md](./epic-03-expenses.md) |
+| 4. Approvals | P1 | Complete | [epic-04-approvals.md](./epic-04-approvals.md) |
+| 5. Vouchers | P2 | Complete | [epic-05-vouchers.md](./epic-05-vouchers.md) |
+| 6. Budgets | P2 | Complete | [epic-06-budgets.md](./epic-06-budgets.md) |
+| 6b. Budget Pages | P2 | Complete | [epic-06b-budget-pages.md](./epic-06b-budget-pages.md) |
+| 7. Reports | P2 | Complete | [epic-07-reports.md](./epic-07-reports.md) |
+| 8. Admin | P2 | Complete | [epic-08-admin.md](./epic-08-admin.md) |
+| 9-11. Advanced | P3 | Pending | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
+| RBAC Overhaul | P0 | Planning | [epic-rbac-overhaul.md](./epic-rbac-overhaul.md) |
+
+### Remaining Work
+- **QA Testing**: Role-based widget visibility (in progress)
+- **Epic 9**: OCR Integration (not started)
+- **Epic 10**: Pre-Approval Workflow (not started)
+- **RBAC Overhaul**: Enhanced role access control (planning)
 
 ### Branching Strategy
 Each epic has its own feature branch. Create branch from `main` when starting an epic:

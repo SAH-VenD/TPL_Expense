@@ -5,7 +5,8 @@ Petty cash voucher management with complete lifecycle from request to settlement
 
 ## Status: COMPLETE
 - Completed: 2026-01-30
-- Tests: 114 unit tests, E2E tests
+- Tests: 114 unit tests, 24 E2E tests
+- QA Update: 2026-02-02 (DTO alignment, pagination, settlement modal fixes)
 
 ## Key Files
 - `vouchers.service.ts` - Voucher lifecycle and business logic

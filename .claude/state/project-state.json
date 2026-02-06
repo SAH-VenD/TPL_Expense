@@ -1,10 +1,24 @@
 {
   "project_name": "tpl-expense",
   "created_at": "2026-01-28T00:00:00Z",
-  "last_updated": "2026-02-02T12:00:00Z",
+  "last_updated": "2026-02-06T00:00:00Z",
 
   "current_phase": "phase-2",
-  "phase_description": "QA testing and production readiness",
+  "phase_description": "Frontend QA and completion - Phase 1 backend complete, Phase 2 frontend ~80% complete",
+
+  "phase_2_epics": {
+    "epic-01-ui-components": { "status": "complete", "notes": "Components in use across all pages" },
+    "epic-02-dashboard": { "status": "complete", "notes": "DashboardPage with role-based visibility in progress" },
+    "epic-03-expenses": { "status": "complete", "notes": "4 pages: List, Create, Edit, Detail" },
+    "epic-04-approvals": { "status": "complete", "notes": "ApprovalQueuePage implemented" },
+    "epic-05-vouchers": { "status": "complete", "notes": "3 pages: List, Detail, Request" },
+    "epic-06-budgets": { "status": "complete", "notes": "3 pages: List, Create, Detail + tests" },
+    "epic-07-reports": { "status": "complete", "notes": "ReportsPage implemented" },
+    "epic-08-admin": { "status": "complete", "notes": "4 pages: Users, Categories, Settings, AuditLogs" },
+    "epic-09-ocr": { "status": "pending", "notes": "Advanced feature - not started" },
+    "epic-10-preapproval": { "status": "pending", "notes": "Advanced feature - not started" },
+    "epic-11-notifications": { "status": "complete", "notes": "NotificationListPage implemented" }
+  },
 
   "features": {
     "auth": {
@@ -87,6 +101,12 @@
   ],
 
   "recent_sessions": [
+    {
+      "date": "2026-02-06",
+      "features_completed": ["documentation-update"],
+      "agents_used": [],
+      "notes": "Updated all CLAUDE.md files to reflect current state. Phase 1 backend complete (11 features, 280+ unit tests, 100+ E2E). Phase 2 frontend ~80% complete (25 pages, 8 services). Remaining: OCR, Pre-Approval, RBAC Overhaul."
+    },
     {
       "date": "2026-02-02",
       "features_completed": ["vouchers-qa"],
