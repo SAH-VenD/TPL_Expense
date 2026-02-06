@@ -4,6 +4,7 @@ import {
   ClockIcon,
   BanknotesIcon,
 } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
 import { useAppSelector } from '../../store/hooks';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentExpenses } from '@/components/dashboard/RecentExpenses';
@@ -19,7 +20,7 @@ import { Alert } from '@/components/ui/Alert';
 export function DashboardPage() {
   const { user } = useAppSelector((state) => state.auth);
   const { departmentId, scopeLabel, isDepartmentScoped, canViewOrgWide } = useDashboardContext();
-  const { canApprove, isFinance, isCEO, isAdmin } = useRolePermissions();
+  const { canApprove, isFinance, isCEO, isAdmin, isEmployee, isSuperApprover } = useRolePermissions();
 
   // Pass departmentId for role-based filtering
   const { data: summary, isLoading, isError, refetch } = useGetDashboardSummaryQuery({
@@ -35,8 +36,21 @@ export function DashboardPage() {
 
   const myPendingCount = pendingApprovalsData?.meta?.pagination?.total ?? 0;
 
-  // Show finance stats for FINANCE, CEO, or ADMIN (for budget visibility)
-  const showFinanceStats = isFinance || isCEO || isAdmin;
+  // Show finance stats for FINANCE, CEO, ADMIN, or SUPER_APPROVER (for budget visibility)
+  const showFinanceStats = isFinance || isCEO || isAdmin || isSuperApprover;
+
+  // Employees see a simplified dashboard without budget/approval widgets
+  const showFullDashboard = !isEmployee;
+
+  // Compute pending approvals subtitle to avoid nested ternary
+  const getPendingApprovalsSubtitle = (): string | undefined => {
+    if (isDepartmentScoped) {
+      return myPendingCount > 0 ? `${myPendingCount} awaiting your review` : undefined;
+    }
+    return summary?.approvals.pendingCount
+      ? `${summary.approvals.pendingCount} awaiting review`
+      : undefined;
+  };
 
   return (
     <div className="space-y-6">
@@ -46,7 +60,9 @@ export function DashboardPage() {
           Welcome back, {user?.firstName}!
         </h1>
         <p className="text-gray-600">
-          {isDepartmentScoped ? (
+          {isEmployee ? (
+            "Here's a summary of your expense activity."
+          ) : isDepartmentScoped ? (
             <>Showing metrics for <span className="font-medium">{scopeLabel}</span></>
           ) : (
             "Here's what's happening across the organization."
@@ -66,10 +82,15 @@ export function DashboardPage() {
         </Alert>
       )}
 
-      {/* Stats Grid - Equal Height Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+      {/* Stats Grid - Equal Height Cards (2 columns for employees, 4 for others) */}
+      <div className={clsx(
+        "grid gap-6 items-stretch",
+        isEmployee
+          ? "grid-cols-1 md:grid-cols-2"
+          : "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
+      )}>
         <StatCard
-          label="Total Expenses (30 days)"
+          label={isEmployee ? "My Total Expenses (30 days)" : "Total Expenses (30 days)"}
           value={summary?.expenses.total.value ?? 0}
           format="currency"
           trend={summary?.expenses.total.trend}
@@ -80,7 +101,7 @@ export function DashboardPage() {
           variant="expanded"
         />
         <StatCard
-          label="Approved This Month"
+          label={isEmployee ? "My Approved This Month" : "Approved This Month"}
           value={summary?.expenses.approved.value ?? 0}
           format="currency"
           trend={summary?.expenses.approved.trend}
@@ -90,40 +111,45 @@ export function DashboardPage() {
           href="/expenses?status=APPROVED"
           variant="expanded"
         />
-        <StatCard
-          label={isDepartmentScoped ? "My Pending Approvals" : "Pending Approval"}
-          value={isDepartmentScoped ? myPendingCount : (summary?.expenses.pending.value ?? 0)}
-          format="number"
-          subtitle={isDepartmentScoped
-            ? (myPendingCount > 0 ? `${myPendingCount} awaiting your review` : undefined)
-            : (summary?.approvals.pendingCount
-              ? `${summary.approvals.pendingCount} awaiting review`
-              : undefined)
-          }
-          icon={<ClockIcon className="h-6 w-6" />}
-          loading={isLoading}
-          href="/approvals"
-          variant="expanded"
-        />
-        <StatCard
-          label="Outstanding Vouchers"
-          value={summary?.vouchers.outstandingCount ?? 0}
-          format="number"
-          subtitle={summary?.vouchers.overdueCount
-            ? `${summary.vouchers.overdueCount} overdue`
-            : undefined
-          }
-          icon={<BanknotesIcon className="h-6 w-6" />}
-          loading={isLoading}
-          href="/vouchers"
-          variant="expanded"
-        />
+        {/* Pending Approvals - hide for employees */}
+        {showFullDashboard && (
+          <StatCard
+            label={isDepartmentScoped ? "My Pending Approvals" : "Pending Approval"}
+            value={isDepartmentScoped ? myPendingCount : (summary?.expenses.pending.value ?? 0)}
+            format="number"
+            subtitle={getPendingApprovalsSubtitle()}
+            icon={<ClockIcon className="h-6 w-6" />}
+            loading={isLoading}
+            href="/approvals"
+            variant="expanded"
+          />
+        )}
+        {/* Outstanding Vouchers - hide for employees */}
+        {showFullDashboard && (
+          <StatCard
+            label="Outstanding Vouchers"
+            value={summary?.vouchers.outstandingCount ?? 0}
+            format="number"
+            subtitle={summary?.vouchers.overdueCount
+              ? `${summary.vouchers.overdueCount} overdue`
+              : undefined
+            }
+            icon={<BanknotesIcon className="h-6 w-6" />}
+            loading={isLoading}
+            href="/vouchers"
+            variant="expanded"
+          />
+        )}
       </div>
 
-      {/* Row 2: Spending Trend + Budget Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Row 2: Spending Trend + Budget Overview (full width for employees) */}
+      <div className={clsx(
+        "grid gap-6",
+        isEmployee ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-2"
+      )}>
         <SpendTrendChart showComparison={false} departmentId={departmentId} />
-        <BudgetOverview limit={5} departmentId={departmentId} />
+        {/* Budget Overview - hide for employees */}
+        {showFullDashboard && <BudgetOverview limit={5} departmentId={departmentId} />}
       </div>
 
       {/* Quick Stats for Finance Users */}
