@@ -43,8 +43,16 @@ test.describe('Reports', () => {
     await page.locator('text=Spend by Department').first().click();
 
     // Should have date inputs or date labels
-    const hasDateInput = await page.locator('input[type="date"]').first().isVisible({ timeout: 2000 }).catch(() => false);
-    const hasDateLabel = await page.locator('text=/start date|end date|from|to/i').first().isVisible({ timeout: 2000 }).catch(() => false);
+    const hasDateInput = await page
+      .locator('input[type="date"]')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
+    const hasDateLabel = await page
+      .locator('text=/start date|end date|from|to/i')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     expect(hasDateInput || hasDateLabel).toBeTruthy();
   });
@@ -85,8 +93,16 @@ test.describe('Reports', () => {
     await page.locator('text=Spend by Department').first().click();
 
     // Should show export options
-    const hasExport = await page.locator('text=/export|xlsx|csv|pdf/i').first().isVisible({ timeout: 2000 }).catch(() => false);
-    const hasExportButton = await page.locator('button:has-text("Export")').first().isVisible({ timeout: 2000 }).catch(() => false);
+    const hasExport = await page
+      .locator('text=/export|xlsx|csv|pdf/i')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
+    const hasExportButton = await page
+      .locator('button:has-text("Export")')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     expect(hasExport || hasExportButton).toBeTruthy();
   });

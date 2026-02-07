@@ -67,6 +67,22 @@ export interface SystemSetting {
   category?: string;
 }
 
+export interface SystemSettings {
+  sessionTimeoutMinutes?: number;
+  maxLoginAttempts?: number;
+  lockoutDurationMinutes?: number;
+  passwordMinLength?: number;
+  requireUppercase?: boolean;
+  requireLowercase?: boolean;
+  requireNumber?: boolean;
+  requireSpecialChar?: boolean;
+  expenseSubmissionDeadlineDays?: number;
+  preApprovalExpiryDays?: number;
+  voucherSettlementDeadlineDays?: number;
+  budgetWarningThreshold?: number;
+  allowedEmailDomains?: string[];
+}
+
 export const adminApi = createApi({
   reducerPath: 'adminApi',
   baseQuery: baseQueryWithReauth,
@@ -90,6 +106,20 @@ export const adminApi = createApi({
         url: `/categories/${id}`,
         method: 'PATCH',
         body: data,
+      }),
+      invalidatesTags: ['Category'],
+    }),
+    deleteCategory: builder.mutation<Category, string>({
+      query: (id) => ({
+        url: `/categories/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Category'],
+    }),
+    reactivateCategory: builder.mutation<Category, string>({
+      query: (id) => ({
+        url: `/categories/${id}/reactivate`,
+        method: 'POST',
       }),
       invalidatesTags: ['Category'],
     }),
@@ -121,6 +151,16 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['ApprovalTier'],
     }),
+    updateApprovalTier: builder.mutation<ApprovalTier, { id: string; data: Partial<ApprovalTier> }>(
+      {
+        query: ({ id, data }) => ({
+          url: `/admin/approval-tiers/${id}`,
+          method: 'PATCH',
+          body: data,
+        }),
+        invalidatesTags: ['ApprovalTier'],
+      },
+    ),
 
     // Users
     getUsers: builder.query<PaginatedResponse<User>, { page?: number; search?: string }>({
@@ -130,14 +170,17 @@ export const adminApi = createApi({
       }),
       providesTags: ['User'],
     }),
-    createUser: builder.mutation<User, {
-      email: string;
-      firstName: string;
-      lastName: string;
-      role?: string;
-      departmentId?: string;
-      password?: string;
-    }>({
+    createUser: builder.mutation<
+      User,
+      {
+        email: string;
+        firstName: string;
+        lastName: string;
+        role?: string;
+        departmentId?: string;
+        password?: string;
+      }
+    >({
       query: (body) => ({
         url: '/users',
         method: 'POST',
@@ -166,14 +209,20 @@ export const adminApi = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    updateUser: builder.mutation<User, { id: string; data: {
-      firstName?: string;
-      lastName?: string;
-      phone?: string;
-      departmentId?: string;
-      managerId?: string;
-      role?: string;
-    } }>({
+    updateUser: builder.mutation<
+      User,
+      {
+        id: string;
+        data: {
+          firstName?: string;
+          lastName?: string;
+          phone?: string;
+          departmentId?: string;
+          managerId?: string;
+          role?: string;
+        };
+      }
+    >({
       query: ({ id, data }) => ({
         url: `/users/${id}`,
         method: 'PATCH',
@@ -210,14 +259,14 @@ export const adminApi = createApi({
     }),
 
     // Settings
-    getSettings: builder.query<SystemSetting[], void>({
+    getSettings: builder.query<SystemSettings, void>({
       query: () => '/admin/settings',
       providesTags: ['Setting'],
     }),
-    updateSetting: builder.mutation<SystemSetting, { key: string; value: unknown }>({
+    updateSettings: builder.mutation<SystemSettings, Partial<SystemSettings>>({
       query: (body) => ({
         url: '/admin/settings',
-        method: 'PUT',
+        method: 'PATCH',
         body,
       }),
       invalidatesTags: ['Setting'],
@@ -243,10 +292,13 @@ export const {
   useGetCategoriesQuery,
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+  useReactivateCategoryMutation,
   useGetDepartmentsQuery,
   useCreateDepartmentMutation,
   useGetApprovalTiersQuery,
   useCreateApprovalTierMutation,
+  useUpdateApprovalTierMutation,
   useGetUsersQuery,
   useCreateUserMutation,
   useApproveUserMutation,
@@ -257,7 +309,7 @@ export const {
   useBulkImportUsersMutation,
   useGetAuditLogsQuery,
   useGetSettingsQuery,
-  useUpdateSettingMutation,
+  useUpdateSettingsMutation,
   useGenerateTestDataMutation,
   useCleanupTestDataMutation,
 } = adminApi;

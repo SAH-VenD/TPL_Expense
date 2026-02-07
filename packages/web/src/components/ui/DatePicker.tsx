@@ -3,7 +3,10 @@ import { format, parseISO, isValid } from 'date-fns';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 
-export interface DatePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange' | 'value'> {
+export interface DatePickerProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'onChange' | 'value'
+> {
   label?: string;
   value?: string | Date;
   onChange: (date: string) => void;
@@ -38,7 +41,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
       disabled,
       ...props
     },
-    ref
+    ref,
   ) => {
     const inputRef = useRef<HTMLInputElement>(null);
     useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
@@ -91,10 +94,12 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
               '[&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:left-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer',
               '[&::-webkit-inner-spin-button]:hidden [&::-webkit-clear-button]:hidden',
               error && 'input-error',
-              className
+              className,
             )}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
+            aria-describedby={
+              error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
+            }
             {...props}
           />
         </div>
@@ -110,7 +115,7 @@ export const DatePicker = forwardRef<HTMLInputElement, DatePickerProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 DatePicker.displayName = 'DatePicker';

@@ -45,7 +45,7 @@ const getActionsForStatus = (
     onClone?: () => void;
     onResubmit?: () => Promise<void>;
   },
-  isLoading: boolean
+  isLoading: boolean,
 ): { primary: ActionButton[]; secondary: ActionButton[] } => {
   const actions: { primary: ActionButton[]; secondary: ActionButton[] } = {
     primary: [],
@@ -281,7 +281,7 @@ export const ExpenseActions: React.FC<ExpenseActionsProps> = ({
       onClone: handleClone,
       onResubmit: onResubmit,
     },
-    isLoading
+    isLoading,
   );
 
   // If not owner, only show view/clone actions
@@ -383,7 +383,7 @@ export const ExpenseActions: React.FC<ExpenseActionsProps> = ({
             disabled={action.disabled}
             className={clsx(
               'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-              variantStyles[action.variant]
+              variantStyles[action.variant],
             )}
           >
             {action.icon}
@@ -398,7 +398,7 @@ export const ExpenseActions: React.FC<ExpenseActionsProps> = ({
             disabled={action.disabled}
             className={clsx(
               'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-              variantStyles[action.variant]
+              variantStyles[action.variant],
             )}
           >
             {action.icon}

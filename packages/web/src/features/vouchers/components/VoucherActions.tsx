@@ -48,7 +48,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
   // Form states
   const [approvedAmount, setApprovedAmount] = useState(voucher.requestedAmount);
   const [rejectReason, setRejectReason] = useState('');
-  const [disbursedAmount, setDisbursedAmount] = useState(voucher.approvedAmount || voucher.requestedAmount);
+  const [disbursedAmount, setDisbursedAmount] = useState(
+    voucher.approvedAmount || voucher.requestedAmount,
+  );
   const [error, setError] = useState<string | null>(null);
 
   // RTK Query mutations
@@ -75,7 +77,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
       setShowApproveModal(false);
       onActionComplete();
     } catch (err) {
-      setError((err as { data?: { message?: string } })?.data?.message || 'Failed to approve voucher');
+      setError(
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to approve voucher',
+      );
     }
   };
 
@@ -93,7 +97,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
       setShowRejectModal(false);
       onActionComplete();
     } catch (err) {
-      setError((err as { data?: { message?: string } })?.data?.message || 'Failed to reject voucher');
+      setError(
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to reject voucher',
+      );
     }
   };
 
@@ -115,7 +121,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
       setShowDisburseModal(false);
       onActionComplete();
     } catch (err) {
-      setError((err as { data?: { message?: string } })?.data?.message || 'Failed to disburse voucher');
+      setError(
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to disburse voucher',
+      );
     }
   };
 
@@ -126,7 +134,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
       setShowDeleteConfirm(false);
       navigate(VOUCHER_ROUTES.LIST);
     } catch (err) {
-      setError((err as { data?: { message?: string } })?.data?.message || 'Failed to delete voucher');
+      setError(
+        (err as { data?: { message?: string } })?.data?.message || 'Failed to delete voucher',
+      );
     }
   };
 
@@ -232,7 +242,9 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
           )}
           <p className="text-sm text-gray-600 mb-4">
             Approve voucher <span className="font-medium">{voucher.voucherNumber}</span> for{' '}
-            <span className="font-medium">{voucher.requester.firstName} {voucher.requester.lastName}</span>
+            <span className="font-medium">
+              {voucher.requester.firstName} {voucher.requester.lastName}
+            </span>
           </p>
           <Input
             label="Approved Amount (PKR)"
@@ -325,8 +337,11 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
             </Alert>
           )}
           <p className="text-sm text-gray-600 mb-4">
-            Disburse cash for voucher <span className="font-medium">{voucher.voucherNumber}</span> to{' '}
-            <span className="font-medium">{voucher.requester.firstName} {voucher.requester.lastName}</span>
+            Disburse cash for voucher <span className="font-medium">{voucher.voucherNumber}</span>{' '}
+            to{' '}
+            <span className="font-medium">
+              {voucher.requester.firstName} {voucher.requester.lastName}
+            </span>
           </p>
           <Input
             label="Disbursed Amount (PKR)"
@@ -339,7 +354,8 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
           />
           <Alert variant="info" className="mt-4">
             <p className="text-sm">
-              Settlement deadline will be set to <span className="font-medium">7 days</span> from disbursement.
+              Settlement deadline will be set to <span className="font-medium">7 days</span> from
+              disbursement.
             </p>
           </Alert>
         </ModalBody>
@@ -372,7 +388,10 @@ export const VoucherActions: React.FC<VoucherActionsProps> = ({
         title="Delete Voucher"
         message={
           <div>
-            <p>Are you sure you want to delete voucher <span className="font-medium">{voucher.voucherNumber}</span>?</p>
+            <p>
+              Are you sure you want to delete voucher{' '}
+              <span className="font-medium">{voucher.voucherNumber}</span>?
+            </p>
             <p className="mt-2 text-sm text-gray-500">This action cannot be undone.</p>
           </div>
         }

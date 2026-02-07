@@ -20,7 +20,10 @@ const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
   { id: 'password', label: 'Change Password', icon: <KeyIcon className="h-5 w-5" /> },
 ];
 
-const roleDescriptions: Record<string, { title: string; description: string; permissions: string[] }> = {
+const roleDescriptions: Record<
+  string,
+  { title: string; description: string; permissions: string[] }
+> = {
   EMPLOYEE: {
     title: 'Employee',
     description: 'Standard user with access to personal expense management.',
@@ -145,7 +148,7 @@ export function ProfilePage() {
                 'flex items-center gap-2 py-4 px-1 border-b-2 text-sm font-medium transition-colors',
                 activeTab === tab.id
                   ? 'border-primary-600 text-primary-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
               )}
             >
               {tab.icon}
@@ -306,7 +309,9 @@ export function ProfilePage() {
                 type="password"
                 id="currentPassword"
                 value={passwordForm.currentPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                }
                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 required
               />
@@ -336,17 +341,16 @@ export function ProfilePage() {
                 type="password"
                 id="confirmPassword"
                 value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                onChange={(e) =>
+                  setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                }
                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                 required
               />
             </div>
 
             <div className="pt-2">
-              <button
-                type="submit"
-                className="btn btn-primary"
-              >
+              <button type="submit" className="btn btn-primary">
                 Update Password
               </button>
             </div>

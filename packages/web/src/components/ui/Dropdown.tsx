@@ -42,7 +42,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <MenuItems
           className={clsx(
             'absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none',
-            align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left'
+            align === 'right' ? 'right-0 origin-top-right' : 'left-0 origin-top-left',
           )}
         >
           <div className="py-1">
@@ -53,7 +53,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                     'flex w-full items-center px-4 py-2 text-sm',
                     active && !disabled && 'bg-gray-100',
                     disabled && 'opacity-50 cursor-not-allowed',
-                    item.danger ? 'text-red-600' : 'text-gray-700'
+                    item.danger ? 'text-red-600' : 'text-gray-700',
                   );
 
                   if (item.href) {
@@ -102,7 +102,7 @@ export const DropdownButton: React.FC<{
             variant === 'primary'
               ? 'bg-primary-600 text-white hover:bg-primary-700'
               : 'border border-gray-300 text-gray-700 bg-white hover:bg-gray-50',
-            className
+            className,
           )}
         >
           {label}

@@ -52,8 +52,16 @@ test.describe('Approval Workflow', () => {
     await expect(page.getByRole('heading', { name: /pending approvals/i })).toBeVisible();
 
     // Either there are pending expense cards or we're on the page with content
-    const hasExpenseCards = await page.locator('.bg-white.rounded-lg, [class*="card"], table tbody tr').first().isVisible({ timeout: 2000 }).catch(() => false);
-    const hasAwaitingText = await page.locator('text=/awaiting|pending|expense/i').first().isVisible({ timeout: 2000 }).catch(() => false);
+    const hasExpenseCards = await page
+      .locator('.bg-white.rounded-lg, [class*="card"], table tbody tr')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
+    const hasAwaitingText = await page
+      .locator('text=/awaiting|pending|expense/i')
+      .first()
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     expect(hasExpenseCards || hasAwaitingText).toBeTruthy();
   });
@@ -69,7 +77,10 @@ test.describe('Approval Workflow', () => {
     await page.waitForTimeout(1000);
     const url = page.url();
     const isRedirected = !url.includes('/admin/users') || url.includes('/login');
-    const hasUnauthorized = await page.locator('text=/unauthorized|forbidden|access denied/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasUnauthorized = await page
+      .locator('text=/unauthorized|forbidden|access denied/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     expect(isRedirected || hasUnauthorized).toBeTruthy();
   });
@@ -114,8 +125,15 @@ test.describe('Approval Workflow', () => {
     await page.waitForLoadState('networkidle');
 
     // Check for either data or empty state
-    const hasTableData = await page.locator('tbody tr').first().isVisible({ timeout: 3000 }).catch(() => false);
-    const hasEmptyState = await page.locator('text=/all caught up|no pending/i').isVisible({ timeout: 3000 }).catch(() => false);
+    const hasTableData = await page
+      .locator('tbody tr')
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
+    const hasEmptyState = await page
+      .locator('text=/all caught up|no pending/i')
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     // One of these should be true
     expect(hasTableData || hasEmptyState).toBeTruthy();
@@ -201,10 +219,16 @@ test.describe('Approval Workflow', () => {
 
     // Check for approve buttons in table rows
     const approveButtons = page.locator('tbody button:has-text("Approve")');
-    const hasApproveButtons = await approveButtons.first().isVisible({ timeout: 3000 }).catch(() => false);
+    const hasApproveButtons = await approveButtons
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     // If there are pending items, approve buttons should be visible
-    const hasEmptyState = await page.locator('text=/all caught up|no pending/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasEmptyState = await page
+      .locator('text=/all caught up|no pending/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     if (!hasEmptyState) {
       expect(hasApproveButtons).toBeTruthy();
@@ -218,10 +242,16 @@ test.describe('Approval Workflow', () => {
 
     // Check for reject buttons in table rows
     const rejectButtons = page.locator('tbody button:has-text("Reject")');
-    const hasRejectButtons = await rejectButtons.first().isVisible({ timeout: 3000 }).catch(() => false);
+    const hasRejectButtons = await rejectButtons
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     // If there are pending items, reject buttons should be visible
-    const hasEmptyState = await page.locator('text=/all caught up|no pending/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasEmptyState = await page
+      .locator('text=/all caught up|no pending/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     if (!hasEmptyState) {
       expect(hasRejectButtons).toBeTruthy();
@@ -235,10 +265,16 @@ test.describe('Approval Workflow', () => {
 
     // Check for clarify buttons in table rows
     const clarifyButtons = page.locator('tbody button:has-text("Clarify")');
-    const hasClarifyButtons = await clarifyButtons.first().isVisible({ timeout: 3000 }).catch(() => false);
+    const hasClarifyButtons = await clarifyButtons
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
 
     // If there are pending items, clarify buttons should be visible
-    const hasEmptyState = await page.locator('text=/all caught up|no pending/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasEmptyState = await page
+      .locator('text=/all caught up|no pending/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     if (!hasEmptyState) {
       expect(hasClarifyButtons).toBeTruthy();
@@ -291,7 +327,9 @@ test.describe('Approval Workflow', () => {
       await expect(modalTitle).toBeVisible({ timeout: 2000 });
 
       // Should have textarea for question
-      const questionInput = page.locator('textarea#clarify-question, textarea[placeholder*="question"]');
+      const questionInput = page.locator(
+        'textarea#clarify-question, textarea[placeholder*="question"]',
+      );
       await expect(questionInput).toBeVisible();
 
       // Cancel button should close modal
@@ -492,7 +530,10 @@ test.describe('Approval Workflow', () => {
 
     // Check for skeleton elements during load
     const skeleton = page.locator('[class*="skeleton"], [class*="animate-pulse"]');
-    const hadSkeleton = await skeleton.first().isVisible({ timeout: 1000 }).catch(() => false);
+    const hadSkeleton = await skeleton
+      .first()
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     // Wait for content to load
     await page.waitForLoadState('networkidle');

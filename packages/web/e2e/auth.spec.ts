@@ -25,9 +25,7 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL('/login');
 
     // Should show error message
-    await expect(
-      page.locator('text=/invalid|incorrect|error/i')
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/invalid|incorrect|error/i')).toBeVisible({ timeout: 5000 });
   });
 
   test('AUTH-03: Session persists after page reload', async ({ page }) => {
@@ -79,8 +77,6 @@ test.describe('Authentication Flow', () => {
     await expect(page).toHaveURL('/login');
 
     // Should show error message
-    await expect(
-      page.locator('text=/invalid|not found|error/i')
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/invalid|not found|error/i')).toBeVisible({ timeout: 5000 });
   });
 });

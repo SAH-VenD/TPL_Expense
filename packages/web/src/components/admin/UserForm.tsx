@@ -174,11 +174,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                 {...register('firstName')}
                 error={errors.firstName?.message}
               />
-              <Input
-                label="Last Name"
-                {...register('lastName')}
-                error={errors.lastName?.message}
-              />
+              <Input label="Last Name" {...register('lastName')} error={errors.lastName?.message} />
             </div>
 
             {isEditMode && (

@@ -118,10 +118,7 @@ export function ExpenseCreatePage() {
       <PageHeader
         title="Create Expense"
         subtitle="Submit a new expense for reimbursement"
-        breadcrumbs={[
-          { label: 'Expenses', href: '/expenses' },
-          { label: 'New Expense' },
-        ]}
+        breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'New Expense' }]}
         actions={
           <button
             onClick={() => navigate('/expenses')}
@@ -295,9 +292,7 @@ export function ExpenseCreatePage() {
                 >
                   <span className="text-4xl block mb-2">📎</span>
                   <span className="font-medium">Click to upload</span>
-                  <span className="block text-sm text-gray-500 mt-1">
-                    JPG, PNG, PDF up to 10MB
-                  </span>
+                  <span className="block text-sm text-gray-500 mt-1">JPG, PNG, PDF up to 10MB</span>
                 </label>
               </div>
               <p className="mt-2 text-sm text-amber-600">

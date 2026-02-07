@@ -30,10 +30,7 @@ vi.mock('react-hot-toast', async (importOriginal) => {
 const mockCreateBudget = vi.fn();
 const mockUnwrap = vi.fn();
 vi.mock('@/features/budgets/services/budgets.service', () => ({
-  useCreateBudgetMutation: () => [
-    mockCreateBudget,
-    { isLoading: false },
-  ],
+  useCreateBudgetMutation: () => [mockCreateBudget, { isLoading: false }],
 }));
 
 // Mock the admin service for departments and categories
@@ -253,7 +250,7 @@ describe('BudgetCreatePage', () => {
     renderWithProviders(<BudgetCreatePage />);
 
     expect(
-      screen.getByText(/set up a new budget to track and control spending/i)
+      screen.getByText(/set up a new budget to track and control spending/i),
     ).toBeInTheDocument();
   });
 

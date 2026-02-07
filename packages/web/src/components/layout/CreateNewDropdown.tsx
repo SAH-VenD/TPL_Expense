@@ -71,12 +71,10 @@ export function CreateNewDropdown() {
                     onClick={() => navigate(option.href)}
                     className={clsx(
                       'flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left',
-                      active ? 'bg-gray-100' : ''
+                      active ? 'bg-gray-100' : '',
                     )}
                   >
-                    <span className="flex-shrink-0 text-primary-600 mt-0.5">
-                      {option.icon}
-                    </span>
+                    <span className="flex-shrink-0 text-primary-600 mt-0.5">{option.icon}</span>
                     <div>
                       <p className="text-sm font-medium text-gray-900">{option.label}</p>
                       <p className="text-xs text-gray-500">{option.description}</p>

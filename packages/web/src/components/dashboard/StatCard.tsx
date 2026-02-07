@@ -1,10 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ArrowUpIcon,
-  ArrowDownIcon,
-  MinusIcon,
-} from '@heroicons/react/24/solid';
+import { ArrowUpIcon, ArrowDownIcon, MinusIcon } from '@heroicons/react/24/solid';
 import clsx from 'clsx';
 import { Card, Skeleton } from '@/components/ui';
 
@@ -28,7 +24,7 @@ export interface StatCardProps {
 const formatValue = (
   value: number | string,
   format: 'number' | 'currency' | 'percentage',
-  currency: string
+  currency: string,
 ): string => {
   if (typeof value === 'string') return value;
 
@@ -66,17 +62,10 @@ const TrendIndicator: React.FC<{
   const Icon = isUp ? ArrowUpIcon : ArrowDownIcon;
 
   return (
-    <div
-      className={clsx(
-        'flex items-center',
-        isUp ? 'text-green-600' : 'text-red-600'
-      )}
-    >
+    <div className={clsx('flex items-center', isUp ? 'text-green-600' : 'text-red-600')}>
       <Icon className="h-4 w-4 mr-1" />
       {changePercentage !== undefined && (
-        <span className="text-xs font-medium">
-          {Math.abs(changePercentage).toFixed(1)}%
-        </span>
+        <span className="text-xs font-medium">{Math.abs(changePercentage).toFixed(1)}%</span>
       )}
     </div>
   );
@@ -95,9 +84,7 @@ const StatCardSkeleton: React.FC<{ variant: 'compact' | 'expanded' }> = ({ varia
         <Skeleton width="60%" height={variant === 'compact' ? 28 : 36} className="mb-2" />
         <Skeleton width="80%" height={14} />
       </div>
-      {variant === 'compact' && (
-        <Skeleton width={60} height={16} />
-      )}
+      {variant === 'compact' && <Skeleton width={60} height={16} />}
     </div>
   </Card>
 );
@@ -132,7 +119,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       className={clsx(
         'relative overflow-hidden h-full',
         (onClick || href) && 'cursor-pointer',
-        className
+        className,
       )}
     >
       {variant === 'expanded' && (
@@ -142,10 +129,7 @@ export const StatCard: React.FC<StatCardProps> = ({
               {icon}
             </div>
           )}
-          <TrendIndicator
-            trend={trend}
-            changePercentage={changePercentage}
-          />
+          <TrendIndicator trend={trend} changePercentage={changePercentage} />
         </div>
       )}
 
@@ -153,7 +137,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         <p
           className={clsx(
             'font-bold text-gray-900',
-            variant === 'compact' ? 'text-2xl' : 'text-3xl'
+            variant === 'compact' ? 'text-2xl' : 'text-3xl',
           )}
         >
           {formattedValue}
@@ -161,22 +145,17 @@ export const StatCard: React.FC<StatCardProps> = ({
         <p
           className={clsx(
             'font-medium text-gray-600 mt-1',
-            variant === 'compact' ? 'text-sm' : 'text-base'
+            variant === 'compact' ? 'text-sm' : 'text-base',
           )}
         >
           {label}
         </p>
-        {subtitle && (
-          <p className="text-xs text-gray-500 mt-1">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
       </div>
 
       {variant === 'compact' && (trend || changePercentage !== undefined) && (
         <div className="mt-3">
-          <TrendIndicator
-            trend={trend}
-            changePercentage={changePercentage}
-          />
+          <TrendIndicator trend={trend} changePercentage={changePercentage} />
         </div>
       )}
 

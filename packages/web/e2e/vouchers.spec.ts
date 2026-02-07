@@ -41,8 +41,15 @@ test.describe('Voucher Management', () => {
     await page.waitForLoadState('networkidle');
 
     // Should display voucher numbers (format: PC-YYYY-XXXX) or empty state
-    const hasVouchers = await page.locator('text=/PC-\\d{4}-\\d{4}/').first().isVisible({ timeout: 3000 }).catch(() => false);
-    const hasEmptyState = await page.locator('text=/no.*vouchers/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasVouchers = await page
+      .locator('text=/PC-\\d{4}-\\d{4}/')
+      .first()
+      .isVisible({ timeout: 3000 })
+      .catch(() => false);
+    const hasEmptyState = await page
+      .locator('text=/no.*vouchers/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     expect(hasVouchers || hasEmptyState).toBeTruthy();
   });
@@ -74,7 +81,9 @@ test.describe('Voucher Management', () => {
     await page.waitForLoadState('networkidle');
 
     // Click on first voucher card or view details link
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       // Should navigate to voucher detail page
@@ -92,10 +101,14 @@ test.describe('Voucher Management', () => {
 
     // Should show filtered results or empty message
     await page.waitForLoadState('networkidle');
-    const requestedBadge = page.locator('span:has-text("Pending Approval"), span:has-text("REQUESTED")').first();
+    const requestedBadge = page
+      .locator('span:has-text("Pending Approval"), span:has-text("REQUESTED")')
+      .first();
     const emptyMessage = page.locator('text=/no.*vouchers/i');
 
-    const hasRequestedVoucher = await requestedBadge.isVisible({ timeout: 2000 }).catch(() => false);
+    const hasRequestedVoucher = await requestedBadge
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
     const hasEmptyState = await emptyMessage.isVisible({ timeout: 1000 }).catch(() => false);
 
     expect(hasRequestedVoucher || hasEmptyState).toBeTruthy();
@@ -198,8 +211,13 @@ test.describe('Voucher Management', () => {
     await page.click('button[type="submit"]');
 
     // Should show success or navigate to detail page
-    const hasSuccessToast = await page.locator('text=/success|created|submitted/i').isVisible({ timeout: 5000 }).catch(() => false);
-    const navigatedToDetail = await page.url().then(url => /\/vouchers\/[a-zA-Z0-9-]+$/.test(url));
+    const hasSuccessToast = await page
+      .locator('text=/success|created|submitted/i')
+      .isVisible({ timeout: 5000 })
+      .catch(() => false);
+    const navigatedToDetail = await page
+      .url()
+      .then((url) => /\/vouchers\/[a-zA-Z0-9-]+$/.test(url));
 
     expect(hasSuccessToast || navigatedToDetail).toBeTruthy();
   });
@@ -212,7 +230,9 @@ test.describe('Voucher Management', () => {
     await page.waitForLoadState('networkidle');
 
     // Find and click first voucher
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
 
@@ -226,7 +246,9 @@ test.describe('Voucher Management', () => {
     await page.goto('/vouchers');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -242,7 +264,9 @@ test.describe('Voucher Management', () => {
     await page.goto('/vouchers');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -257,7 +281,9 @@ test.describe('Voucher Management', () => {
     await page.goto('/vouchers');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -279,7 +305,9 @@ test.describe('Voucher Management', () => {
     await page.click('button:has-text("REQUESTED")');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -302,7 +330,9 @@ test.describe('Voucher Management', () => {
     await page.click('button:has-text("REQUESTED")');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -324,7 +354,9 @@ test.describe('Voucher Management', () => {
     await page.click('button:has-text("APPROVED")');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -348,7 +380,9 @@ test.describe('Voucher Management', () => {
     await page.click('button:has-text("DISBURSED")');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -370,7 +404,9 @@ test.describe('Voucher Management', () => {
     await page.click('button:has-text("DISBURSED")');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');
@@ -380,7 +416,9 @@ test.describe('Voucher Management', () => {
         await settleBtn.click();
 
         // Modal should show balance info
-        await expect(page.locator('text=/balance|disbursed|expenses/i').first()).toBeVisible({ timeout: 2000 });
+        await expect(page.locator('text=/balance|disbursed|expenses/i').first()).toBeVisible({
+          timeout: 2000,
+        });
       }
     }
   });
@@ -390,7 +428,9 @@ test.describe('Voucher Management', () => {
     await page.goto('/vouchers');
     await page.waitForLoadState('networkidle');
 
-    const voucherLink = page.locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])').first();
+    const voucherLink = page
+      .locator('a[href^="/vouchers/"]:not([href="/vouchers/request"])')
+      .first();
     if (await voucherLink.isVisible({ timeout: 3000 })) {
       await voucherLink.click();
       await page.waitForLoadState('networkidle');

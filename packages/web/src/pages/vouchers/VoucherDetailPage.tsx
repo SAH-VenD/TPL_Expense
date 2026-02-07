@@ -6,7 +6,15 @@ import {
   useSettleVoucherMutation,
 } from '@/features/vouchers/services/vouchers.service';
 import { VoucherActions } from '@/features/vouchers/components/VoucherActions';
-import { Skeleton, Alert, showToast, Modal, ModalBody, ModalFooter, PageHeader } from '@/components/ui';
+import {
+  Skeleton,
+  Alert,
+  showToast,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  PageHeader,
+} from '@/components/ui';
 import { Textarea } from '@/components/ui/Textarea';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
@@ -26,12 +34,7 @@ export function VoucherDetailPage() {
   const navigate = useNavigate();
   const { user } = useAppSelector((state) => state.auth);
 
-  const {
-    data: voucher,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetVoucherQuery(id!, { skip: !id });
+  const { data: voucher, isLoading, isError, refetch } = useGetVoucherQuery(id!, { skip: !id });
 
   // Settlement modal state
   const [showSettleModal, setShowSettleModal] = useState(false);
@@ -73,7 +76,8 @@ export function VoucherDetailPage() {
 
     const data: SettleVoucherDto = {
       notes: settleNotes || undefined,
-      overspendJustification: balance.balanceType === 'overspend' ? overspendJustification : undefined,
+      overspendJustification:
+        balance.balanceType === 'overspend' ? overspendJustification : undefined,
       cashReturnConfirmed: balance.balanceType === 'underspend' ? cashReturnConfirmed : undefined,
     };
 
@@ -93,10 +97,7 @@ export function VoucherDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Loading..."
-          breadcrumbs={[
-            { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Vouchers', href: VOUCHER_ROUTES.LIST }, { label: 'Details' }]}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -119,17 +120,11 @@ export function VoucherDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Error"
-          breadcrumbs={[
-            { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Vouchers', href: VOUCHER_ROUTES.LIST }, { label: 'Details' }]}
         />
         <Alert variant="error" title="Failed to load voucher">
           <p>Unable to load voucher details. Please try again.</p>
-          <button
-            onClick={() => refetch()}
-            className="mt-4 btn-primary inline-flex items-center"
-          >
+          <button onClick={() => refetch()} className="mt-4 btn-primary inline-flex items-center">
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             Retry
           </button>
@@ -159,12 +154,12 @@ export function VoucherDetailPage() {
               statusConfig.variant === 'success'
                 ? 'bg-green-100 text-green-800'
                 : statusConfig.variant === 'danger'
-                ? 'bg-red-100 text-red-800'
-                : statusConfig.variant === 'warning'
-                ? 'bg-yellow-100 text-yellow-800'
-                : statusConfig.variant === 'primary'
-                ? 'bg-purple-100 text-purple-800'
-                : 'bg-blue-100 text-blue-800'
+                  ? 'bg-red-100 text-red-800'
+                  : statusConfig.variant === 'warning'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : statusConfig.variant === 'primary'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-blue-100 text-blue-800'
             }`}
           >
             {statusConfig.label}
@@ -200,11 +195,15 @@ export function VoucherDetailPage() {
                           daysUntilDeadline < 0
                             ? 'text-red-600'
                             : daysUntilDeadline <= 3
-                            ? 'text-yellow-600'
-                            : 'text-gray-500'
+                              ? 'text-yellow-600'
+                              : 'text-gray-500'
                         }`}
                       >
-                        ({daysUntilDeadline < 0 ? `${Math.abs(daysUntilDeadline)} days overdue` : `${daysUntilDeadline} days left`})
+                        (
+                        {daysUntilDeadline < 0
+                          ? `${Math.abs(daysUntilDeadline)} days overdue`
+                          : `${daysUntilDeadline} days left`}
+                        )
                       </span>
                     )}
                   </dd>
@@ -267,9 +266,16 @@ export function VoucherDetailPage() {
                       balance.balance >= 0 ? 'text-green-600' : 'text-red-600'
                     }`}
                   >
-                    {balance.balance >= 0 ? '' : '-'}{formatAmount(Math.abs(balance.balance))}
+                    {balance.balance >= 0 ? '' : '-'}
+                    {formatAmount(Math.abs(balance.balance))}
                     <span className="text-xs ml-1">
-                      ({balance.balanceType === 'underspend' ? 'to return' : balance.balanceType === 'overspend' ? 'overspent' : 'settled'})
+                      (
+                      {balance.balanceType === 'underspend'
+                        ? 'to return'
+                        : balance.balanceType === 'overspend'
+                          ? 'overspent'
+                          : 'settled'}
+                      )
                     </span>
                   </span>
                 </div>
@@ -367,8 +373,8 @@ export function VoucherDetailPage() {
                             expense.status === 'APPROVED' || expense.status === 'PAID'
                               ? 'bg-green-100 text-green-800'
                               : expense.status === 'REJECTED'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
                           }`}
                         >
                           {expense.status}
@@ -428,9 +434,13 @@ export function VoucherDetailPage() {
                   <div className="w-2 h-2 mt-2 rounded-full bg-purple-600" />
                   <div>
                     <p className="font-medium text-gray-900">
-                      Disbursed{voucher.disbursedBy && ` by ${voucher.disbursedBy.firstName} ${voucher.disbursedBy.lastName}`}
+                      Disbursed
+                      {voucher.disbursedBy &&
+                        ` by ${voucher.disbursedBy.firstName} ${voucher.disbursedBy.lastName}`}
                     </p>
-                    <p className="text-gray-500">{new Date(voucher.disbursedAt).toLocaleString()}</p>
+                    <p className="text-gray-500">
+                      {new Date(voucher.disbursedAt).toLocaleString()}
+                    </p>
                   </div>
                 </div>
               )}
@@ -439,7 +449,9 @@ export function VoucherDetailPage() {
                   <div className="w-2 h-2 mt-2 rounded-full bg-blue-600" />
                   <div>
                     <p className="font-medium text-gray-900">
-                      Approved{voucher.approvedBy && ` by ${voucher.approvedBy.firstName} ${voucher.approvedBy.lastName}`}
+                      Approved
+                      {voucher.approvedBy &&
+                        ` by ${voucher.approvedBy.firstName} ${voucher.approvedBy.lastName}`}
                     </p>
                     <p className="text-gray-500">{new Date(voucher.approvedAt).toLocaleString()}</p>
                   </div>
@@ -497,11 +509,13 @@ export function VoucherDetailPage() {
               >
                 {formatAmount(Math.abs(balance.balance))}
                 <span className="text-xs ml-1">
-                  ({balance.balanceType === 'underspend'
+                  (
+                  {balance.balanceType === 'underspend'
                     ? 'to return'
                     : balance.balanceType === 'overspend'
-                    ? 'overspent'
-                    : 'exact'})
+                      ? 'overspent'
+                      : 'exact'}
+                  )
                 </span>
               </span>
             </div>
@@ -511,7 +525,8 @@ export function VoucherDetailPage() {
           {balance.balanceType === 'underspend' && (
             <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-sm text-yellow-800 mb-3">
-                You have {formatAmount(balance.balance)} unused. Please confirm you will return this amount.
+                You have {formatAmount(balance.balance)} unused. Please confirm you will return this
+                amount.
               </p>
               <Checkbox
                 label="I confirm that I will return the unused cash"
@@ -525,7 +540,8 @@ export function VoucherDetailPage() {
           {balance.balanceType === 'overspend' && (
             <div className="mb-4">
               <Alert variant="warning" className="mb-3">
-                You have overspent by {formatAmount(Math.abs(balance.balance))}. Please provide justification.
+                You have overspent by {formatAmount(Math.abs(balance.balance))}. Please provide
+                justification.
               </Alert>
               <Textarea
                 label="Overspend Justification"
@@ -533,7 +549,11 @@ export function VoucherDetailPage() {
                 value={overspendJustification}
                 onChange={(e) => setOverspendJustification(e.target.value)}
                 minRows={3}
-                error={!overspendJustification.trim() ? 'Justification is required for overspend' : undefined}
+                error={
+                  !overspendJustification.trim()
+                    ? 'Justification is required for overspend'
+                    : undefined
+                }
               />
             </div>
           )}

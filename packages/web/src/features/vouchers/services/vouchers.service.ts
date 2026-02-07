@@ -164,9 +164,7 @@ export const vouchersApi = createApi({
         method: 'POST',
         body: { expenseId },
       }),
-      invalidatesTags: (_result, _error, { voucherId }) => [
-        { type: 'Voucher', id: voucherId },
-      ],
+      invalidatesTags: (_result, _error, { voucherId }) => [{ type: 'Voucher', id: voucherId }],
     }),
 
     // Get user's open vouchers (for warning messages)

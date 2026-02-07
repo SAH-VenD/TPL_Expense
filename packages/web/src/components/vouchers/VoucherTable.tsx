@@ -80,16 +80,12 @@ export function VoucherTable({ vouchers, isLoading, onRowClick }: VoucherTablePr
       key: 'requester',
       header: 'Requester',
       render: (voucher) =>
-        voucher.requester
-          ? `${voucher.requester.firstName} ${voucher.requester.lastName}`
-          : '-',
+        voucher.requester ? `${voucher.requester.firstName} ${voucher.requester.lastName}` : '-',
     },
     {
       key: 'createdAt',
       header: 'Date',
-      render: (voucher) => (
-        <span className="text-gray-500">{formatDate(voucher.createdAt)}</span>
-      ),
+      render: (voucher) => <span className="text-gray-500">{formatDate(voucher.createdAt)}</span>,
     },
   ];
 

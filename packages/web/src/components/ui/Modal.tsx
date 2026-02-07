@@ -36,11 +36,7 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   return (
     <Transition show={isOpen} as={Fragment}>
-      <Dialog
-        as="div"
-        className="relative z-50"
-        onClose={closeOnOverlayClick ? onClose : () => {}}
-      >
+      <Dialog as="div" className="relative z-50" onClose={closeOnOverlayClick ? onClose : () => {}}>
         <TransitionChild
           as={Fragment}
           enter="ease-out duration-300"
@@ -68,7 +64,7 @@ export const Modal: React.FC<ModalProps> = ({
                 className={clsx(
                   'w-full transform overflow-hidden rounded-lg bg-white p-6 shadow-xl transition-all',
                   sizeStyles[size],
-                  className
+                  className,
                 )}
               >
                 {(title || showCloseButton) && (
@@ -109,9 +105,7 @@ export const ModalBody: React.FC<{ children: React.ReactNode; className?: string
 export const ModalFooter: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className,
-}) => (
-  <div className={clsx('mt-6 flex justify-end space-x-3', className)}>{children}</div>
-);
+}) => <div className={clsx('mt-6 flex justify-end space-x-3', className)}>{children}</div>;
 
 Modal.displayName = 'Modal';
 ModalBody.displayName = 'ModalBody';

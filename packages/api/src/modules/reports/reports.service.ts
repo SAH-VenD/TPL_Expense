@@ -829,7 +829,10 @@ export class ReportsService {
    * Get dashboard summary with key metrics
    * For EMPLOYEE role, only shows their own expenses
    */
-  async getDashboardSummary(query: DashboardQueryDto, user?: User): Promise<DashboardSummaryReportDto> {
+  async getDashboardSummary(
+    query: DashboardQueryDto,
+    user?: User,
+  ): Promise<DashboardSummaryReportDto> {
     const periodDays = query.periodDays || 30;
     const endDate = new Date();
     const startDate = new Date();
@@ -883,16 +886,18 @@ export class ReportsService {
     );
 
     // Budget utilization - EMPLOYEE sees their department's budgets
-    const budgetDepartmentId = user?.role === RoleType.EMPLOYEE ? user.departmentId : query.departmentId;
+    const budgetDepartmentId =
+      user?.role === RoleType.EMPLOYEE ? user.departmentId : query.departmentId;
     const budgetMetrics = await this.getBudgetMetrics(budgetDepartmentId ?? undefined);
 
     // Top categories
     const topCategories = await this.getTopCategories(startDate, endDate, baseWhere, 5);
 
     // Top departments (if not filtering by department or user is EMPLOYEE)
-    const topDepartments = (query.departmentId || user?.role === RoleType.EMPLOYEE)
-      ? undefined
-      : await this.getTopDepartments(startDate, endDate, 5);
+    const topDepartments =
+      query.departmentId || user?.role === RoleType.EMPLOYEE
+        ? undefined
+        : await this.getTopDepartments(startDate, endDate, 5);
 
     // Recent trend (daily)
     const recentTrend = await this.getRecentTrend(periodDays, baseWhere);

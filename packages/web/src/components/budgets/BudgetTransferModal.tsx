@@ -56,7 +56,7 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
       .min(0.01, 'Amount must be greater than 0')
       .max(
         availableToTransfer,
-        `Amount cannot exceed ${formatCurrency(availableToTransfer, sourceBudget.currency)}`
+        `Amount cannot exceed ${formatCurrency(availableToTransfer, sourceBudget.currency)}`,
       ),
     reason: z.string().max(500, 'Reason must be at most 500 characters').optional(),
   });
@@ -124,27 +124,16 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
 
   // Calculate preview values
   const sourceAfterTransfer = availableToTransfer - (watchedAmount || 0);
-  const targetNewTotal = targetBudget
-    ? targetBudget.totalAmount + (watchedAmount || 0)
-    : 0;
+  const targetNewTotal = targetBudget ? targetBudget.totalAmount + (watchedAmount || 0) : 0;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title="Transfer Budget Allocation"
-      size="lg"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title="Transfer Budget Allocation" size="lg">
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <ModalBody className="space-y-6">
           {/* Source Budget Info */}
           <Card className="bg-gray-50">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
-              Source Budget
-            </h4>
-            <p className="text-lg font-semibold text-gray-900">
-              {sourceBudget.name}
-            </p>
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Source Budget</h4>
+            <p className="text-lg font-semibold text-gray-900">{sourceBudget.name}</p>
             <div className="mt-3 grid grid-cols-3 gap-3 text-sm">
               <div>
                 <p className="text-gray-500">Allocated</p>
@@ -219,16 +208,12 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
           {/* Preview Section */}
           {targetBudget && watchedAmount > 0 && (
             <div className="bg-blue-50 rounded-lg border border-blue-200 p-4">
-              <h4 className="text-sm font-medium text-blue-900 mb-3">
-                Transfer Preview
-              </h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-3">Transfer Preview</h4>
               <div className="flex items-center gap-4">
                 {/* Source Preview */}
                 <div className="flex-1 text-center">
                   <p className="text-xs text-blue-700 mb-1">Source</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {sourceBudget.name}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">{sourceBudget.name}</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {formatCurrency(availableToTransfer, sourceBudget.currency)}
                   </p>
@@ -248,9 +233,7 @@ export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
                 {/* Target Preview */}
                 <div className="flex-1 text-center">
                   <p className="text-xs text-blue-700 mb-1">Target</p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {targetBudget.name}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">{targetBudget.name}</p>
                   <p className="text-lg font-semibold text-gray-900">
                     {formatCurrency(targetBudget.totalAmount, targetBudget.currency)}
                   </p>

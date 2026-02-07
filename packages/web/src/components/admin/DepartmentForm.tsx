@@ -44,7 +44,7 @@ export interface DepartmentFormProps {
 // Flatten departments for select dropdown
 function flattenDepartments(
   departments: DepartmentTreeNode[],
-  level = 0
+  level = 0,
 ): { value: string; label: string }[] {
   const result: { value: string; label: string }[] = [];
   for (const dept of departments) {

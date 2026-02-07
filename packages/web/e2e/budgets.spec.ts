@@ -146,7 +146,10 @@ test.describe('Budget Management', () => {
       await page.goto('/budgets/new');
 
       // Fill in budget name
-      await page.fill('input[name="name"], label:has-text("Budget Name") + input', 'E2E Test Budget');
+      await page.fill(
+        'input[name="name"], label:has-text("Budget Name") + input',
+        'E2E Test Budget',
+      );
 
       // Fill in amount
       await page.fill('input[name="totalAmount"], input[type="number"]', '100000');
@@ -170,7 +173,10 @@ test.describe('Budget Management', () => {
 
       // Should navigate to budgets list on success or show error
       const isOnListPage = page.url().endsWith('/budgets');
-      const hasError = await page.locator('text=Failed, text=Error, [role="alert"]').isVisible({ timeout: 1000 }).catch(() => false);
+      const hasError = await page
+        .locator('text=Failed, text=Error, [role="alert"]')
+        .isVisible({ timeout: 1000 })
+        .catch(() => false);
 
       // Either successfully navigated or showing an error (both are valid states for testing)
       expect(isOnListPage || hasError || page.url().includes('/budgets/new')).toBeTruthy();
@@ -362,7 +368,10 @@ test.describe('Budget Management', () => {
 
       // Should either show budgets or redirect based on permissions
       await page.waitForTimeout(1000);
-      const hasBudgetsHeading = await page.getByRole('heading', { name: /budgets/i }).isVisible({ timeout: 2000 }).catch(() => false);
+      const hasBudgetsHeading = await page
+        .getByRole('heading', { name: /budgets/i })
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
       const isRedirected = !page.url().includes('/budgets');
 
       // Finance user should have access or be redirected appropriately
@@ -380,7 +389,10 @@ test.describe('Budget Management', () => {
       // Look for pagination controls
       const pagination = page.locator('text=Previous, text=Next, [class*="pagination"]');
       // Pagination may or may not be visible depending on data volume
-      const hasPagination = await pagination.first().isVisible({ timeout: 2000 }).catch(() => false);
+      const hasPagination = await pagination
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
 
       // This test passes regardless - we're just checking the component renders if needed
       expect(true).toBeTruthy();
@@ -414,10 +426,15 @@ test.describe('Budget Management', () => {
       await page.waitForTimeout(2000);
 
       // Should show error state or redirect
-      const errorMessage = page.locator('text=Failed to load, text=not found, text=Error, [role="alert"]');
+      const errorMessage = page.locator(
+        'text=Failed to load, text=not found, text=Error, [role="alert"]',
+      );
       const isOnBudgetsPage = page.url() === new URL('/budgets', page.url()).href;
 
-      const hasError = await errorMessage.first().isVisible({ timeout: 2000 }).catch(() => false);
+      const hasError = await errorMessage
+        .first()
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
 
       expect(hasError || isOnBudgetsPage).toBeTruthy();
     });
@@ -591,7 +608,9 @@ test.describe('Budget Management', () => {
       const totalAllocatedCard = page.getByText('Total Allocated');
 
       // At least some summary stats should be visible if there are budgets
-      const hasTotalBudgets = await totalBudgetsCard.isVisible({ timeout: 2000 }).catch(() => false);
+      const hasTotalBudgets = await totalBudgetsCard
+        .isVisible({ timeout: 2000 })
+        .catch(() => false);
       const hasTotalAllocated = await totalAllocatedCard
         .isVisible({ timeout: 2000 })
         .catch(() => false);
@@ -654,9 +673,7 @@ test.describe('Budget Management', () => {
       await page.waitForTimeout(1000);
 
       // Check for period type on cards (annual, quarterly, monthly, etc.)
-      const periodType = page
-        .locator('text=/annual|quarterly|monthly|project based/i')
-        .first();
+      const periodType = page.locator('text=/annual|quarterly|monthly|project based/i').first();
 
       const hasPeriod = await periodType.isVisible({ timeout: 2000 }).catch(() => false);
       const emptyState = await page
@@ -768,9 +785,7 @@ test.describe('Budget Management', () => {
 
         // Check for enforcement type display
         await expect(page.getByText('Enforcement')).toBeVisible();
-        const enforcementType = page.locator(
-          'text=/hard block|soft warning|auto escalate|none/i'
-        );
+        const enforcementType = page.locator('text=/hard block|soft warning|auto escalate|none/i');
         await expect(enforcementType.first()).toBeVisible({ timeout: 3000 });
       }
     });

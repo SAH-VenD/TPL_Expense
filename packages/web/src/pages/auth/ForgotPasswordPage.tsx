@@ -29,10 +29,7 @@ export function ForgotPasswordPage() {
           </p>
         </div>
         <div className="text-center">
-          <Link
-            to="/login"
-            className="text-sm font-medium text-primary-600 hover:text-primary-500"
-          >
+          <Link to="/login" className="text-sm font-medium text-primary-600 hover:text-primary-500">
             Back to sign in
           </Link>
         </div>
@@ -43,9 +40,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Reset your password
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900">Reset your password</h2>
         <p className="mt-1 text-sm text-gray-600">
           Enter your email address and we'll send you a link to reset your password.
         </p>
@@ -68,19 +63,12 @@ export function ForgotPasswordPage() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="btn-primary w-full"
-        >
+        <button type="submit" disabled={isLoading} className="btn-primary w-full">
           {isLoading ? 'Sending...' : 'Send reset link'}
         </button>
 
         <div className="text-center">
-          <Link
-            to="/login"
-            className="text-sm font-medium text-primary-600 hover:text-primary-500"
-          >
+          <Link to="/login" className="text-sm font-medium text-primary-600 hover:text-primary-500">
             Back to sign in
           </Link>
         </div>

@@ -212,7 +212,7 @@ async function cleanupByPattern() {
       const vcmResult = await prisma.vendorCategoryMapping.deleteMany({
         where: {
           vendorId: {
-            in: vendors.map(v => v.id),
+            in: vendors.map((v) => v.id),
           },
         },
       });
@@ -235,7 +235,7 @@ async function cleanupByPattern() {
       const splitResult = await prisma.expenseSplit.deleteMany({
         where: {
           expenseId: {
-            in: expenses.map(e => e.id),
+            in: expenses.map((e) => e.id),
           },
         },
       });

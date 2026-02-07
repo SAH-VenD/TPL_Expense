@@ -5,11 +5,11 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { DatePicker } from '@/components/ui/DatePicker';
-import { useGetDepartmentsQuery, useGetCategoriesQuery } from '@/features/admin/services/admin.service';
-import type {
-  BudgetPeriod,
-  CreateBudgetDto,
-} from '@/features/budgets/services/budgets.service';
+import {
+  useGetDepartmentsQuery,
+  useGetCategoriesQuery,
+} from '@/features/admin/services/admin.service';
+import type { BudgetPeriod, CreateBudgetDto } from '@/features/budgets/services/budgets.service';
 
 const budgetFormSchema = z
   .object({
@@ -40,7 +40,7 @@ const budgetFormSchema = z
     {
       message: 'End date must be after start date',
       path: ['endDate'],
-    }
+    },
   );
 
 type BudgetFormValues = z.infer<typeof budgetFormSchema>;
@@ -85,16 +85,19 @@ const enforcementOptions = [
 const validBudgetTypes = ['DEPARTMENT', 'PROJECT', 'COST_CENTER', 'EMPLOYEE', 'CATEGORY'] as const;
 const validEnforcements = ['HARD_BLOCK', 'SOFT_WARNING', 'AUTO_ESCALATE'] as const;
 
-const getValidBudgetType = (type?: string): typeof validBudgetTypes[number] => {
-  if (type && validBudgetTypes.includes(type as typeof validBudgetTypes[number])) {
-    return type as typeof validBudgetTypes[number];
+const getValidBudgetType = (type?: string): (typeof validBudgetTypes)[number] => {
+  if (type && validBudgetTypes.includes(type as (typeof validBudgetTypes)[number])) {
+    return type as (typeof validBudgetTypes)[number];
   }
   return 'DEPARTMENT';
 };
 
-const getValidEnforcement = (enforcement?: string): typeof validEnforcements[number] => {
-  if (enforcement && validEnforcements.includes(enforcement as typeof validEnforcements[number])) {
-    return enforcement as typeof validEnforcements[number];
+const getValidEnforcement = (enforcement?: string): (typeof validEnforcements)[number] => {
+  if (
+    enforcement &&
+    validEnforcements.includes(enforcement as (typeof validEnforcements)[number])
+  ) {
+    return enforcement as (typeof validEnforcements)[number];
   }
   return 'SOFT_WARNING';
 };
@@ -147,10 +150,8 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     setValue('categoryId', undefined);
   }, [selectedType, setValue]);
 
-  const departmentOptions =
-    departments?.map((d) => ({ value: d.id, label: d.name })) || [];
-  const categoryOptions =
-    categories?.map((c) => ({ value: c.id, label: c.name })) || [];
+  const departmentOptions = departments?.map((d) => ({ value: d.id, label: d.name })) || [];
+  const categoryOptions = categories?.map((c) => ({ value: c.id, label: c.name })) || [];
 
   const handleFormSubmit = async (data: BudgetFormValues) => {
     await onSubmit(data as CreateBudgetDto);
@@ -160,9 +161,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
       {/* Basic Information */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Basic Information
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <Input
@@ -205,9 +204,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Entity Selection */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Assign To
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Assign To</h3>
         <div className="grid grid-cols-1 gap-4">
           {selectedType === 'DEPARTMENT' && (
             <Controller
@@ -283,9 +280,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Financial Details */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Financial Details
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Details</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Input
@@ -317,9 +312,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Period Dates */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Budget Period
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Budget Period</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Controller
             name="startDate"
@@ -351,9 +344,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
 
       {/* Alert Settings */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Alert Settings
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Alert Settings</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <Input
@@ -394,11 +385,7 @@ export const BudgetForm: React.FC<BudgetFormProps> = ({
         >
           Cancel
         </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isSubmitting || isLoading}
-        >
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoading}>
           {isSubmitting || isLoading ? 'Saving...' : submitLabel}
         </button>
       </div>

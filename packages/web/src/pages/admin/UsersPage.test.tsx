@@ -2,7 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { UsersPage } from './UsersPage';
-import { renderWithProviders, mockActiveUser, mockPendingUser, mockInactiveUser, mockDepartments } from '@/test/test-utils';
+import {
+  renderWithProviders,
+  mockActiveUser,
+  mockPendingUser,
+  mockInactiveUser,
+  mockDepartments,
+} from '@/test/test-utils';
 
 // Mock the admin service hooks
 vi.mock('@/features/admin/services/admin.service', () => ({
@@ -65,15 +71,9 @@ describe('UsersPage', () => {
       isLoading: false,
     } as never);
 
-    mockUseCreateUserMutation.mockReturnValue([
-      mockCreateUser,
-      { isLoading: false },
-    ] as never);
+    mockUseCreateUserMutation.mockReturnValue([mockCreateUser, { isLoading: false }] as never);
 
-    mockUseApproveUserMutation.mockReturnValue([
-      mockApproveUser,
-      { isLoading: false },
-    ] as never);
+    mockUseApproveUserMutation.mockReturnValue([mockApproveUser, { isLoading: false }] as never);
 
     mockUseDeactivateUserMutation.mockReturnValue([
       mockDeactivateUser,
@@ -85,15 +85,9 @@ describe('UsersPage', () => {
       { isLoading: false },
     ] as never);
 
-    mockUseUpdateUserMutation.mockReturnValue([
-      mockUpdateUser,
-      { isLoading: false },
-    ] as never);
+    mockUseUpdateUserMutation.mockReturnValue([mockUpdateUser, { isLoading: false }] as never);
 
-    mockUseDeleteUserMutation.mockReturnValue([
-      mockDeleteUser,
-      { isLoading: false },
-    ] as never);
+    mockUseDeleteUserMutation.mockReturnValue([mockDeleteUser, { isLoading: false }] as never);
   });
 
   describe('User List Display', () => {
@@ -220,10 +214,7 @@ describe('UsersPage', () => {
     });
 
     it('should show Approving... while loading', () => {
-      mockUseApproveUserMutation.mockReturnValue([
-        mockApproveUser,
-        { isLoading: true },
-      ] as never);
+      mockUseApproveUserMutation.mockReturnValue([mockApproveUser, { isLoading: true }] as never);
 
       renderWithProviders(<UsersPage />);
 
@@ -392,7 +383,7 @@ describe('UsersPage', () => {
             email: 'john@tekcellent.com',
             firstName: 'John',
             lastName: 'Doe',
-          })
+          }),
         );
       });
     });
@@ -448,7 +439,7 @@ describe('UsersPage', () => {
       const adminElements = screen.getAllByDisplayValue('Admin');
       expect(adminElements.length).toBeGreaterThanOrEqual(1);
       // First name input should have 'Admin' value
-      const firstNameInput = adminElements.find(el => el.tagName === 'INPUT');
+      const firstNameInput = adminElements.find((el) => el.tagName === 'INPUT');
       expect(firstNameInput).toBeInTheDocument();
       // Last name 'User' appears only in the input
       expect(screen.getByDisplayValue('User')).toBeInTheDocument();
@@ -478,7 +469,7 @@ describe('UsersPage', () => {
 
       // Modify the first name - find the input element specifically
       const adminElements = screen.getAllByDisplayValue('Admin');
-      const firstNameInput = adminElements.find(el => el.tagName === 'INPUT') as HTMLInputElement;
+      const firstNameInput = adminElements.find((el) => el.tagName === 'INPUT') as HTMLInputElement;
       await user.clear(firstNameInput);
       await user.type(firstNameInput, 'Updated');
 
@@ -492,16 +483,13 @@ describe('UsersPage', () => {
               firstName: 'Updated',
               lastName: 'User',
             }),
-          })
+          }),
         );
       });
     });
 
     it('should show Saving... while updating', () => {
-      mockUseUpdateUserMutation.mockReturnValue([
-        mockUpdateUser,
-        { isLoading: true },
-      ] as never);
+      mockUseUpdateUserMutation.mockReturnValue([mockUpdateUser, { isLoading: true }] as never);
 
       renderWithProviders(<UsersPage />);
 

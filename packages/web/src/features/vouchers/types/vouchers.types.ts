@@ -173,11 +173,27 @@ export const VOUCHER_ROUTES = {
 };
 
 export const VOUCHER_PURPOSE_CATEGORIES = [
-  { value: 'office-supplies', label: 'Office Supplies', defaultText: 'Office supplies and stationery' },
+  {
+    value: 'office-supplies',
+    label: 'Office Supplies',
+    defaultText: 'Office supplies and stationery',
+  },
   { value: 'meals', label: 'Meals & Refreshments', defaultText: 'Team meals and refreshments' },
-  { value: 'travel', label: 'Travel & Transport', defaultText: 'Local travel and transport expenses' },
-  { value: 'entertainment', label: 'Client Entertainment', defaultText: 'Client entertainment and hospitality' },
-  { value: 'maintenance', label: 'Facility Maintenance', defaultText: 'Facility maintenance and repairs' },
+  {
+    value: 'travel',
+    label: 'Travel & Transport',
+    defaultText: 'Local travel and transport expenses',
+  },
+  {
+    value: 'entertainment',
+    label: 'Client Entertainment',
+    defaultText: 'Client entertainment and hospitality',
+  },
+  {
+    value: 'maintenance',
+    label: 'Facility Maintenance',
+    defaultText: 'Facility maintenance and repairs',
+  },
   { value: 'other', label: 'Other', defaultText: '' },
 ] as const;
 
@@ -220,7 +236,7 @@ export type VoucherUrgency = 'overdue' | 'due-soon' | 'normal';
 
 export const getVoucherUrgency = (
   status: VoucherStatus,
-  settlementDeadline?: string
+  settlementDeadline?: string,
 ): VoucherUrgency => {
   if (status === 'OVERDUE') return 'overdue';
   if (!settlementDeadline) return 'normal';
@@ -235,7 +251,7 @@ export const canUserPerformAction = (
   action: 'edit' | 'delete' | 'approve' | 'reject' | 'disburse' | 'settle',
   userRole: RoleType,
   userId: string,
-  voucher: Voucher
+  voucher: Voucher,
 ): boolean => {
   const isOwner = voucher.requesterId === userId;
   const isApprover = ['APPROVER', 'FINANCE', 'ADMIN'].includes(userRole);
@@ -278,7 +294,7 @@ export interface SettlementBalance {
 
 export const calculateSettlementBalance = (
   disbursedAmount: number,
-  totalExpenses: number
+  totalExpenses: number,
 ): SettlementBalance => {
   const balance = disbursedAmount - totalExpenses;
   return {

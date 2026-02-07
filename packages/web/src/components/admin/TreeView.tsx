@@ -36,7 +36,7 @@ export interface TreeViewProps<T extends { id: string; parentId?: string | null;
 // Build tree from flat array
 function buildTree<T extends { id: string; parentId?: string | null; children?: T[] }>(
   items: T[],
-  parentId: string | null | undefined = null
+  parentId: string | null | undefined = null,
 ): T[] {
   return items
     .filter((item) => item.parentId === parentId || (!item.parentId && !parentId))
@@ -60,7 +60,7 @@ function flattenTree<T extends { id: string; children?: T[] }>(tree: T[]): T[] {
 // Get all parent IDs of a node
 function getParentIds<T extends { id: string; parentId?: string | null }>(
   items: T[],
-  nodeId: string
+  nodeId: string,
 ): string[] {
   const node = items.find((item) => item.id === nodeId);
   if (!node || !node.parentId) return [];
@@ -99,7 +99,7 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
         setInternalSearchQuery(value);
       }
     },
-    [onSearchChange]
+    [onSearchChange],
   );
 
   const handleExpandedChange = useCallback(
@@ -110,7 +110,7 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
         setInternalExpandedIds(ids);
       }
     },
-    [onExpandedChange]
+    [onExpandedChange],
   );
 
   const toggleExpanded = useCallback(
@@ -120,7 +120,7 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
         : [...expandedIds, nodeId];
       handleExpandedChange(newExpandedIds);
     },
-    [expandedIds, handleExpandedChange]
+    [expandedIds, handleExpandedChange],
   );
 
   // Build tree from flat data
@@ -162,13 +162,10 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
   }, [expandedIds, expandedIdsForSearch, searchQuery]);
 
   // Drag and drop handlers
-  const handleDragStart = useCallback(
-    (e: React.DragEvent, node: T) => {
-      e.dataTransfer.effectAllowed = 'move';
-      setDraggedNode(node);
-    },
-    []
-  );
+  const handleDragStart = useCallback((e: React.DragEvent, node: T) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedNode(node);
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent, nodeId: string) => {
     e.preventDefault();
@@ -189,7 +186,7 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
       setDraggedNode(null);
       setDragOverNodeId(null);
     },
-    [draggedNode, onDragEnd, data]
+    [draggedNode, onDragEnd, data],
   );
 
   const handleDragEnd = useCallback(() => {
@@ -252,7 +249,10 @@ export function TreeView<T extends { id: string; parentId?: string | null; child
       )}
       <div role="tree" aria-label="Tree view" className="space-y-1">
         {filteredTree.length === 0 ? (
-          <EmptyState title={emptyMessage} description="Try adding some items or adjusting your search." />
+          <EmptyState
+            title={emptyMessage}
+            description="Try adding some items or adjusting your search."
+          />
         ) : (
           filteredTree.map((node) => renderTreeNode(node))
         )}

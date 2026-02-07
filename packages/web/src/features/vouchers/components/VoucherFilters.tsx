@@ -83,7 +83,7 @@ export const VoucherFilters: React.FC<VoucherFiltersProps> = ({
   };
 
   const hasActiveFilters = Object.values(filters).some(
-    (value) => value !== undefined && value !== ''
+    (value) => value !== undefined && value !== '',
   );
 
   return (
@@ -117,7 +117,7 @@ export const VoucherFilters: React.FC<VoucherFiltersProps> = ({
         id="voucher-filters-panel"
         className={clsx(
           'border-t border-gray-200 overflow-hidden transition-all duration-200',
-          isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+          isExpanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0',
         )}
       >
         <div className="p-4 space-y-4">
@@ -152,9 +152,7 @@ export const VoucherFilters: React.FC<VoucherFiltersProps> = ({
           {/* Advanced Filters - Finance/Admin Only */}
           {canSeeAdvancedFilters && (
             <div className="pt-4 border-t border-gray-100">
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
-                Advanced Filters
-              </h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">Advanced Filters</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Amount Range */}
                 <Input
@@ -180,8 +178,7 @@ export const VoucherFilters: React.FC<VoucherFiltersProps> = ({
                 {(filters.minAmount !== undefined || filters.maxAmount !== undefined) && (
                   <div className="lg:col-span-2 flex items-end">
                     <p className="text-sm text-gray-500">
-                      Amount range: PKR{' '}
-                      {filters.minAmount?.toLocaleString() || '0'} - PKR{' '}
+                      Amount range: PKR {filters.minAmount?.toLocaleString() || '0'} - PKR{' '}
                       {filters.maxAmount?.toLocaleString() ||
                         MAX_PETTY_CASH_AMOUNT.toLocaleString()}
                     </p>

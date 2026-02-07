@@ -5,7 +5,14 @@ import type { RoleType } from '@/features/auth/types/auth.types';
 /**
  * All valid role types for type guards.
  */
-const ALL_ROLES = new Set<RoleType>(['EMPLOYEE', 'APPROVER', 'SUPER_APPROVER', 'FINANCE', 'CEO', 'ADMIN']);
+const ALL_ROLES = new Set<RoleType>([
+  'EMPLOYEE',
+  'APPROVER',
+  'SUPER_APPROVER',
+  'FINANCE',
+  'CEO',
+  'ADMIN',
+]);
 
 /**
  * Type guard to check if a string is a valid RoleType.
@@ -104,7 +111,7 @@ export function useRolePermissions(): RolePermissions {
       // Context info
       departmentId: user?.departmentId,
       departmentName: user?.departmentName,
-      scopeLabel: isOrgWide ? 'Organization' : (user?.departmentName || 'Your Department'),
+      scopeLabel: isOrgWide ? 'Organization' : user?.departmentName || 'Your Department',
 
       // Role flags for direct checks
       isCEO,

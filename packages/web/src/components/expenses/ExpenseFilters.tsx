@@ -8,7 +8,10 @@ import { Select } from '../ui/Select';
 import { DatePicker } from '../ui/DatePicker';
 import { Badge } from '../ui/Badge';
 import { useGetCategoriesQuery } from '@/features/admin/services/admin.service';
-import type { ExpenseStatus, ExpenseFilters as ExpenseFiltersType } from '@/features/expenses/services/expenses.service';
+import type {
+  ExpenseStatus,
+  ExpenseFilters as ExpenseFiltersType,
+} from '@/features/expenses/services/expenses.service';
 
 export interface ExpenseFiltersProps {
   onFiltersChange: (filters: ExpenseFiltersType) => void;
@@ -119,7 +122,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
       if (newFilters.sort) params.set('sort', newFilters.sort);
       setSearchParams(params);
     },
-    [setSearchParams]
+    [setSearchParams],
   );
 
   // Update filters and notify parent
@@ -130,7 +133,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
       updateUrl(newFilters);
       onFiltersChange(newFilters);
     },
-    [filters, updateUrl, onFiltersChange]
+    [filters, updateUrl, onFiltersChange],
   );
 
   // Clear all filters
@@ -210,7 +213,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
                 'inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium transition-colors',
                 isExpanded
                   ? 'bg-primary-50 border-primary-300 text-primary-700'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50',
               )}
             >
               <FunnelIcon className="h-5 w-5" />
@@ -252,7 +255,7 @@ export const ExpenseFilters: React.FC<ExpenseFiltersProps> = ({
                     'px-3 py-1.5 text-sm rounded-full border transition-colors',
                     filters.status?.includes(option.value)
                       ? 'bg-primary-100 border-primary-300 text-primary-700'
-                      : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                      : 'border-gray-300 text-gray-600 hover:border-gray-400',
                   )}
                 >
                   {option.label}

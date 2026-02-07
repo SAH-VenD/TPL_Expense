@@ -43,19 +43,18 @@ export function RegisterPage() {
     }
   };
 
-  const errorMessage = error && 'data' in error
-    ? (error.data as { message?: string })?.message || 'Registration failed'
-    : error ? 'Registration failed' : null;
+  const errorMessage =
+    error && 'data' in error
+      ? (error.data as { message?: string })?.message || 'Registration failed'
+      : error
+        ? 'Registration failed'
+        : null;
 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Create your account
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          TPL Expense Management System
-        </p>
+        <h2 className="text-xl font-semibold text-gray-900">Create your account</h2>
+        <p className="mt-1 text-sm text-gray-600">TPL Expense Management System</p>
       </div>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -78,9 +77,7 @@ export function RegisterPage() {
                 required
                 className="input"
                 value={formData.firstName}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstName: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
               />
             </div>
             <div>
@@ -94,9 +91,7 @@ export function RegisterPage() {
                 required
                 className="input"
                 value={formData.lastName}
-                onChange={(e) =>
-                  setFormData({ ...formData, lastName: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
               />
             </div>
           </div>
@@ -114,9 +109,7 @@ export function RegisterPage() {
               className="input"
               placeholder="you@tekcellent.com"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
 
@@ -132,9 +125,7 @@ export function RegisterPage() {
               minLength={8}
               className="input"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
             <p className="mt-1 text-xs text-gray-500">
               Min 8 characters with uppercase, lowercase, number, and special character
@@ -152,26 +143,17 @@ export function RegisterPage() {
               required
               className="input"
               value={formData.confirmPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, confirmPassword: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
             />
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="btn-primary w-full"
-        >
+        <button type="submit" disabled={isLoading} className="btn-primary w-full">
           {isLoading ? 'Creating account...' : 'Create account'}
         </button>
 
         <div className="text-center">
-          <Link
-            to="/login"
-            className="text-sm font-medium text-primary-600 hover:text-primary-500"
-          >
+          <Link to="/login" className="text-sm font-medium text-primary-600 hover:text-primary-500">
             Already have an account? Sign in
           </Link>
         </div>

@@ -216,8 +216,20 @@ describe('ReportsService', () => {
       const result = await service.getSpendByCategory();
 
       expect(result).toHaveLength(2);
-      expect(result).toContainEqual({ category: 'Travel', amount: 5000, count: 10 });
-      expect(result).toContainEqual({ category: 'Meals', amount: 3000, count: 5 });
+      expect(result).toContainEqual({
+        categoryId: 'cat-1',
+        categoryName: 'Travel',
+        totalAmount: 5000,
+        count: 10,
+        percentage: 62.5,
+      });
+      expect(result).toContainEqual({
+        categoryId: 'cat-2',
+        categoryName: 'Meals',
+        totalAmount: 3000,
+        count: 5,
+        percentage: 37.5,
+      });
     });
 
     it('should handle unknown categories', async () => {
@@ -228,7 +240,13 @@ describe('ReportsService', () => {
 
       const result = await service.getSpendByCategory();
 
-      expect(result).toContainEqual({ category: 'Unknown', amount: 1000, count: 2 });
+      expect(result).toContainEqual({
+        categoryId: 'unknown-cat',
+        categoryName: 'Unknown',
+        totalAmount: 1000,
+        count: 2,
+        percentage: 100,
+      });
     });
   });
 

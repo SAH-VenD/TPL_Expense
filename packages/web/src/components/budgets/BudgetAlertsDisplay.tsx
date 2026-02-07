@@ -140,37 +140,27 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
             'border-2',
             isWarning && !isCritical && !isExceeded
               ? 'border-amber-400 bg-amber-50'
-              : 'border-gray-200'
+              : 'border-gray-200',
           )}
         >
           <div className="flex items-center gap-3">
             <div
               className={clsx(
                 'p-2 rounded-full',
-                isWarning && !isCritical && !isExceeded
-                  ? 'bg-amber-100'
-                  : 'bg-gray-100'
+                isWarning && !isCritical && !isExceeded ? 'bg-amber-100' : 'bg-gray-100',
               )}
             >
               <ExclamationTriangleIcon
                 className={clsx(
                   'h-6 w-6',
-                  isWarning && !isCritical && !isExceeded
-                    ? 'text-amber-600'
-                    : 'text-gray-400'
+                  isWarning && !isCritical && !isExceeded ? 'text-amber-600' : 'text-gray-400',
                 )}
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">
-                Warning Threshold
-              </p>
-              <p className="text-lg font-bold">
-                {budget.warningThreshold}%
-              </p>
-              <p className="text-xs text-gray-500">
-                Current: {utilizationPercent.toFixed(1)}%
-              </p>
+              <p className="text-sm font-medium text-gray-900">Warning Threshold</p>
+              <p className="text-lg font-bold">{budget.warningThreshold}%</p>
+              <p className="text-xs text-gray-500">Current: {utilizationPercent.toFixed(1)}%</p>
             </div>
           </div>
         </Card>
@@ -179,51 +169,37 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
         <Card
           className={clsx(
             'border-2',
-            isCritical && !isExceeded
-              ? 'border-orange-400 bg-orange-50'
-              : 'border-gray-200'
+            isCritical && !isExceeded ? 'border-orange-400 bg-orange-50' : 'border-gray-200',
           )}
         >
           <div className="flex items-center gap-3">
             <div
               className={clsx(
                 'p-2 rounded-full',
-                isCritical && !isExceeded ? 'bg-orange-100' : 'bg-gray-100'
+                isCritical && !isExceeded ? 'bg-orange-100' : 'bg-gray-100',
               )}
             >
               <ExclamationTriangleIcon
                 className={clsx(
                   'h-6 w-6',
-                  isCritical && !isExceeded ? 'text-orange-600' : 'text-gray-400'
+                  isCritical && !isExceeded ? 'text-orange-600' : 'text-gray-400',
                 )}
               />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900">
-                Critical Threshold
-              </p>
+              <p className="text-sm font-medium text-gray-900">Critical Threshold</p>
               <p className="text-lg font-bold">90%</p>
-              <p className="text-xs text-gray-500">
-                {isCritical ? 'Triggered' : 'Not triggered'}
-              </p>
+              <p className="text-xs text-gray-500">{isCritical ? 'Triggered' : 'Not triggered'}</p>
             </div>
           </div>
         </Card>
 
         {/* Exceeded Status */}
         <Card
-          className={clsx(
-            'border-2',
-            isExceeded ? 'border-red-400 bg-red-50' : 'border-gray-200'
-          )}
+          className={clsx('border-2', isExceeded ? 'border-red-400 bg-red-50' : 'border-gray-200')}
         >
           <div className="flex items-center gap-3">
-            <div
-              className={clsx(
-                'p-2 rounded-full',
-                isExceeded ? 'bg-red-100' : 'bg-gray-100'
-              )}
-            >
+            <div className={clsx('p-2 rounded-full', isExceeded ? 'bg-red-100' : 'bg-gray-100')}>
               {isExceeded ? (
                 <ExclamationCircleIcon className="h-6 w-6 text-red-600" />
               ) : (
@@ -235,7 +211,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
               <p
                 className={clsx(
                   'text-lg font-bold',
-                  isExceeded ? 'text-red-600' : 'text-green-600'
+                  isExceeded ? 'text-red-600' : 'text-green-600',
                 )}
               >
                 {isExceeded ? 'Exceeded' : 'Within Budget'}
@@ -253,30 +229,24 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
       {/* Alert History */}
       {alerts.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Alert History
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Alert History</h3>
           <div className="space-y-3">
             {sortedAlerts.slice(0, 5).map((alert) => (
               <div
                 key={alert.id}
                 className={clsx(
                   'flex items-center justify-between p-3 rounded-lg border',
-                  getAlertColor(alert.type)
+                  getAlertColor(alert.type),
                 )}
               >
                 <div className="flex items-center gap-3">
                   {getAlertIcon(alert.type)}
                   <div>
-                    <p className="font-medium text-gray-900">
-                      {getAlertLabel(alert.type)}
-                    </p>
+                    <p className="font-medium text-gray-900">{getAlertLabel(alert.type)}</p>
                     <p className="text-sm text-gray-500">
                       Triggered at {alert.currentValue.toFixed(1)}% utilization
                     </p>
-                    <p className="text-xs text-gray-400">
-                      {formatDate(alert.triggeredAt)}
-                    </p>
+                    <p className="text-xs text-gray-400">{formatDate(alert.triggeredAt)}</p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -297,9 +267,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
                       {acknowledging === alert.id ? 'Acknowledging...' : 'Acknowledge'}
                     </button>
                   ) : (
-                    <span className="text-xs text-amber-600 font-medium">
-                      Pending
-                    </span>
+                    <span className="text-xs text-amber-600 font-medium">Pending</span>
                   )}
                 </div>
               </div>
@@ -311,9 +279,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
       {/* Threshold Configuration (Admin Only) */}
       {isAdmin && onThresholdUpdate && (
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Alert Configuration
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Alert Configuration</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -339,11 +305,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
               </div>
             </div>
             <div className="flex justify-end">
-              <button
-                onClick={handleSaveThreshold}
-                disabled={isSaving}
-                className="btn btn-primary"
-              >
+              <button onClick={handleSaveThreshold} disabled={isSaving} className="btn btn-primary">
                 {isSaving ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
@@ -353,9 +315,7 @@ export const BudgetAlertsDisplay: React.FC<BudgetAlertsDisplayProps> = ({
 
       {/* Notification Settings Info */}
       <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-          Notification Settings
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Notification Settings</h3>
         <p className="text-sm text-gray-600 mb-4">
           Budget alerts are sent to the following recipients:
         </p>

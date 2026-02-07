@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
 
 export interface BudgetUtilizationChartProps {

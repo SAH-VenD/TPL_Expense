@@ -78,14 +78,8 @@ const mockDeleteUnwrap = vi.fn();
 
 vi.mock('@/features/budgets/services/budgets.service', () => ({
   useGetBudgetQuery: () => mockQueryState,
-  useUpdateBudgetMutation: () => [
-    mockUpdateBudget,
-    { isLoading: false },
-  ],
-  useDeleteBudgetMutation: () => [
-    mockDeleteBudget,
-    { isLoading: false },
-  ],
+  useUpdateBudgetMutation: () => [mockUpdateBudget, { isLoading: false }],
+  useDeleteBudgetMutation: () => [mockDeleteBudget, { isLoading: false }],
 }));
 
 // Mock the admin service for edit form

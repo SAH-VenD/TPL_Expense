@@ -108,7 +108,7 @@ export function ExpenseListPage() {
       params.set('page', '1');
       setSearchParams(params);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Handle page change
@@ -119,7 +119,7 @@ export function ExpenseListPage() {
       params.set('page', String(newPage));
       setSearchParams(params);
     },
-    [searchParams, setSearchParams]
+    [searchParams, setSearchParams],
   );
 
   // Selection handlers
@@ -169,7 +169,7 @@ export function ExpenseListPage() {
     (expense: Expense) => {
       navigate(`/expenses/${expense.id}`);
     },
-    [navigate]
+    [navigate],
   );
 
   // Table columns for list view
@@ -221,9 +221,7 @@ export function ExpenseListPage() {
       {
         key: 'category',
         header: 'Category',
-        render: (expense) => (
-          <span className="text-gray-500">{expense.category?.name || '-'}</span>
-        ),
+        render: (expense) => <span className="text-gray-500">{expense.category?.name || '-'}</span>,
       },
       {
         key: 'date',
@@ -268,13 +266,13 @@ export function ExpenseListPage() {
         ),
       },
     ],
-    [selectedExpenses, expenses.length, handleSelectAll, handleSelectExpense]
+    [selectedExpenses, expenses.length, handleSelectAll, handleSelectExpense],
   );
 
   // Selected items for bulk actions
   const selectedItems = React.useMemo(
     () => expenses.filter((e) => selectedExpenses.has(e.id)),
-    [expenses, selectedExpenses]
+    [expenses, selectedExpenses],
   );
 
   return (
@@ -287,10 +285,7 @@ export function ExpenseListPage() {
         actions={
           <>
             <ViewToggle value={view} onChange={setView} />
-            <Link
-              to="/expenses/new"
-              className="btn btn-primary flex items-center gap-2"
-            >
+            <Link to="/expenses/new" className="btn btn-primary flex items-center gap-2">
               <PlusIcon className="h-5 w-5" />
               Expense
             </Link>

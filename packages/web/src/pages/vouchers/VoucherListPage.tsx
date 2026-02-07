@@ -15,7 +15,10 @@ import { VoucherTable } from '@/components/vouchers/VoucherTable';
 import { useAppSelector } from '@/store/hooks';
 import { useGetVouchersQuery } from '@/features/vouchers/services/vouchers.service';
 import { VoucherCard, VoucherCardSkeleton } from '@/features/vouchers/components/VoucherCard';
-import { VoucherFilters, type VoucherFilterOptions } from '@/features/vouchers/components/VoucherFilters';
+import {
+  VoucherFilters,
+  type VoucherFilterOptions,
+} from '@/features/vouchers/components/VoucherFilters';
 import type { VoucherStatus } from '@/features/vouchers/types/vouchers.types';
 import { VOUCHER_STATUS_CONFIG, VOUCHER_ROUTES } from '@/features/vouchers/types/vouchers.types';
 
@@ -23,7 +26,9 @@ import { VOUCHER_STATUS_CONFIG, VOUCHER_ROUTES } from '@/features/vouchers/types
 const VOUCHERS_VIEW_KEY = 'vouchers_view';
 
 // Hook for voucher view preference with localStorage persistence
-const useVoucherViewPreference = (defaultView: ViewType = 'grid'): [ViewType, (view: ViewType) => void] => {
+const useVoucherViewPreference = (
+  defaultView: ViewType = 'grid',
+): [ViewType, (view: ViewType) => void] => {
   const [view, setView] = useState<ViewType>(() => {
     if (typeof globalThis.window !== 'undefined') {
       const stored = localStorage.getItem(VOUCHERS_VIEW_KEY);
@@ -74,7 +79,7 @@ export function VoucherListPage() {
   const initialPage = Number.parseInt(searchParams.get('page') || '1', 10);
   const initialPageSize = Number.parseInt(
     searchParams.get('pageSize') || DEFAULT_PAGE_SIZE.toString(),
-    10
+    10,
   );
 
   const [selectedStatus, setSelectedStatus] = useState<VoucherStatus | 'ALL'>(initialStatus);
@@ -91,7 +96,7 @@ export function VoucherListPage() {
       ...(selectedStatus !== 'ALL' && { status: selectedStatus }),
       ...filters,
     }),
-    [page, pageSize, selectedStatus, filters]
+    [page, pageSize, selectedStatus, filters],
   );
 
   // Fetch vouchers
@@ -111,7 +116,10 @@ export function VoucherListPage() {
 
   // Calculate total count for "ALL" tab from all individual status counts
   const totalStatusCount = useMemo(() => {
-    return Object.values(statusCounts).reduce((sum: number, count: number) => sum + (count || 0), 0);
+    return Object.values(statusCounts).reduce(
+      (sum: number, count: number) => sum + (count || 0),
+      0,
+    );
   }, [statusCounts]);
 
   // Get count for a specific status tab
@@ -227,8 +235,7 @@ export function VoucherListPage() {
         <nav className="flex space-x-1 min-w-max" aria-label="Voucher status tabs">
           {TABS.map((tab) => {
             const isActive = selectedStatus === tab.id;
-            const statusConfig =
-              tab.id === 'ALL' ? null : VOUCHER_STATUS_CONFIG[tab.id];
+            const statusConfig = tab.id === 'ALL' ? null : VOUCHER_STATUS_CONFIG[tab.id];
 
             return (
               <button
@@ -247,7 +254,7 @@ export function VoucherListPage() {
                 <span className="mr-2">{tab.icon}</span>
                 {tab.label}
                 <Badge
-                  variant={isActive ? 'default' : (statusConfig?.variant || 'default')}
+                  variant={isActive ? 'default' : statusConfig?.variant || 'default'}
                   size="sm"
                   className="ml-2"
                 >
@@ -276,7 +283,7 @@ export function VoucherListPage() {
           {totalItems > 0
             ? `Showing ${(page - 1) * pageSize + 1}-${Math.min(
                 page * pageSize,
-                totalItems
+                totalItems,
               )} of ${totalItems} vouchers`
             : 'No vouchers found'}
         </p>
@@ -333,11 +340,7 @@ export function VoucherListPage() {
           {view === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {vouchers.map((voucher) => (
-                <VoucherCard
-                  key={voucher.id}
-                  voucher={voucher}
-                  onClick={handleVoucherClick}
-                />
+                <VoucherCard key={voucher.id} voucher={voucher} onClick={handleVoucherClick} />
               ))}
             </div>
           ) : (

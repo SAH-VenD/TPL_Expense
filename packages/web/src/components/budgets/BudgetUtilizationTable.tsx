@@ -20,7 +20,7 @@ const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
 };
 
 const getBudgetTypeBadgeVariant = (
-  type: string
+  type: string,
 ): 'primary' | 'info' | 'success' | 'warning' | 'default' => {
   const variants: Record<string, 'primary' | 'info' | 'success' | 'warning' | 'default'> = {
     DEPARTMENT: 'primary',
@@ -110,7 +110,7 @@ export const BudgetUtilizationTable: React.FC<BudgetUtilizationTableProps> = ({
           <span
             className={clsx(
               'font-medium',
-              budget.available < 0 ? 'text-red-600' : 'text-green-600'
+              budget.available < 0 ? 'text-red-600' : 'text-green-600',
             )}
           >
             {formatCurrency(budget.available)}
@@ -133,7 +133,7 @@ export const BudgetUtilizationTable: React.FC<BudgetUtilizationTableProps> = ({
                     'h-full rounded-full transition-all',
                     isExceeded && 'bg-red-500',
                     isWarning && !isExceeded && 'bg-amber-500',
-                    !isWarning && 'bg-green-500'
+                    !isWarning && 'bg-green-500',
                   )}
                   style={{ width: `${cappedPercent}%` }}
                 />
@@ -143,7 +143,7 @@ export const BudgetUtilizationTable: React.FC<BudgetUtilizationTableProps> = ({
                   'text-xs font-medium w-12 text-right',
                   isExceeded && 'text-red-600',
                   isWarning && !isExceeded && 'text-amber-600',
-                  !isWarning && 'text-green-600'
+                  !isWarning && 'text-green-600',
                 )}
               >
                 {percent.toFixed(0)}%
@@ -191,7 +191,7 @@ export const BudgetUtilizationTable: React.FC<BudgetUtilizationTableProps> = ({
         },
       },
     ],
-    []
+    [],
   );
 
   return (

@@ -81,26 +81,21 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
           position === 'header'
             ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
             : 'text-gray-600 hover:bg-gray-100',
-          isOpen && 'bg-gray-100 text-gray-700'
+          isOpen && 'bg-gray-100 text-gray-700',
         )}
         aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="dialog"
         title={`You have ${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`}
       >
-        <BellIcon
-          className={clsx(
-            'w-6 h-6',
-            hasNewNotification && 'animate-bounce'
-          )}
-        />
+        <BellIcon className={clsx('w-6 h-6', hasNewNotification && 'animate-bounce')} />
 
         {/* Unread count badge */}
         {unreadCount > 0 && !isLoading && (
           <span
             className={clsx(
               'absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-xs font-bold text-white bg-red-500 rounded-full',
-              hasNewNotification && 'animate-pulse'
+              hasNewNotification && 'animate-pulse',
             )}
           >
             {displayCount}

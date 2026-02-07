@@ -25,11 +25,7 @@ export const TEST_USERS = {
 /**
  * Login helper function
  */
-export async function login(
-  page: Page,
-  email: string,
-  password: string
-): Promise<void> {
+export async function login(page: Page, email: string, password: string): Promise<void> {
   await page.goto('/login');
   await page.fill('input[name="email"], input[type="email"]', email);
   await page.fill('input[name="password"], input[type="password"]', password);

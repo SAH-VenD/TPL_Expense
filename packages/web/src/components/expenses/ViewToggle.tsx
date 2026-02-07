@@ -14,7 +14,9 @@ export interface ViewToggleProps {
 
 const STORAGE_KEY = 'expenses_view';
 
-export const useViewPreference = (defaultView: ViewType = 'list'): [ViewType, (view: ViewType) => void] => {
+export const useViewPreference = (
+  defaultView: ViewType = 'list',
+): [ViewType, (view: ViewType) => void] => {
   const [view, setView] = React.useState<ViewType>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -43,7 +45,9 @@ export const ViewToggle: React.FC<ViewToggleProps> = ({
   className,
 }) => {
   return (
-    <div className={clsx('inline-flex rounded-lg border border-gray-300 p-1 bg-gray-50', className)}>
+    <div
+      className={clsx('inline-flex rounded-lg border border-gray-300 p-1 bg-gray-50', className)}
+    >
       <button
         type="button"
         onClick={() => onChange('list')}
@@ -51,7 +55,7 @@ export const ViewToggle: React.FC<ViewToggleProps> = ({
           'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
           value === 'list'
             ? 'bg-white text-gray-900 shadow-sm'
-            : 'text-gray-600 hover:text-gray-900'
+            : 'text-gray-600 hover:text-gray-900',
         )}
         aria-pressed={value === 'list'}
       >
@@ -65,7 +69,7 @@ export const ViewToggle: React.FC<ViewToggleProps> = ({
           'inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
           value === 'grid'
             ? 'bg-white text-gray-900 shadow-sm'
-            : 'text-gray-600 hover:text-gray-900'
+            : 'text-gray-600 hover:text-gray-900',
         )}
         aria-pressed={value === 'grid'}
       >

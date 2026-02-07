@@ -128,10 +128,7 @@ export function ExpenseDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Loading..."
-          breadcrumbs={[
-            { label: 'Expenses', href: '/expenses' },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'Details' }]}
         />
         <SkeletonCard />
         <SkeletonCard />
@@ -145,13 +142,11 @@ export function ExpenseDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Error"
-          breadcrumbs={[
-            { label: 'Expenses', href: '/expenses' },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'Details' }]}
         />
         <Alert variant="error" title="Failed to load expense">
-          {(error as { message?: string })?.message || 'An error occurred while loading the expense.'}
+          {(error as { message?: string })?.message ||
+            'An error occurred while loading the expense.'}
           <button
             type="button"
             onClick={() => refetch()}
@@ -170,10 +165,7 @@ export function ExpenseDetailPage() {
       <div className="space-y-6">
         <PageHeader
           title="Not Found"
-          breadcrumbs={[
-            { label: 'Expenses', href: '/expenses' },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'Details' }]}
         />
         <Alert variant="warning" title="Expense not found">
           The expense you are looking for does not exist or you do not have permission to view it.
@@ -196,10 +188,7 @@ export function ExpenseDetailPage() {
       <PageHeader
         title={expense.expenseNumber}
         subtitle={expense.description}
-        breadcrumbs={[
-          { label: 'Expenses', href: '/expenses' },
-          { label: expense.expenseNumber },
-        ]}
+        breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: expense.expenseNumber }]}
         actions={
           <span
             className={`inline-flex px-3 py-1 text-sm font-medium rounded-full ${
@@ -231,9 +220,7 @@ export function ExpenseDetailPage() {
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Vendor</dt>
-                <dd className="text-sm font-medium text-gray-900">
-                  {expense.vendor?.name || '-'}
-                </dd>
+                <dd className="text-sm font-medium text-gray-900">{expense.vendor?.name || '-'}</dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Expense Date</dt>
@@ -403,31 +390,45 @@ export function ExpenseDetailPage() {
               <div className="space-y-4">
                 {approvalHistory.map((history) => (
                   <div key={history.id} className="flex items-start space-x-3 text-sm">
-                    <div className={`w-2 h-2 mt-2 rounded-full ${
-                      history.action === 'APPROVED' ? 'bg-green-600' :
-                      history.action === 'REJECTED' ? 'bg-red-600' :
-                      'bg-amber-600'
-                    }`} />
+                    <div
+                      className={`w-2 h-2 mt-2 rounded-full ${
+                        history.action === 'APPROVED'
+                          ? 'bg-green-600'
+                          : history.action === 'REJECTED'
+                            ? 'bg-red-600'
+                            : 'bg-amber-600'
+                      }`}
+                    />
                     <div>
                       <p className="font-medium text-gray-900">
-                        {history.action === 'APPROVED' ? 'Approved' :
-                         history.action === 'REJECTED' ? 'Rejected' :
-                         'Clarification Requested'}
+                        {history.action === 'APPROVED'
+                          ? 'Approved'
+                          : history.action === 'REJECTED'
+                            ? 'Rejected'
+                            : 'Clarification Requested'}
                         {history.approver && (
-                          <> by {history.approver.firstName} {history.approver.lastName}</>
+                          <>
+                            {' '}
+                            by {history.approver.firstName} {history.approver.lastName}
+                          </>
                         )}
                       </p>
-                      <p className="text-gray-500">
-                        {format(new Date(history.createdAt), 'PPp')}
-                      </p>
+                      <p className="text-gray-500">{format(new Date(history.createdAt), 'PPp')}</p>
                       {history.comment && (
-                        <p className={`mt-1 ${
-                          history.action === 'REJECTED' ? 'text-red-600' :
-                          history.action === 'CLARIFICATION_REQUESTED' ? 'text-orange-600' :
-                          'text-gray-600'
-                        }`}>
-                          {history.action === 'REJECTED' ? 'Reason: ' :
-                           history.action === 'CLARIFICATION_REQUESTED' ? 'Question: ' : ''}
+                        <p
+                          className={`mt-1 ${
+                            history.action === 'REJECTED'
+                              ? 'text-red-600'
+                              : history.action === 'CLARIFICATION_REQUESTED'
+                                ? 'text-orange-600'
+                                : 'text-gray-600'
+                          }`}
+                        >
+                          {history.action === 'REJECTED'
+                            ? 'Reason: '
+                            : history.action === 'CLARIFICATION_REQUESTED'
+                              ? 'Question: '
+                              : ''}
                           {history.comment}
                         </p>
                       )}
@@ -439,7 +440,6 @@ export function ExpenseDetailPage() {
               <p className="text-gray-500 text-sm">No approval history yet</p>
             )}
           </div>
-
         </div>
       </div>
 

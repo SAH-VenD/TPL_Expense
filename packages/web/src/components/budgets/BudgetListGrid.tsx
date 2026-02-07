@@ -17,12 +17,7 @@ export const BudgetListGrid: React.FC<BudgetListGridProps> = ({
   className,
 }) => {
   return (
-    <div
-      className={clsx(
-        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4',
-        className
-      )}
-    >
+    <div className={clsx('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4', className)}>
       {budgets.map((budget) => (
         <BudgetCard
           key={budget.id}

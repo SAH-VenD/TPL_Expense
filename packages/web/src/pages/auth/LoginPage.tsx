@@ -18,30 +18,31 @@ export function LoginPage() {
     e.preventDefault();
     try {
       const result = await login(formData).unwrap();
-      dispatch(setCredentials({
-        user: result.user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      }));
+      dispatch(
+        setCredentials({
+          user: result.user,
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        }),
+      );
       navigate('/');
     } catch {
       // Error handled by RTK Query
     }
   };
 
-  const errorMessage = error && 'data' in error
-    ? (error.data as { message?: string })?.message || 'Login failed'
-    : error ? 'Login failed' : null;
+  const errorMessage =
+    error && 'data' in error
+      ? (error.data as { message?: string })?.message || 'Login failed'
+      : error
+        ? 'Login failed'
+        : null;
 
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Sign in to your account
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          TPL Expense Management System
-        </p>
+        <h2 className="text-xl font-semibold text-gray-900">Sign in to your account</h2>
+        <p className="mt-1 text-sm text-gray-600">TPL Expense Management System</p>
       </div>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
@@ -65,9 +66,7 @@ export function LoginPage() {
               className="input"
               placeholder="Email address"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
           <div>
@@ -83,9 +82,7 @@ export function LoginPage() {
               className="input"
               placeholder="Password"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </div>
         </div>
@@ -99,11 +96,7 @@ export function LoginPage() {
           </Link>
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="btn-primary w-full"
-        >
+        <button type="submit" disabled={isLoading} className="btn-primary w-full">
           {isLoading ? 'Signing in...' : 'Sign in'}
         </button>
 

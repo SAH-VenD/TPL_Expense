@@ -29,7 +29,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={clsx(
               'h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
               error && 'border-red-500',
-              className
+              className,
             )}
             aria-invalid={error ? 'true' : 'false'}
             {...props}
@@ -40,7 +40,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             htmlFor={checkboxId}
             className={clsx(
               'ml-2 text-sm',
-              props.disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer'
+              props.disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer',
             )}
           >
             {label}
@@ -48,7 +48,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Checkbox.displayName = 'Checkbox';

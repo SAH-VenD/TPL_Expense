@@ -103,7 +103,7 @@ export const BudgetFilters: React.FC<BudgetFiltersProps> = ({
           <Select
             options={typeOptions}
             value={type || ''}
-            onChange={(value) => onTypeChange(value as BudgetType || undefined)}
+            onChange={(value) => onTypeChange((value as BudgetType) || undefined)}
             placeholder="All Types"
           />
         </div>
@@ -113,7 +113,7 @@ export const BudgetFilters: React.FC<BudgetFiltersProps> = ({
           <Select
             options={periodOptions}
             value={period || ''}
-            onChange={(value) => onPeriodChange(value as BudgetPeriod || undefined)}
+            onChange={(value) => onPeriodChange((value as BudgetPeriod) || undefined)}
             placeholder="All Periods"
           />
         </div>
@@ -123,9 +123,7 @@ export const BudgetFilters: React.FC<BudgetFiltersProps> = ({
           <Select
             options={statusOptions}
             value={status || ''}
-            onChange={(value) =>
-              onStatusChange(value as 'active' | 'exhausted' || undefined)
-            }
+            onChange={(value) => onStatusChange((value as 'active' | 'exhausted') || undefined)}
             placeholder="All Statuses"
           />
         </div>

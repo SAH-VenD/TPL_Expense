@@ -95,7 +95,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({ budget, utilization, onC
               'text-sm font-medium',
               isExceeded && 'text-red-600',
               isWarning && !isExceeded && 'text-amber-600',
-              !isWarning && 'text-green-600'
+              !isWarning && 'text-green-600',
             )}
           >
             {utilizationPercent.toFixed(1)}%

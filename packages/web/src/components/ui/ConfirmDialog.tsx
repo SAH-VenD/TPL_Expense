@@ -1,5 +1,9 @@
 import React from 'react';
-import { ExclamationTriangleIcon, InformationCircleIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/24/outline';
 import { Modal } from './Modal';
 import clsx from 'clsx';
 
@@ -19,27 +23,25 @@ export interface ConfirmDialogProps {
   children?: React.ReactNode;
 }
 
-const variantConfig: Record<
-  ConfirmDialogVariant,
-  { icon: React.ReactNode; buttonClass: string }
-> = {
-  danger: {
-    icon: <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />,
-    buttonClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
-  },
-  warning: {
-    icon: <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />,
-    buttonClass: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-  },
-  info: {
-    icon: <InformationCircleIcon className="h-6 w-6 text-blue-600" />,
-    buttonClass: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-  },
-  primary: {
-    icon: <CheckCircleIcon className="h-6 w-6 text-primary-600" />,
-    buttonClass: 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500',
-  },
-};
+const variantConfig: Record<ConfirmDialogVariant, { icon: React.ReactNode; buttonClass: string }> =
+  {
+    danger: {
+      icon: <ExclamationTriangleIcon className="h-6 w-6 text-red-600" />,
+      buttonClass: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+    },
+    warning: {
+      icon: <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" />,
+      buttonClass: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
+    },
+    info: {
+      icon: <InformationCircleIcon className="h-6 w-6 text-blue-600" />,
+      buttonClass: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+    },
+    primary: {
+      icon: <CheckCircleIcon className="h-6 w-6 text-primary-600" />,
+      buttonClass: 'bg-primary-600 hover:bg-primary-700 focus:ring-primary-500',
+    },
+  };
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
@@ -66,7 +68,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             variant === 'danger' && 'bg-red-100',
             variant === 'warning' && 'bg-yellow-100',
             variant === 'info' && 'bg-blue-100',
-            variant === 'primary' && 'bg-primary-100'
+            variant === 'primary' && 'bg-primary-100',
           )}
         >
           {config.icon}
@@ -98,7 +100,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           disabled={isProcessing}
           className={clsx(
             'px-4 py-2 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50',
-            config.buttonClass
+            config.buttonClass,
           )}
         >
           {isProcessing ? 'Processing...' : confirmText}

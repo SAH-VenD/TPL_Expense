@@ -130,7 +130,7 @@ export function UsersPage() {
         console.error('Failed to approve user:', err);
       }
     },
-    [approveUser]
+    [approveUser],
   );
 
   const handleDeactivateUser = useCallback(async () => {
@@ -204,7 +204,7 @@ export function UsersPage() {
         setEditFormError(error.data?.message || 'Failed to update user');
       }
     },
-    [showEditModal, editFormData, updateUser]
+    [showEditModal, editFormData, updateUser],
   );
 
   const handleCreateUser = useCallback(
@@ -237,7 +237,7 @@ export function UsersPage() {
         setFormError(error.data?.message || 'Failed to create user');
       }
     },
-    [formData, createUser]
+    [formData, createUser],
   );
 
   const closeCreateModal = useCallback(() => {
@@ -276,9 +276,7 @@ export function UsersPage() {
       {
         key: 'role',
         header: 'Role',
-        render: (user) => (
-          <Badge variant={getStatusVariant(user.role)}>{user.role}</Badge>
-        ),
+        render: (user) => <Badge variant={getStatusVariant(user.role)}>{user.role}</Badge>,
       },
       {
         key: 'status',
@@ -358,7 +356,7 @@ export function UsersPage() {
         ),
       },
     ],
-    [handleApproveUser, handleEditUser, isApproving]
+    [handleApproveUser, handleEditUser, isApproving],
   );
 
   if (isLoading) {
@@ -557,9 +555,7 @@ export function UsersPage() {
                 <Input
                   label="First Name"
                   value={editFormData.firstName}
-                  onChange={(e) =>
-                    setEditFormData({ ...editFormData, firstName: e.target.value })
-                  }
+                  onChange={(e) => setEditFormData({ ...editFormData, firstName: e.target.value })}
                   required
                 />
                 <Input

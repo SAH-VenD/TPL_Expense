@@ -67,7 +67,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
           'fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50',
           'bg-gray-900 text-white rounded-lg shadow-lg px-6 py-3',
           'flex items-center gap-4',
-          className
+          className,
         )}
       >
         {/* Selected Count */}
@@ -86,7 +86,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors',
             canSubmit && !isLoading
               ? 'bg-primary-600 text-white hover:bg-primary-700'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-700 text-gray-400 cursor-not-allowed',
           )}
         >
           <PaperAirplaneIcon className="h-4 w-4" />
@@ -105,7 +105,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             'inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors',
             canDelete && !isLoading
               ? 'bg-red-600 text-white hover:bg-red-700'
-              : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-700 text-gray-400 cursor-not-allowed',
           )}
         >
           <TrashIcon className="h-4 w-4" />

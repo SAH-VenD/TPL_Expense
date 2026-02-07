@@ -1,10 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Menu, MenuButton, MenuItem, MenuItems, Transition } from '@headlessui/react';
-import {
-  UserIcon,
-  ShieldCheckIcon,
-  ArrowRightOnRectangleIcon,
-} from '@heroicons/react/24/outline';
+import { UserIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 import { Fragment } from 'react';
 import clsx from 'clsx';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
@@ -71,7 +67,12 @@ export function UserMenuDropdown() {
                   {user?.firstName} {user?.lastName}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>
-                <span className={clsx('inline-flex mt-1 px-2 py-0.5 text-xs font-medium rounded-full', roleInfo.color)}>
+                <span
+                  className={clsx(
+                    'inline-flex mt-1 px-2 py-0.5 text-xs font-medium rounded-full',
+                    roleInfo.color,
+                  )}
+                >
                   {roleInfo.label}
                 </span>
               </div>
@@ -86,7 +87,7 @@ export function UserMenuDropdown() {
                   onClick={() => navigate('/profile')}
                   className={clsx(
                     'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700',
-                    active ? 'bg-gray-100' : ''
+                    active ? 'bg-gray-100' : '',
                   )}
                 >
                   <UserIcon className="h-5 w-5 text-gray-400" />
@@ -101,7 +102,7 @@ export function UserMenuDropdown() {
                   onClick={() => navigate('/profile?tab=permissions')}
                   className={clsx(
                     'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-700',
-                    active ? 'bg-gray-100' : ''
+                    active ? 'bg-gray-100' : '',
                   )}
                 >
                   <ShieldCheckIcon className="h-5 w-5 text-gray-400" />
@@ -119,7 +120,7 @@ export function UserMenuDropdown() {
                   onClick={handleLogout}
                   className={clsx(
                     'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-red-600',
-                    active ? 'bg-red-50' : ''
+                    active ? 'bg-red-50' : '',
                   )}
                 >
                   <ArrowRightOnRectangleIcon className="h-5 w-5" />

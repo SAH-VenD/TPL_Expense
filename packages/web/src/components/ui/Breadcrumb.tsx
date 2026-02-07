@@ -44,7 +44,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 <span
                   className={clsx(
                     'flex items-center text-sm',
-                    isLast ? 'font-medium text-gray-900' : 'text-gray-500'
+                    isLast ? 'font-medium text-gray-900' : 'text-gray-500',
                   )}
                   aria-current={isLast ? 'page' : undefined}
                 >

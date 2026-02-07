@@ -1,13 +1,7 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export type BadgeVariant =
-  | 'default'
-  | 'primary'
-  | 'success'
-  | 'warning'
-  | 'danger'
-  | 'info';
+export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info';
 
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
@@ -56,7 +50,7 @@ export const Badge: React.FC<BadgeProps> = ({
         'inline-flex items-center font-medium rounded-full',
         variantStyles[variant],
         sizeStyles[size],
-        className
+        className,
       )}
     >
       {dot && (

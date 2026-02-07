@@ -132,7 +132,11 @@ export const NotificationListPage: React.FC = () => {
   };
 
   const handleClearAll = async () => {
-    if (window.confirm('Are you sure you want to delete all notifications? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete all notifications? This action cannot be undone.',
+      )
+    ) {
       try {
         await clearAll().unwrap();
       } catch (error) {
@@ -151,7 +155,9 @@ export const NotificationListPage: React.FC = () => {
       {/* Header */}
       <PageHeader
         title="Notifications"
-        subtitle={pagination ? `${pagination.total} total notifications` : 'Manage your notifications'}
+        subtitle={
+          pagination ? `${pagination.total} total notifications` : 'Manage your notifications'
+        }
         breadcrumbs={[{ label: 'Notifications' }]}
         actions={
           <div className="flex items-center gap-2">
@@ -161,11 +167,7 @@ export const NotificationListPage: React.FC = () => {
                 disabled={isMarkingAllRead}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg transition-colors disabled:opacity-50"
               >
-                {isMarkingAllRead ? (
-                  <Spinner size="xs" />
-                ) : (
-                  <CheckIcon className="w-4 h-4" />
-                )}
+                {isMarkingAllRead ? <Spinner size="xs" /> : <CheckIcon className="w-4 h-4" />}
                 Mark all as read
               </button>
             )}
@@ -175,11 +177,7 @@ export const NotificationListPage: React.FC = () => {
                 disabled={isClearing}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
               >
-                {isClearing ? (
-                  <Spinner size="xs" />
-                ) : (
-                  <TrashIcon className="w-4 h-4" />
-                )}
+                {isClearing ? <Spinner size="xs" /> : <TrashIcon className="w-4 h-4" />}
                 Clear all
               </button>
             )}
@@ -204,7 +202,7 @@ export const NotificationListPage: React.FC = () => {
                     'px-4 py-2 text-sm font-medium transition-colors',
                     activeTab === tab.id
                       ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-600 hover:bg-gray-50'
+                      : 'text-gray-600 hover:bg-gray-50',
                   )}
                 >
                   {tab.label}
@@ -255,8 +253,8 @@ export const NotificationListPage: React.FC = () => {
               {activeTab === 'unread'
                 ? "You're all caught up! No unread notifications."
                 : activeTab === 'read'
-                ? 'No read notifications to show.'
-                : 'You have no notifications yet.'}
+                  ? 'No read notifications to show.'
+                  : 'You have no notifications yet.'}
             </p>
           </div>
         ) : (

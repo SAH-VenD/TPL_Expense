@@ -44,7 +44,7 @@ function formatValue(value: unknown): string {
 
 function computeDiff(
   before?: Record<string, unknown>,
-  after?: Record<string, unknown>
+  after?: Record<string, unknown>,
 ): FieldDiff[] {
   const diffs: FieldDiff[] = [];
   const allKeys = new Set([...Object.keys(before || {}), ...Object.keys(after || {})]);
@@ -115,7 +115,7 @@ export const DiffView: React.FC<DiffViewProps> = ({ before, after, className }) 
             'border rounded-lg overflow-hidden',
             diff.isAdded && 'border-green-200',
             diff.isRemoved && 'border-red-200',
-            diff.isChanged && 'border-blue-200'
+            diff.isChanged && 'border-blue-200',
           )}
         >
           {/* Field header */}
@@ -124,7 +124,7 @@ export const DiffView: React.FC<DiffViewProps> = ({ before, after, className }) 
               'px-3 py-2 text-sm font-medium flex items-center justify-between',
               diff.isAdded && 'bg-green-50 text-green-800',
               diff.isRemoved && 'bg-red-50 text-red-800',
-              diff.isChanged && 'bg-blue-50 text-blue-800'
+              diff.isChanged && 'bg-blue-50 text-blue-800',
             )}
           >
             <span>{diff.field}</span>
@@ -141,15 +141,13 @@ export const DiffView: React.FC<DiffViewProps> = ({ before, after, className }) 
             <div className="p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-gray-500 uppercase">Before</span>
-                {diff.before !== undefined && (
-                  <CopyButton text={formatValue(diff.before)} />
-                )}
+                {diff.before !== undefined && <CopyButton text={formatValue(diff.before)} />}
               </div>
               <div
                 className={clsx(
                   'text-sm font-mono whitespace-pre-wrap break-all max-h-40 overflow-auto',
                   diff.isAdded ? 'text-gray-400' : 'text-gray-900',
-                  (diff.isChanged || diff.isRemoved) && 'bg-red-50 p-2 rounded'
+                  (diff.isChanged || diff.isRemoved) && 'bg-red-50 p-2 rounded',
                 )}
               >
                 {diff.before === undefined ? (
@@ -164,15 +162,13 @@ export const DiffView: React.FC<DiffViewProps> = ({ before, after, className }) 
             <div className="p-3">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-gray-500 uppercase">After</span>
-                {diff.after !== undefined && (
-                  <CopyButton text={formatValue(diff.after)} />
-                )}
+                {diff.after !== undefined && <CopyButton text={formatValue(diff.after)} />}
               </div>
               <div
                 className={clsx(
                   'text-sm font-mono whitespace-pre-wrap break-all max-h-40 overflow-auto',
                   diff.isRemoved ? 'text-gray-400' : 'text-gray-900',
-                  (diff.isChanged || diff.isAdded) && 'bg-green-50 p-2 rounded'
+                  (diff.isChanged || diff.isAdded) && 'bg-green-50 p-2 rounded',
                 )}
               >
                 {diff.after === undefined ? (

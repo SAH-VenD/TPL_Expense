@@ -31,13 +31,13 @@ export const ReceiptViewerModal: React.FC<ReceiptViewerModalProps> = ({
   const getMimeTypeFromFilename = (filename: string): string | null => {
     const ext = filename.toLowerCase().split('.').pop();
     const mimeTypes: Record<string, string> = {
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'png': 'image/png',
-      'gif': 'image/gif',
-      'webp': 'image/webp',
-      'heic': 'image/heic',
-      'pdf': 'application/pdf',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      heic: 'image/heic',
+      pdf: 'application/pdf',
     };
     return ext ? mimeTypes[ext] || null : null;
   };
@@ -60,12 +60,7 @@ export const ReceiptViewerModal: React.FC<ReceiptViewerModalProps> = ({
   const displayName = receipt?.originalName || receipt?.fileName || 'Receipt';
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={displayName}
-      size="full"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={displayName} size="full">
       <ModalBody className="min-h-[400px]">
         {isLoading && (
           <div className="flex items-center justify-center h-64">

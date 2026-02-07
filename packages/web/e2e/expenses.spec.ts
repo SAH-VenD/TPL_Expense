@@ -27,7 +27,7 @@ test.describe('Expense Management', () => {
       let foundFilter = false;
       for (const option of filterOptions) {
         const filterButton = page.locator(
-          `button:has-text("${option}"), [role="tab"]:has-text("${option}")`
+          `button:has-text("${option}"), [role="tab"]:has-text("${option}")`,
         );
         if (await filterButton.isVisible({ timeout: 1000 }).catch(() => false)) {
           foundFilter = true;
@@ -61,10 +61,10 @@ test.describe('Expense Management', () => {
 
       // Look for view toggle buttons
       const gridButton = page.locator(
-        'button[aria-label*="grid" i], button:has(svg[class*="grid"]), [data-testid="grid-view"]'
+        'button[aria-label*="grid" i], button:has(svg[class*="grid"]), [data-testid="grid-view"]',
       );
       const listButton = page.locator(
-        'button[aria-label*="list" i], button:has(svg[class*="list"]), [data-testid="list-view"]'
+        'button[aria-label*="list" i], button:has(svg[class*="list"]), [data-testid="list-view"]',
       );
 
       // If toggle exists, test switching
@@ -91,7 +91,7 @@ test.describe('Expense Management', () => {
 
       // Set view preference
       const gridButton = page.locator(
-        'button[aria-label*="grid" i], button:has(svg[class*="grid"]), [data-testid="grid-view"]'
+        'button[aria-label*="grid" i], button:has(svg[class*="grid"]), [data-testid="grid-view"]',
       );
 
       if (await gridButton.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -110,7 +110,7 @@ test.describe('Expense Management', () => {
 
       // Find search input
       const searchInput = page.locator(
-        'input[placeholder*="search" i], input[type="search"], [data-testid="search-input"]'
+        'input[placeholder*="search" i], input[type="search"], [data-testid="search-input"]',
       );
 
       if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -131,13 +131,13 @@ test.describe('Expense Management', () => {
 
       // Look for pagination controls
       const pagination = page.locator(
-        'nav[aria-label*="pagination" i], .pagination, [data-testid="pagination"]'
+        'nav[aria-label*="pagination" i], .pagination, [data-testid="pagination"]',
       );
       const nextButton = page.locator(
-        'button:has-text("Next"), button[aria-label*="next" i], a:has-text("Next")'
+        'button:has-text("Next"), button[aria-label*="next" i], a:has-text("Next")',
       );
       const prevButton = page.locator(
-        'button:has-text("Previous"), button[aria-label*="prev" i], a:has-text("Previous")'
+        'button:has-text("Previous"), button[aria-label*="prev" i], a:has-text("Previous")',
       );
 
       // At least pagination or page info should be visible if there are expenses
@@ -393,7 +393,9 @@ test.describe('Expense Management', () => {
       await page.waitForTimeout(1000);
 
       // Look for select all checkbox (usually in table header)
-      const selectAllCheckbox = page.locator('thead input[type="checkbox"], th input[type="checkbox"]');
+      const selectAllCheckbox = page.locator(
+        'thead input[type="checkbox"], th input[type="checkbox"]',
+      );
 
       if (await selectAllCheckbox.isVisible({ timeout: 2000 }).catch(() => false)) {
         await selectAllCheckbox.click();
@@ -456,9 +458,18 @@ test.describe('Expense Management', () => {
 
         // Draft expenses should have Submit, Edit, Delete buttons
         const hasActionButtons =
-          (await page.locator('button:has-text("Submit")').isVisible({ timeout: 2000 }).catch(() => false)) ||
-          (await page.locator('button:has-text("Edit")').isVisible({ timeout: 2000 }).catch(() => false)) ||
-          (await page.locator('button:has-text("Delete")').isVisible({ timeout: 2000 }).catch(() => false));
+          (await page
+            .locator('button:has-text("Submit")')
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)) ||
+          (await page
+            .locator('button:has-text("Edit")')
+            .isVisible({ timeout: 2000 })
+            .catch(() => false)) ||
+          (await page
+            .locator('button:has-text("Delete")')
+            .isVisible({ timeout: 2000 })
+            .catch(() => false));
 
         expect(hasActionButtons).toBeTruthy();
       }
@@ -479,8 +490,11 @@ test.describe('Expense Management', () => {
         await page.waitForTimeout(1000);
 
         // Look for approval timeline or history section
-        const hasApprovalSection =
-          (await page.locator('text=/approval|timeline|history/i').first().isVisible({ timeout: 2000 }).catch(() => false));
+        const hasApprovalSection = await page
+          .locator('text=/approval|timeline|history/i')
+          .first()
+          .isVisible({ timeout: 2000 })
+          .catch(() => false);
 
         // This is informational - section exists but may be empty for new expenses
         console.log('Approval section visible:', hasApprovalSection);
@@ -507,8 +521,11 @@ test.describe('Expense Management', () => {
       await expect(page).toHaveURL('/');
 
       // Look for expense-related metrics on dashboard
-      const hasExpenseMetrics =
-        (await page.locator('text=/total expenses|pending|approved/i').first().isVisible({ timeout: 3000 }).catch(() => false));
+      const hasExpenseMetrics = await page
+        .locator('text=/total expenses|pending|approved/i')
+        .first()
+        .isVisible({ timeout: 3000 })
+        .catch(() => false);
 
       expect(hasExpenseMetrics).toBeTruthy();
     });

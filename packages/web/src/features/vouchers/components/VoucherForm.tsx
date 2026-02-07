@@ -28,7 +28,10 @@ const voucherFormSchema = z.object({
       invalid_type_error: 'Please enter a valid number',
     })
     .min(1, 'Amount must be at least PKR 1')
-    .max(MAX_PETTY_CASH_AMOUNT, `Maximum petty cash limit is PKR ${MAX_PETTY_CASH_AMOUNT.toLocaleString()}`),
+    .max(
+      MAX_PETTY_CASH_AMOUNT,
+      `Maximum petty cash limit is PKR ${MAX_PETTY_CASH_AMOUNT.toLocaleString()}`,
+    ),
   purpose: z
     .string()
     .min(MIN_PURPOSE_LENGTH, `Purpose must be at least ${MIN_PURPOSE_LENGTH} characters`)
@@ -108,9 +111,7 @@ export const VoucherForm: React.FC<VoucherFormProps> = ({
   // Update purpose when category changes
   useEffect(() => {
     if (purposeCategory) {
-      const category = VOUCHER_PURPOSE_CATEGORIES.find(
-        (cat) => cat.value === purposeCategory
-      );
+      const category = VOUCHER_PURPOSE_CATEGORIES.find((cat) => cat.value === purposeCategory);
       if (category && category.defaultText) {
         setValue('purpose', category.defaultText, { shouldValidate: true });
       }
@@ -136,7 +137,8 @@ export const VoucherForm: React.FC<VoucherFormProps> = ({
           <div className="space-y-1">
             {openVouchers.map((voucher) => (
               <p key={voucher.id}>
-                <span className="font-medium">{voucher.voucherNumber}</span> ({formatAmount(voucher.requestedAmount)})
+                <span className="font-medium">{voucher.voucherNumber}</span> (
+                {formatAmount(voucher.requestedAmount)})
                 {voucher.settlementDeadline && (
                   <span> - Due: {formatDate(voucher.settlementDeadline)}</span>
                 )}
@@ -173,9 +175,7 @@ export const VoucherForm: React.FC<VoucherFormProps> = ({
           )}
         />
         {requestedAmount && requestedAmount > 0 && (
-          <p className="mt-1 text-sm text-gray-600">
-            Amount: {formatAmount(requestedAmount)}
-          </p>
+          <p className="mt-1 text-sm text-gray-600">Amount: {formatAmount(requestedAmount)}</p>
         )}
       </div>
 
@@ -255,9 +255,7 @@ export const VoucherForm: React.FC<VoucherFormProps> = ({
         <div className="flex">
           <InformationCircleIcon className="h-5 w-5 text-blue-400 flex-shrink-0" />
           <div className="ml-3">
-            <h4 className="text-sm font-medium text-blue-800">
-              Voucher Request Information
-            </h4>
+            <h4 className="text-sm font-medium text-blue-800">Voucher Request Information</h4>
             <ul className="mt-2 text-sm text-blue-700 list-disc list-inside space-y-1">
               <li>Submitted vouchers will be reviewed by your approver</li>
               <li>Typically approved within 1-2 business days</li>

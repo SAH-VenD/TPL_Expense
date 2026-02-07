@@ -103,16 +103,14 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
 
   const { data: previousYearData } = useGetMonthlyTrendQuery(
     { year: currentYear - 1, departmentId },
-    { skip: !showComparison }
+    { skip: !showComparison },
   );
 
   const chartData: ChartDataPoint[] = React.useMemo(() => {
     if (!data?.months) return [];
 
     return data.months.map((month) => {
-      const prevMonth = previousYearData?.months?.find(
-        (m) => m.month === month.month
-      );
+      const prevMonth = previousYearData?.months?.find((m) => m.month === month.month);
 
       return {
         month: month.monthName.substring(0, 3),
@@ -130,12 +128,14 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
       <div className="p-6 border-b border-gray-200">
         <CardHeader
           className="mb-0"
-          action={data && (
-            <span className="text-sm text-gray-500">
-              {currentYear}
-              {showComparison && ` vs ${currentYear - 1}`}
-            </span>
-          )}
+          action={
+            data && (
+              <span className="text-sm text-gray-500">
+                {currentYear}
+                {showComparison && ` vs ${currentYear - 1}`}
+              </span>
+            )
+          }
         >
           <CardTitle>Spending Trend</CardTitle>
         </CardHeader>
@@ -162,10 +162,7 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
           />
         ) : (
           <ResponsiveContainer width="100%" height={height}>
-            <LineChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis
                 dataKey="month"
@@ -183,9 +180,7 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
               <Legend
                 wrapperStyle={{ paddingTop: 20 }}
                 formatter={(value) =>
-                  value === 'currentYear'
-                    ? String(currentYear)
-                    : String(currentYear - 1)
+                  value === 'currentYear' ? String(currentYear) : String(currentYear - 1)
                 }
               />
               <Line
@@ -216,17 +211,13 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
       </div>
       {data && hasData && (
         <div className="px-6 pb-4 flex items-center justify-between text-sm text-gray-500">
-          <span>
-            YTD Total: {formatTooltipValue(data.ytdTotal)}
-          </span>
-          <span>
-            Monthly Avg: {formatTooltipValue(data.monthlyAverage)}
-          </span>
+          <span>YTD Total: {formatTooltipValue(data.ytdTotal)}</span>
+          <span>Monthly Avg: {formatTooltipValue(data.monthlyAverage)}</span>
           {data.yoyChangePercentage !== undefined && (
             <span
               className={clsx(
                 'font-medium',
-                data.yoyChangePercentage > 0 ? 'text-red-600' : 'text-green-600'
+                data.yoyChangePercentage > 0 ? 'text-red-600' : 'text-green-600',
               )}
             >
               {data.yoyChangePercentage > 0 ? '+' : ''}

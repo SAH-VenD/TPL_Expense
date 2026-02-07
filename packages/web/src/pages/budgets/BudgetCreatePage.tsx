@@ -36,10 +36,7 @@ export const BudgetCreatePage: React.FC = () => {
       <PageHeader
         title="Create Budget"
         subtitle="Set up a new budget to track and control spending"
-        breadcrumbs={[
-          { label: 'Budgets', href: '/budgets' },
-          { label: 'New Budget' },
-        ]}
+        breadcrumbs={[{ label: 'Budgets', href: '/budgets' }, { label: 'New Budget' }]}
         actions={
           <button
             onClick={handleCancel}

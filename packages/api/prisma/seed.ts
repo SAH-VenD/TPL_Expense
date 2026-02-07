@@ -1,4 +1,11 @@
-import { PrismaClient, RoleType, UserStatus, BudgetEnforcement, BudgetPeriod, BudgetType } from '@prisma/client';
+import {
+  PrismaClient,
+  RoleType,
+  UserStatus,
+  BudgetEnforcement,
+  BudgetPeriod,
+  BudgetType,
+} from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -636,7 +643,7 @@ async function main() {
         id: 'mileage-car',
         name: 'Car Standard Rate',
         vehicleType: 'car',
-        ratePerKm: 25.00,
+        ratePerKm: 25.0,
         effectiveFrom: new Date('2024-01-01'),
       },
     }),
@@ -647,7 +654,7 @@ async function main() {
         id: 'mileage-motorcycle',
         name: 'Motorcycle Standard Rate',
         vehicleType: 'motorcycle',
-        ratePerKm: 15.00,
+        ratePerKm: 15.0,
         effectiveFrom: new Date('2024-01-01'),
       },
     }),
@@ -664,8 +671,8 @@ async function main() {
         id: 'perdiem-domestic',
         destination: 'Pakistan - Domestic',
         destinationType: 'DOMESTIC',
-        dailyRate: 5000.00,
-        halfDayRate: 2500.00,
+        dailyRate: 5000.0,
+        halfDayRate: 2500.0,
         effectiveFrom: new Date('2024-01-01'),
       },
     }),
@@ -676,8 +683,8 @@ async function main() {
         id: 'perdiem-uk',
         destination: 'United Kingdom',
         destinationType: 'INTERNATIONAL',
-        dailyRate: 150.00,
-        halfDayRate: 75.00,
+        dailyRate: 150.0,
+        halfDayRate: 75.0,
         currency: 'GBP',
         effectiveFrom: new Date('2024-01-01'),
       },
@@ -689,8 +696,8 @@ async function main() {
         id: 'perdiem-uae',
         destination: 'United Arab Emirates',
         destinationType: 'INTERNATIONAL',
-        dailyRate: 500.00,
-        halfDayRate: 250.00,
+        dailyRate: 500.0,
+        halfDayRate: 250.0,
         currency: 'AED',
         effectiveFrom: new Date('2024-01-01'),
       },
@@ -716,7 +723,7 @@ async function main() {
       create: {
         fromCurrency: 'USD',
         toCurrency: 'PKR',
-        rate: 278.50,
+        rate: 278.5,
         effectiveDate: today,
         source: 'seed',
       },
@@ -733,7 +740,7 @@ async function main() {
       create: {
         fromCurrency: 'GBP',
         toCurrency: 'PKR',
-        rate: 352.00,
+        rate: 352.0,
         effectiveDate: today,
         source: 'seed',
       },
@@ -750,7 +757,7 @@ async function main() {
       create: {
         fromCurrency: 'AED',
         toCurrency: 'PKR',
-        rate: 75.80,
+        rate: 75.8,
         effectiveDate: today,
         source: 'seed',
       },
@@ -767,7 +774,7 @@ async function main() {
       create: {
         fromCurrency: 'SAR',
         toCurrency: 'PKR',
-        rate: 74.20,
+        rate: 74.2,
         effectiveDate: today,
         source: 'seed',
       },

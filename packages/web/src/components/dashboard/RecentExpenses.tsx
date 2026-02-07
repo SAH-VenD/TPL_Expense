@@ -3,7 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ReceiptPercentIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
-import { Card, CardHeader, CardTitle, Badge, getStatusVariant, Skeleton, EmptyState } from '@/components/ui';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  Badge,
+  getStatusVariant,
+  Skeleton,
+  EmptyState,
+} from '@/components/ui';
 import { useGetExpensesQuery, type Expense } from '@/features/expenses/services/expenses.service';
 
 export interface RecentExpensesProps {
@@ -42,10 +50,7 @@ const getStatusLabel = (status: string): string => {
   return labels[status] || status;
 };
 
-const ExpenseRow: React.FC<{ expense: Expense; onClick: () => void }> = ({
-  expense,
-  onClick,
-}) => (
+const ExpenseRow: React.FC<{ expense: Expense; onClick: () => void }> = ({ expense, onClick }) => (
   <div
     onClick={onClick}
     className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 -mx-4 px-4 transition-colors"
@@ -54,9 +59,7 @@ const ExpenseRow: React.FC<{ expense: Expense; onClick: () => void }> = ({
       <p className="font-medium text-gray-900 truncate">
         {expense.description || expense.category?.name || 'Expense'}
       </p>
-      <p className="text-sm text-gray-500">
-        {formatRelativeDate(expense.createdAt)}
-      </p>
+      <p className="text-sm text-gray-500">{formatRelativeDate(expense.createdAt)}</p>
     </div>
     <div className="text-right ml-4 flex-shrink-0">
       <p className="font-medium text-gray-900">
@@ -82,10 +85,7 @@ const ExpenseRowSkeleton: React.FC = () => (
   </div>
 );
 
-export const RecentExpenses: React.FC<RecentExpensesProps> = ({
-  limit = 5,
-  className,
-}) => {
+export const RecentExpenses: React.FC<RecentExpensesProps> = ({ limit = 5, className }) => {
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useGetExpensesQuery({
     pageSize: limit,
@@ -115,10 +115,7 @@ export const RecentExpenses: React.FC<RecentExpensesProps> = ({
         ) : isError ? (
           <div className="py-8 text-center">
             <p className="text-sm text-red-600 mb-4">Failed to load expenses</p>
-            <button
-              onClick={() => refetch()}
-              className="btn-primary text-sm"
-            >
+            <button onClick={() => refetch()} className="btn-primary text-sm">
               Retry
             </button>
           </div>
@@ -151,7 +148,7 @@ export const RecentExpenses: React.FC<RecentExpensesProps> = ({
             to="/expenses"
             className={clsx(
               'inline-flex items-center text-sm font-medium text-primary-600',
-              'hover:text-primary-700 transition-colors'
+              'hover:text-primary-700 transition-colors',
             )}
           >
             View all expenses

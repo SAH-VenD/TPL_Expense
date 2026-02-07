@@ -87,7 +87,8 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
   const utilizationPercent = utilization?.utilizationPercentage ?? 0;
   const usedAmount = utilization ? utilization.committed + utilization.spent : 0;
   const remainingAmount = utilization?.available ?? budget.totalAmount;
-  const isWarning = utilization?.isAtWarningThreshold ?? utilizationPercent >= budget.warningThreshold;
+  const isWarning =
+    utilization?.isAtWarningThreshold ?? utilizationPercent >= budget.warningThreshold;
   const isExceeded = utilization?.isOverBudget ?? utilizationPercent > 100;
 
   const getProgressColor = () => {
@@ -116,7 +117,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
               <span
                 className={clsx(
                   'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-                  isExceeded ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                  isExceeded ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700',
                 )}
               >
                 {isExceeded ? (
@@ -200,7 +201,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
           <p
             className={clsx(
               'text-2xl font-bold',
-              remainingAmount < 0 ? 'text-red-600' : 'text-green-600'
+              remainingAmount < 0 ? 'text-red-600' : 'text-green-600',
             )}
           >
             {remainingAmount >= 0 ? '+' : ''}
@@ -218,7 +219,7 @@ export const BudgetDetailHeader: React.FC<BudgetDetailHeaderProps> = ({
               'text-sm font-semibold',
               isExceeded && 'text-red-600',
               isWarning && !isExceeded && 'text-amber-600',
-              !isWarning && 'text-green-600'
+              !isWarning && 'text-green-600',
             )}
           >
             {utilizationPercent.toFixed(1)}%

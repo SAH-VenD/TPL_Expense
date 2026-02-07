@@ -23,7 +23,9 @@ test.describe('Registration Flow', () => {
     await expect(page.locator('input[name="firstName"]')).toBeVisible();
     await expect(page.locator('input[name="lastName"]')).toBeVisible();
     await expect(page.locator('input[name="email"], input[type="email"]').first()).toBeVisible();
-    await expect(page.locator('input[name="password"], input[type="password"]').first()).toBeVisible();
+    await expect(
+      page.locator('input[name="password"], input[type="password"]').first(),
+    ).toBeVisible();
   });
 
   test('REG-03: Password validation - passwords must match', async ({ page }) => {
@@ -82,7 +84,10 @@ test.describe('Registration Flow', () => {
 
     // Wait for response and check for error (either shows error or stays on page)
     await page.waitForTimeout(2000);
-    const hasError = await page.locator('text=/already|exists|registered/i').isVisible({ timeout: 2000 }).catch(() => false);
+    const hasError = await page
+      .locator('text=/already|exists|registered/i')
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
     const stayedOnRegister = page.url().includes('/register');
 
     // Either should show duplicate error or stay on register page

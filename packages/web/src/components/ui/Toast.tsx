@@ -46,7 +46,7 @@ export const showToast = {
       success: string | ((data: T) => string);
       error: string | ((err: unknown) => string);
     },
-    options?: ToastOptions
+    options?: ToastOptions,
   ) => toast.promise(promise, messages, options),
 };
 

@@ -33,10 +33,7 @@ export function VoucherRequestPage() {
       <PageHeader
         title="Request Petty Cash"
         subtitle="Submit a request for petty cash disbursement"
-        breadcrumbs={[
-          { label: 'Vouchers', href: VOUCHER_ROUTES.LIST },
-          { label: 'New Request' },
-        ]}
+        breadcrumbs={[{ label: 'Vouchers', href: VOUCHER_ROUTES.LIST }, { label: 'New Request' }]}
         actions={
           <button
             onClick={handleCancel}

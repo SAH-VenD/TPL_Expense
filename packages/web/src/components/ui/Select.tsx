@@ -51,7 +51,7 @@ export const Select: React.FC<SelectProps> = ({
             className={clsx(
               'input text-left flex items-center justify-between cursor-pointer',
               error && 'input-error',
-              disabled && 'opacity-50 cursor-not-allowed'
+              disabled && 'opacity-50 cursor-not-allowed',
             )}
           >
             <span className={clsx(!selectedOption && 'text-gray-400')}>
@@ -60,9 +60,7 @@ export const Select: React.FC<SelectProps> = ({
             <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
           </ListboxButton>
 
-          <ListboxOptions
-            className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-          >
+          <ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             {options.map((option) => (
               <ListboxOption
                 key={option.value}
@@ -73,7 +71,7 @@ export const Select: React.FC<SelectProps> = ({
                     'relative cursor-pointer select-none py-2 pl-10 pr-4',
                     active && 'bg-primary-50 text-primary-900',
                     selected && 'bg-primary-100',
-                    disabled && 'opacity-50 cursor-not-allowed'
+                    disabled && 'opacity-50 cursor-not-allowed',
                   )
                 }
               >
@@ -94,12 +92,8 @@ export const Select: React.FC<SelectProps> = ({
           </ListboxOptions>
         </div>
       </Listbox>
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
-      {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {helperText && !error && <p className="mt-1 text-sm text-gray-500">{helperText}</p>}
     </div>
   );
 };

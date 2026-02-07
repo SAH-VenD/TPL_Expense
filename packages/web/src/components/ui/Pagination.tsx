@@ -77,7 +77,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     <div
       className={clsx(
         'flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6',
-        className
+        className,
       )}
     >
       {showPageInfo && totalItems !== undefined && (
@@ -89,10 +89,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           </p>
         </div>
       )}
-      <nav
-        className="isolate inline-flex -space-x-px rounded-md shadow-sm"
-        aria-label="Pagination"
-      >
+      <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -122,7 +119,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0',
                 currentPage === pageNumber
                   ? 'z-10 bg-primary-600 text-white focus-visible:outline-primary-600'
-                  : 'text-gray-900 hover:bg-gray-50'
+                  : 'text-gray-900 hover:bg-gray-50',
               )}
               aria-current={currentPage === pageNumber ? 'page' : undefined}
             >

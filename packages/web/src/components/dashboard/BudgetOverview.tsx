@@ -7,7 +7,10 @@ import {
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { Card, CardHeader, CardTitle, Skeleton, EmptyState } from '@/components/ui';
-import { useGetBudgetSummaryQuery, type BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import {
+  useGetBudgetSummaryQuery,
+  type BudgetUtilization,
+} from '@/features/budgets/services/budgets.service';
 
 export interface BudgetOverviewProps {
   limit?: number;
@@ -96,13 +99,13 @@ const BudgetRow: React.FC<{
           <div
             className={clsx(
               'flex-1 h-2 rounded-full overflow-hidden',
-              getUtilizationBgColor(budget.utilization)
+              getUtilizationBgColor(budget.utilization),
             )}
           >
             <div
               className={clsx(
                 'h-full rounded-full transition-all duration-300',
-                getUtilizationColor(budget.utilization)
+                getUtilizationColor(budget.utilization),
               )}
               style={{ width: `${cappedUtilization}%` }}
             />
@@ -114,7 +117,7 @@ const BudgetRow: React.FC<{
                 ? 'text-red-600'
                 : budget.utilization >= 70
                   ? 'text-yellow-600'
-                  : 'text-gray-600'
+                  : 'text-gray-600',
             )}
           >
             {budget.utilization.toFixed(0)}%
@@ -214,7 +217,7 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
             to="/budgets"
             className={clsx(
               'inline-flex items-center text-sm font-medium text-primary-600',
-              'hover:text-primary-700 transition-colors'
+              'hover:text-primary-700 transition-colors',
             )}
           >
             View all budgets

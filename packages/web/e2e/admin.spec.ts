@@ -28,7 +28,9 @@ test.describe('Admin Panel', () => {
     await expect(page).toHaveURL('/admin/users');
 
     // Should have a table or list of users
-    await expect(page.locator('table, [class*="user-list"], [class*="card"]').first()).toBeVisible();
+    await expect(
+      page.locator('table, [class*="user-list"], [class*="card"]').first(),
+    ).toBeVisible();
   });
 
   test('ADM-03: Users page has create user button', async ({ page }) => {
@@ -40,7 +42,13 @@ test.describe('Admin Panel', () => {
     await expect(page).toHaveURL('/admin/users');
 
     // Should have add/create user button
-    await expect(page.locator('button:has-text("Add User"), button:has-text("Create User"), button:has-text("New User")').first()).toBeVisible();
+    await expect(
+      page
+        .locator(
+          'button:has-text("Add User"), button:has-text("Create User"), button:has-text("New User")',
+        )
+        .first(),
+    ).toBeVisible();
   });
 
   test('ADM-04: Admin can view categories page', async ({ page }) => {
@@ -103,7 +111,10 @@ test.describe('Admin Panel', () => {
     await page.waitForTimeout(1000);
     const url = page.url();
     const isRedirected = !url.includes('/admin/users');
-    const hasUnauthorized = await page.locator('text=/unauthorized|forbidden|access denied/i').isVisible({ timeout: 1000 }).catch(() => false);
+    const hasUnauthorized = await page
+      .locator('text=/unauthorized|forbidden|access denied/i')
+      .isVisible({ timeout: 1000 })
+      .catch(() => false);
 
     expect(isRedirected || hasUnauthorized).toBeTruthy();
   });

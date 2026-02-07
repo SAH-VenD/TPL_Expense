@@ -30,12 +30,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
   return (
     <div
-      className={clsx(
-        'bg-gray-200',
-        variantStyles[variant],
-        animationStyles[animation],
-        className
-      )}
+      className={clsx('bg-gray-200', variantStyles[variant], animationStyles[animation], className)}
       style={{
         width: typeof width === 'number' ? `${width}px` : width,
         height: typeof height === 'number' ? `${height}px` : height,
@@ -51,12 +46,7 @@ export const SkeletonText: React.FC<{ lines?: number; className?: string }> = ({
 }) => (
   <div className={clsx('space-y-2', className)}>
     {[...Array(lines)].map((_, i) => (
-      <Skeleton
-        key={i}
-        variant="text"
-        height={16}
-        width={i === lines - 1 ? '75%' : '100%'}
-      />
+      <Skeleton key={i} variant="text" height={16} width={i === lines - 1 ? '75%' : '100%'} />
     ))}
   </div>
 );
@@ -97,11 +87,7 @@ export const SkeletonTable: React.FC<{ rows?: number; columns?: number; classNam
           className="h-16 border-t border-gray-200 flex items-center px-6 space-x-6"
         >
           {[...Array(columns)].map((_, colIndex) => (
-            <Skeleton
-              key={colIndex}
-              height={12}
-              width={colIndex === 0 ? 120 : 80}
-            />
+            <Skeleton key={colIndex} height={12} width={colIndex === 0 ? 120 : 80} />
           ))}
         </div>
       ))}

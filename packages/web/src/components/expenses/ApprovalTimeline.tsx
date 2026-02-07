@@ -52,7 +52,7 @@ const statusConfig: Record<
 const formatDateTime = (dateString?: string): string => {
   if (!dateString) return '';
   try {
-    return format(new Date(dateString), 'MMM d, yyyy \'at\' h:mm a');
+    return format(new Date(dateString), "MMM d, yyyy 'at' h:mm a");
   } catch {
     return dateString;
   }
@@ -137,7 +137,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                       className={clsx(
                         'relative flex h-10 w-10 items-center justify-center rounded-full',
                         config.bgColor,
-                        config.color
+                        config.color,
                       )}
                     >
                       {config.icon}
@@ -151,7 +151,7 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                           className={clsx(
                             'ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
                             config.bgColor,
-                            config.color
+                            config.color,
                           )}
                         >
                           {config.label}
@@ -172,8 +172,12 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                       <div className="mt-1 text-sm text-gray-500">
                         {approval.approver ? (
                           <span>
-                            {approval.action === 'APPROVED' ? 'Approved' :
-                             approval.action === 'REJECTED' ? 'Rejected' : 'Reviewed'} by{' '}
+                            {approval.action === 'APPROVED'
+                              ? 'Approved'
+                              : approval.action === 'REJECTED'
+                                ? 'Rejected'
+                                : 'Reviewed'}{' '}
+                            by{' '}
                             <span className="font-medium text-gray-700">
                               {approval.approver.firstName} {approval.approver.lastName}
                             </span>
@@ -197,15 +201,21 @@ export const ApprovalTimeline: React.FC<ApprovalTimelineProps> = ({
                       {approval.comment && (
                         <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
                           <div>
-                            <span className={clsx(
-                              'font-medium',
-                              approval.action === 'REJECTED' ? 'text-red-700' :
-                              approval.action === 'CLARIFICATION_REQUESTED' ? 'text-amber-700' :
-                              'text-gray-700'
-                            )}>
-                              {approval.action === 'REJECTED' ? 'Rejection Reason:' :
-                               approval.action === 'CLARIFICATION_REQUESTED' ? 'Clarification Request:' :
-                               'Comment:'}
+                            <span
+                              className={clsx(
+                                'font-medium',
+                                approval.action === 'REJECTED'
+                                  ? 'text-red-700'
+                                  : approval.action === 'CLARIFICATION_REQUESTED'
+                                    ? 'text-amber-700'
+                                    : 'text-gray-700',
+                              )}
+                            >
+                              {approval.action === 'REJECTED'
+                                ? 'Rejection Reason:'
+                                : approval.action === 'CLARIFICATION_REQUESTED'
+                                  ? 'Clarification Request:'
+                                  : 'Comment:'}
                             </span>
                             <p className="text-gray-600 mt-1">{approval.comment}</p>
                           </div>

@@ -35,7 +35,9 @@ async function main() {
       console.log(`   Amount: ${exp.amount} ${exp.currency}`);
       console.log(`   amountInPKR: ${exp.amountInPKR ?? 'NULL ⚠️'}`);
       console.log(`   totalAmount: ${exp.totalAmount}`);
-      console.log(`   Submitter: ${exp.submitter.firstName} ${exp.submitter.lastName} (${exp.submitter.email})`);
+      console.log(
+        `   Submitter: ${exp.submitter.firstName} ${exp.submitter.lastName} (${exp.submitter.email})`,
+      );
       console.log(`   Submitted At: ${exp.submittedAt}`);
     }
     console.log(`\n   Total: ${pendingExpenses.length} pending expense(s)\n`);
@@ -84,7 +86,7 @@ async function main() {
     const matchingTier = tiers.find(
       (tier) =>
         tier.minAmount.toNumber() <= pkrAmount.toNumber() &&
-        (tier.maxAmount === null || tier.maxAmount.toNumber() >= pkrAmount.toNumber())
+        (tier.maxAmount === null || tier.maxAmount.toNumber() >= pkrAmount.toNumber()),
     );
 
     console.log(`\n   ${exp.expenseNumber}:`);
@@ -113,7 +115,9 @@ async function main() {
     console.log('   No approval history found.\n');
   } else {
     for (const h of history) {
-      console.log(`   ${h.expense.expenseNumber}: ${h.action} by ${h.approver.firstName} ${h.approver.lastName} at tier ${h.tierLevel}`);
+      console.log(
+        `   ${h.expense.expenseNumber}: ${h.action} by ${h.approver.firstName} ${h.approver.lastName} at tier ${h.tierLevel}`,
+      );
     }
   }
 

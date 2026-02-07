@@ -17,7 +17,7 @@ import clsx from 'clsx';
 const BUDGETS_VIEW_KEY = 'budgets_view';
 
 const useBudgetViewPreference = (
-  defaultView: ViewType = 'grid'
+  defaultView: ViewType = 'grid',
 ): [ViewType, (view: ViewType) => void] => {
   const [view, setView] = useState<ViewType>(() => {
     if (typeof window !== 'undefined') {
@@ -52,9 +52,7 @@ const getUtilizationColor = (utilization: number): string => {
   return 'bg-green-500';
 };
 
-const getBudgetStatusBadge = (
-  budget: BudgetUtilization
-): { className: string; label: string } => {
+const getBudgetStatusBadge = (budget: BudgetUtilization): { className: string; label: string } => {
   if (budget.isOverBudget) {
     return { className: 'bg-red-100 text-red-800', label: 'Over Budget' };
   }
@@ -91,15 +89,13 @@ const BudgetCard: React.FC<{ budget: BudgetUtilization }> = ({ budget }) => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">{formatCurrency(usedAmount)} used</span>
-              <span className="text-gray-900 font-medium">
-                {formatCurrency(budget.allocated)}
-              </span>
+              <span className="text-gray-900 font-medium">{formatCurrency(budget.allocated)}</span>
             </div>
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
                 className={clsx(
                   'h-full rounded-full transition-all',
-                  getUtilizationColor(utilization)
+                  getUtilizationColor(utilization),
                 )}
                 style={{ width: `${cappedUtilization}%` }}
               />
@@ -177,7 +173,7 @@ export const BudgetListPage: React.FC = () => {
     (budget: BudgetUtilization) => {
       navigate(`/budgets/${budget.budgetId}`);
     },
-    [navigate]
+    [navigate],
   );
 
   return (
@@ -222,7 +218,7 @@ export const BudgetListPage: React.FC = () => {
             <p
               className={clsx(
                 'text-2xl font-semibold',
-                data.summary.budgetsOverThreshold > 0 ? 'text-yellow-600' : 'text-gray-900'
+                data.summary.budgetsOverThreshold > 0 ? 'text-yellow-600' : 'text-gray-900',
               )}
             >
               {data.summary.budgetsOverThreshold}

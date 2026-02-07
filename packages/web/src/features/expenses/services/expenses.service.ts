@@ -134,7 +134,13 @@ export interface ExpenseFilters {
   amountMin?: number;
   amountMax?: number;
   search?: string;
-  sort?: 'createdAt:desc' | 'createdAt:asc' | 'amount:desc' | 'amount:asc' | 'expenseDate:desc' | 'expenseDate:asc';
+  sort?:
+    | 'createdAt:desc'
+    | 'createdAt:asc'
+    | 'amount:desc'
+    | 'amount:asc'
+    | 'expenseDate:desc'
+    | 'expenseDate:asc';
 }
 
 // DTO interfaces

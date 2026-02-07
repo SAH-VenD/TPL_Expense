@@ -248,7 +248,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
         'flex items-start gap-3 p-3 transition-colors',
         !notification.isRead && 'bg-blue-50/50',
         'hover:bg-gray-50',
-        isLoading && 'opacity-50 pointer-events-none'
+        isLoading && 'opacity-50 pointer-events-none',
       )}
     >
       {/* Icon */}
@@ -263,7 +263,7 @@ export const NotificationItem: React.FC<NotificationItemProps> = ({
             <p
               className={clsx(
                 'text-sm line-clamp-1',
-                !notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'
+                !notification.isRead ? 'font-semibold text-gray-900' : 'font-medium text-gray-700',
               )}
             >
               {notification.title}

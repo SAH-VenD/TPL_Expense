@@ -32,7 +32,8 @@ export function useDashboardContext(): DashboardContext {
     const departmentName = user?.departmentName;
 
     // CEO, SUPER_APPROVER, FINANCE, and ADMIN see org-wide data
-    const canViewOrgWide = role === 'CEO' || role === 'SUPER_APPROVER' || role === 'FINANCE' || role === 'ADMIN';
+    const canViewOrgWide =
+      role === 'CEO' || role === 'SUPER_APPROVER' || role === 'FINANCE' || role === 'ADMIN';
 
     // APPROVER and EMPLOYEE see department-scoped data (if they have a department)
     const isDepartmentScoped = !canViewOrgWide && !!departmentId;
@@ -45,9 +46,7 @@ export function useDashboardContext(): DashboardContext {
       departmentId: isDepartmentScoped ? departmentId : undefined,
       role,
       canViewOrgWide,
-      scopeLabel: isDepartmentScoped
-        ? (departmentName || 'Your Department')
-        : 'Organization',
+      scopeLabel: isDepartmentScoped ? departmentName || 'Your Department' : 'Organization',
       hasDepartmentWarning,
     };
   }, [user]);

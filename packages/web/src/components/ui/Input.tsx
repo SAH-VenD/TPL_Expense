@@ -34,10 +34,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               error && 'input-error',
               leftIcon && 'pl-10',
               rightIcon && 'pr-10',
-              className
+              className,
             )}
             aria-invalid={error ? 'true' : 'false'}
-            aria-describedby={error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined}
+            aria-describedby={
+              error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
+            }
             {...props}
           />
           {rightIcon && (
@@ -58,7 +60,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

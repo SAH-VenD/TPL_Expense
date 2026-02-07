@@ -106,7 +106,7 @@ export function TreeNode<T extends { id: string }>({
         'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-inset',
         isDragging && 'opacity-50 bg-gray-100',
         isDragOver && 'bg-primary-50 border-2 border-dashed border-primary-400',
-        isHighlighted && 'bg-yellow-50 ring-2 ring-yellow-400'
+        isHighlighted && 'bg-yellow-50 ring-2 ring-yellow-400',
       )}
       style={{ paddingLeft: `${level * 16 + 12}px` }}
       onClick={(e) => {
@@ -127,14 +127,14 @@ export function TreeNode<T extends { id: string }>({
         }}
         className={clsx(
           'flex-shrink-0 w-6 h-6 flex items-center justify-center rounded',
-          hasChildren ? 'hover:bg-gray-200' : 'invisible'
+          hasChildren ? 'hover:bg-gray-200' : 'invisible',
         )}
         aria-label={isExpanded ? 'Collapse' : 'Expand'}
       >
         <ChevronRightIcon
           className={clsx(
             'h-4 w-4 text-gray-500 transition-transform duration-200',
-            isExpanded && 'rotate-90'
+            isExpanded && 'rotate-90',
           )}
         />
       </button>
@@ -142,11 +142,7 @@ export function TreeNode<T extends { id: string }>({
       {/* Drag handle */}
       {isDraggable && (
         <div className="flex-shrink-0 w-4 h-4 mr-2 cursor-grab opacity-0 group-hover:opacity-100">
-          <svg
-            className="w-4 h-4 text-gray-400"
-            fill="currentColor"
-            viewBox="0 0 16 16"
-          >
+          <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 16 16">
             <path d="M4 4h2v2H4V4zm0 3h2v2H4V7zm0 3h2v2H4v-2zm3-6h2v2H7V4zm0 3h2v2H7V7zm0 3h2v2H7v-2z" />
           </svg>
         </div>
@@ -160,7 +156,7 @@ export function TreeNode<T extends { id: string }>({
         <span
           className={clsx(
             'flex-shrink-0 ml-2 transition-opacity',
-            showActions ? 'opacity-100' : 'opacity-0'
+            showActions ? 'opacity-100' : 'opacity-0',
           )}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}

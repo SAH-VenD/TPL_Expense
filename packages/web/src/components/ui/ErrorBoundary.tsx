@@ -45,11 +45,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
               <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Something went wrong
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Something went wrong</h2>
             <p className="text-gray-600 mb-6">
-              We encountered an unexpected error. Please try again or contact support if the problem persists.
+              We encountered an unexpected error. Please try again or contact support if the problem
+              persists.
             </p>
             {import.meta.env.DEV && this.state.error && (
               <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">
@@ -77,7 +76,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 // HOC for functional components
 export function withErrorBoundary<P extends object>(
   WrappedComponent: React.ComponentType<P>,
-  fallback?: ReactNode
+  fallback?: ReactNode,
 ): React.FC<P> {
   const WithErrorBoundary: React.FC<P> = (props) => (
     <ErrorBoundary fallback={fallback}>

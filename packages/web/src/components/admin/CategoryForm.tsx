@@ -141,10 +141,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
     return flattenCategories(filterCategories(categories));
   };
 
-  const parentOptions = [
-    { value: '', label: 'None (Top Level)' },
-    ...getAvailableParents(),
-  ];
+  const parentOptions = [{ value: '', label: 'None (Top Level)' }, ...getAvailableParents()];
 
   return (
     <Modal
@@ -257,11 +254,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                 name="isActive"
                 control={control}
                 render={({ field }) => (
-                  <Checkbox
-                    label="Active"
-                    checked={field.value}
-                    onChange={field.onChange}
-                  />
+                  <Checkbox label="Active" checked={field.value} onChange={field.onChange} />
                 )}
               />
             </div>

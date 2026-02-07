@@ -127,7 +127,10 @@ export const reportsApi = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['DashboardSummary', 'MonthlyTrend', 'SpendByCategory'],
   endpoints: (builder) => ({
-    getDashboardSummary: builder.query<DashboardSummaryResponse, { days?: number; departmentId?: string }>({
+    getDashboardSummary: builder.query<
+      DashboardSummaryResponse,
+      { days?: number; departmentId?: string }
+    >({
       query: ({ days = 30, departmentId } = {}) => ({
         url: '/reports/dashboard-summary',
         params: {
@@ -169,14 +172,41 @@ export const reportsApi = createApi({
     getOutstandingAdvances: builder.query<OutstandingAdvance[], void>({
       query: () => '/reports/outstanding-advances',
     }),
+    getSpendByVendor: builder.query<
+      Array<{ vendorName: string; totalAmount: number; count: number; percentage: number }>,
+      ReportFilters
+    >({
+      query: (filters) => ({
+        url: '/reports/spend-by-vendor',
+        params: filters,
+      }),
+    }),
+    getTaxSummary: builder.query<
+      { year: number; totalTax: number; breakdown: Array<{ type: string; amount: number }> },
+      { year?: number }
+    >({
+      query: ({ year } = {}) => ({
+        url: '/reports/tax-summary',
+        params: year ? { year } : {},
+      }),
+    }),
     exportReport: builder.mutation<
       Blob,
-      { reportType: string; format: 'excel' | 'pdf' | 'csv'; filters: ReportFilters }
+      {
+        reportType: string;
+        format: 'xlsx' | 'csv' | 'pdf';
+        startDate?: string;
+        endDate?: string;
+        year?: number;
+        departmentId?: string;
+        projectId?: string;
+        categoryId?: string;
+      }
     >({
-      query: ({ reportType, format, filters }) => ({
+      query: (body) => ({
         url: '/reports/export',
         method: 'POST',
-        body: { reportType, format, filters },
+        body,
         responseHandler: async (response) => response.blob(),
       }),
     }),
@@ -188,7 +218,9 @@ export const {
   useGetMonthlyTrendQuery,
   useGetSpendByCategoryQuery,
   useGetSpendByDepartmentQuery,
+  useGetSpendByVendorQuery,
   useGetBudgetVsActualQuery,
   useGetOutstandingAdvancesQuery,
+  useGetTaxSummaryQuery,
   useExportReportMutation,
 } = reportsApi;

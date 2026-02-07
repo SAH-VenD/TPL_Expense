@@ -64,7 +64,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     {
       skip: !isOpen,
       pollingInterval: isOpen ? 30000 : 0, // Poll every 30s when open
-    }
+    },
   );
 
   // Mutations

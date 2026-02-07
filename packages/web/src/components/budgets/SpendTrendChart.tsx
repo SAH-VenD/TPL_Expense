@@ -50,7 +50,15 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
   const usedAmount = usedAmountProp ?? 0;
   const warningThresholdAmount = (budget.totalAmount * budget.warningThreshold) / 100;
 
-  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ value: number; dataKey: string }>; label?: string }) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<{ value: number; dataKey: string }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length && label) {
       return (
         <div className="bg-white border border-gray-200 shadow-lg rounded-lg p-3">
@@ -77,15 +85,10 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
 
   return (
     <div className={className}>
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Spending Trend
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Spending Trend</h3>
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={data}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
+          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
             <XAxis
               dataKey="date"
@@ -178,9 +181,7 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
           <p
             className={clsx(
               'text-sm font-semibold',
-              budget.totalAmount - usedAmount < 0
-                ? 'text-red-600'
-                : 'text-green-600'
+              budget.totalAmount - usedAmount < 0 ? 'text-red-600' : 'text-green-600',
             )}
           >
             {formatCurrency(budget.totalAmount - usedAmount, budget.currency)}

@@ -92,7 +92,7 @@ const ApprovalRow: React.FC<{
           className={clsx(
             'flex-1 inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
             'bg-green-600 text-white hover:bg-green-700',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
+            'disabled:opacity-50 disabled:cursor-not-allowed',
           )}
         >
           <CheckIcon className="h-4 w-4 mr-1" />
@@ -107,7 +107,7 @@ const ApprovalRow: React.FC<{
           className={clsx(
             'flex-1 inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium rounded-lg transition-colors',
             'bg-red-600 text-white hover:bg-red-700',
-            'disabled:opacity-50 disabled:cursor-not-allowed'
+            'disabled:opacity-50 disabled:cursor-not-allowed',
           )}
         >
           <XMarkIcon className="h-4 w-4 mr-1" />
@@ -216,9 +216,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({
             </div>
           ) : approvals.length === 0 ? (
             <EmptyState
-              icon={
-                <ClipboardDocumentCheckIcon className="h-6 w-6 text-gray-400" />
-              }
+              icon={<ClipboardDocumentCheckIcon className="h-6 w-6 text-gray-400" />}
               title="All caught up!"
               description="No pending approvals at the moment."
             />
@@ -244,7 +242,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({
               to="/approvals"
               className={clsx(
                 'inline-flex items-center text-sm font-medium text-primary-600',
-                'hover:text-primary-700 transition-colors'
+                'hover:text-primary-700 transition-colors',
               )}
             >
               View all approvals
@@ -265,10 +263,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({
         isLoading={isRejecting}
       >
         <div className="mt-4">
-          <label
-            htmlFor="reject-reason"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+          <label htmlFor="reject-reason" className="block text-sm font-medium text-gray-700 mb-2">
             Rejection Reason
           </label>
           <textarea

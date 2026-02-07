@@ -35,7 +35,7 @@ export function renderWithProviders(
     store = createTestStore(preloadedState),
     route = '/',
     ...renderOptions
-  }: ExtendedRenderOptions = {}
+  }: ExtendedRenderOptions = {},
 ) {
   function Wrapper({ children }: PropsWithChildren<object>): JSX.Element {
     return (

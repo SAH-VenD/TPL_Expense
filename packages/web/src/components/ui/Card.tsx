@@ -31,7 +31,7 @@ export const Card: React.FC<CardProps> = ({
         paddingStyles[padding],
         hover && 'hover:shadow-md transition-shadow',
         onClick && 'cursor-pointer',
-        className
+        className,
       )}
     >
       {children}

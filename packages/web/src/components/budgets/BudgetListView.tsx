@@ -78,12 +78,8 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
       render: (budget) => (
         <div>
           <p className="font-medium text-gray-900">{budget.name}</p>
-          {budget.department && (
-            <p className="text-xs text-gray-500">{budget.department.name}</p>
-          )}
-          {budget.project && (
-            <p className="text-xs text-gray-500">{budget.project.name}</p>
-          )}
+          {budget.department && <p className="text-xs text-gray-500">{budget.department.name}</p>}
+          {budget.project && <p className="text-xs text-gray-500">{budget.project.name}</p>}
         </div>
       ),
     },
@@ -100,9 +96,7 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
       key: 'period',
       header: 'Period',
       render: (budget) => (
-        <span className="text-sm text-gray-600">
-          {getPeriodLabel(budget.period)}
-        </span>
+        <span className="text-sm text-gray-600">{getPeriodLabel(budget.period)}</span>
       ),
     },
     {
@@ -132,12 +126,7 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
       render: (budget) => {
         const remaining = getRemaining(budget);
         return (
-          <span
-            className={clsx(
-              'font-medium',
-              remaining < 0 ? 'text-red-600' : 'text-green-600'
-            )}
-          >
+          <span className={clsx('font-medium', remaining < 0 ? 'text-red-600' : 'text-green-600')}>
             {formatCurrency(remaining, budget.currency)}
           </span>
         );
@@ -158,7 +147,7 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
                   'h-full rounded-full',
                   isExceeded && 'bg-red-500',
                   isWarning && !isExceeded && 'bg-amber-500',
-                  !isWarning && 'bg-green-500'
+                  !isWarning && 'bg-green-500',
                 )}
                 style={{ width: `${Math.min(percent, 100)}%` }}
               />
@@ -168,7 +157,7 @@ export const BudgetListView: React.FC<BudgetListViewProps> = ({
                 'text-xs font-medium w-10 text-right',
                 isExceeded && 'text-red-600',
                 isWarning && !isExceeded && 'text-amber-600',
-                !isWarning && 'text-green-600'
+                !isWarning && 'text-green-600',
               )}
             >
               {percent.toFixed(0)}%

@@ -25,11 +25,7 @@ const urgencyStyles: Record<VoucherUrgency, string> = {
   normal: '',
 };
 
-export const VoucherCard: React.FC<VoucherCardProps> = ({
-  voucher,
-  onClick,
-  isLoading,
-}) => {
+export const VoucherCard: React.FC<VoucherCardProps> = ({ voucher, onClick, isLoading }) => {
   if (isLoading) {
     return <VoucherCardSkeleton />;
   }
@@ -41,9 +37,7 @@ export const VoucherCard: React.FC<VoucherCardProps> = ({
     : null;
 
   const truncatedPurpose =
-    voucher.purpose.length > 60
-      ? `${voucher.purpose.substring(0, 60)}...`
-      : voucher.purpose;
+    voucher.purpose.length > 60 ? `${voucher.purpose.substring(0, 60)}...` : voucher.purpose;
 
   const handleClick = () => {
     if (onClick) {
@@ -72,7 +66,7 @@ export const VoucherCard: React.FC<VoucherCardProps> = ({
       className={clsx(
         'transition-all duration-200',
         urgencyStyles[urgency],
-        onClick && 'hover:shadow-md cursor-pointer'
+        onClick && 'hover:shadow-md cursor-pointer',
       )}
       padding="md"
       onClick={onClick ? handleClick : undefined}
@@ -128,14 +122,9 @@ export const VoucherCard: React.FC<VoucherCardProps> = ({
 
           {showBalance && balance !== null && (
             <div className="flex justify-between pt-2 border-t border-gray-100">
-              <span className="text-gray-500">
-                {balance >= 0 ? 'Balance:' : 'Overspent:'}
-              </span>
+              <span className="text-gray-500">{balance >= 0 ? 'Balance:' : 'Overspent:'}</span>
               <span
-                className={clsx(
-                  'font-medium',
-                  balance >= 0 ? 'text-green-600' : 'text-red-600'
-                )}
+                className={clsx('font-medium', balance >= 0 ? 'text-green-600' : 'text-red-600')}
               >
                 {formatAmount(Math.abs(balance), voucher.currency)}
               </span>
@@ -150,7 +139,7 @@ export const VoucherCard: React.FC<VoucherCardProps> = ({
               'mt-3 pt-3 border-t border-gray-100 flex items-center text-sm',
               urgency === 'overdue' && 'text-red-600',
               urgency === 'due-soon' && 'text-yellow-600',
-              urgency === 'normal' && 'text-gray-500'
+              urgency === 'normal' && 'text-gray-500',
             )}
           >
             {urgency === 'overdue' ? (
@@ -160,7 +149,9 @@ export const VoucherCard: React.FC<VoucherCardProps> = ({
             )}
             <span>
               {urgency === 'overdue' && 'Overdue - '}
-              {urgency === 'due-soon' && daysUntil !== null && `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - `}
+              {urgency === 'due-soon' &&
+                daysUntil !== null &&
+                `Due in ${daysUntil} day${daysUntil !== 1 ? 's' : ''} - `}
               Due: {formatDate(voucher.settlementDeadline)}
             </span>
           </div>

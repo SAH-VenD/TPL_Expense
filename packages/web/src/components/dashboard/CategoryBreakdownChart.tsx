@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartPieIcon } from '@heroicons/react/24/outline';
 import { Card, CardHeader, CardTitle, Skeleton, EmptyState, Alert } from '@/components/ui';
 import { useGetSpendByCategoryQuery } from '@/features/reports/services/reports.service';
@@ -117,14 +111,8 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
 
     // Combine remaining categories into "Other"
     if (otherCategories.length > 0) {
-      const otherAmount = otherCategories.reduce(
-        (sum, cat) => sum + cat.totalAmount,
-        0
-      );
-      const otherPercentage = otherCategories.reduce(
-        (sum, cat) => sum + cat.percentage,
-        0
-      );
+      const otherAmount = otherCategories.reduce((sum, cat) => sum + cat.totalAmount, 0);
+      const otherPercentage = otherCategories.reduce((sum, cat) => sum + cat.percentage, 0);
 
       result.push({
         categoryId: 'other',
@@ -140,7 +128,7 @@ export const CategoryBreakdownChart: React.FC<CategoryBreakdownChartProps> = ({
 
   const totalAmount = React.useMemo(
     () => chartData.reduce((sum, cat) => sum + cat.amount, 0),
-    [chartData]
+    [chartData],
   );
 
   const handleClick = (data: CategoryChartData) => {

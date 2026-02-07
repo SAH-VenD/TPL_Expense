@@ -62,7 +62,7 @@ export function DataTable<T>({
                   className={clsx(
                     'px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider',
                     alignmentClasses[column.align || 'left'],
-                    column.headerClassName
+                    column.headerClassName,
                   )}
                 >
                   {column.header}
@@ -75,10 +75,7 @@ export function DataTable<T>({
               <tr
                 key={keyExtractor(item, index)}
                 onClick={onRowClick ? () => onRowClick(item) : undefined}
-                className={clsx(
-                  'hover:bg-gray-50',
-                  onRowClick && 'cursor-pointer'
-                )}
+                className={clsx('hover:bg-gray-50', onRowClick && 'cursor-pointer')}
               >
                 {columns.map((column) => (
                   <td
@@ -86,7 +83,7 @@ export function DataTable<T>({
                     className={clsx(
                       'px-6 py-4 whitespace-nowrap text-sm',
                       alignmentClasses[column.align || 'left'],
-                      column.className
+                      column.className,
                     )}
                   >
                     {column.render

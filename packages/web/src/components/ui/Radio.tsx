@@ -35,7 +35,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
         role="radiogroup"
         className={clsx(
           orientation === 'horizontal' ? 'flex flex-wrap gap-4' : 'space-y-2',
-          className
+          className,
         )}
       >
         {children}
@@ -44,7 +44,10 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   );
 };
 
-export interface RadioProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
+export interface RadioProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'type' | 'onChange'
+> {
   label?: string;
   value: string;
 }
@@ -77,7 +80,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
           onChange={handleChange}
           className={clsx(
             'h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
-            className
+            className,
           )}
           {...props}
         />
@@ -86,7 +89,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
             htmlFor={radioId}
             className={clsx(
               'ml-2 text-sm',
-              disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer'
+              disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer',
             )}
           >
             {label}
@@ -94,7 +97,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Radio.displayName = 'Radio';

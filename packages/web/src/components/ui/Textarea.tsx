@@ -28,7 +28,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       onChange,
       ...props
     },
-    ref
+    ref,
   ) => {
     const textareaId = id || label?.toLowerCase().replace(/\s+/g, '-');
     const internalRef = useRef<HTMLTextAreaElement>(null);
@@ -62,13 +62,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           maxLength={maxLength}
           onChange={onChange}
           rows={minRows}
-          className={clsx(
-            'input resize-none',
-            error && 'input-error',
-            className
-          )}
+          className={clsx('input resize-none', error && 'input-error', className)}
           aria-invalid={error ? 'true' : 'false'}
-          aria-describedby={error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined}
+          aria-describedby={
+            error ? `${textareaId}-error` : helperText ? `${textareaId}-helper` : undefined
+          }
           {...props}
         />
         <div className="flex justify-between mt-1">
@@ -85,14 +83,16 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             )}
           </div>
           {showCharCount && maxLength && (
-            <p className={clsx('text-sm', charCount >= maxLength ? 'text-red-600' : 'text-gray-500')}>
+            <p
+              className={clsx('text-sm', charCount >= maxLength ? 'text-red-600' : 'text-gray-500')}
+            >
               {charCount}/{maxLength}
             </p>
           )}
         </div>
       </div>
     );
-  }
+  },
 );
 
 Textarea.displayName = 'Textarea';

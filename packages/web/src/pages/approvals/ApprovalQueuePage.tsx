@@ -52,13 +52,10 @@ export function ApprovalQueuePage() {
   const [isBulkAction, setIsBulkAction] = useState(false);
 
   // RTK Query hooks
-  const {
-    data,
-    isLoading,
-    isError,
-    isFetching,
-    refetch,
-  } = useGetPendingApprovalsQuery({ page, pageSize });
+  const { data, isLoading, isError, isFetching, refetch } = useGetPendingApprovalsQuery({
+    page,
+    pageSize,
+  });
 
   const [approveExpense, { isLoading: isApproving }] = useApproveExpenseMutation();
   const [rejectExpense, { isLoading: isRejecting }] = useRejectExpenseMutation();
@@ -206,25 +203,53 @@ export function ApprovalQueuePage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3"><Skeleton width={20} height={20} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
-                <th className="px-6 py-3"><Skeleton width={80} height={16} /></th>
+                <th className="px-6 py-3">
+                  <Skeleton width={20} height={20} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
+                <th className="px-6 py-3">
+                  <Skeleton width={80} height={16} />
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {[...Array(5)].map((_, i) => (
                 <tr key={i}>
-                  <td className="px-6 py-4"><Skeleton width={20} height={20} /></td>
-                  <td className="px-6 py-4"><Skeleton width={150} height={40} /></td>
-                  <td className="px-6 py-4"><Skeleton width={100} height={30} /></td>
-                  <td className="px-6 py-4"><Skeleton width={80} height={20} /></td>
-                  <td className="px-6 py-4"><Skeleton width={80} height={20} /></td>
-                  <td className="px-6 py-4"><Skeleton width={50} height={24} /></td>
-                  <td className="px-6 py-4"><Skeleton width={180} height={32} /></td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={20} height={20} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={150} height={40} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={100} height={30} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={80} height={20} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={80} height={20} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={50} height={24} />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Skeleton width={180} height={32} />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -245,10 +270,7 @@ export function ApprovalQueuePage() {
         />
         <div className="card p-8 text-center">
           <p className="text-red-600 mb-4">Failed to load pending approvals</p>
-          <button
-            onClick={() => refetch()}
-            className="btn-primary inline-flex items-center"
-          >
+          <button onClick={() => refetch()} className="btn-primary inline-flex items-center">
             <ArrowPathIcon className="h-4 w-4 mr-2" />
             Retry
           </button>
@@ -314,7 +336,9 @@ export function ApprovalQueuePage() {
                 <th className="px-6 py-3 text-left">
                   <input
                     type="checkbox"
-                    checked={pendingApprovals.length > 0 && selectedIds.length === pendingApprovals.length}
+                    checked={
+                      pendingApprovals.length > 0 && selectedIds.length === pendingApprovals.length
+                    }
                     onChange={handleSelectAll}
                     disabled={pendingApprovals.length === 0}
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
@@ -489,10 +513,7 @@ export function ApprovalQueuePage() {
         isLoading={isRejecting}
       >
         <div className="mt-4">
-          <label
-            htmlFor="reject-reason"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+          <label htmlFor="reject-reason" className="block text-sm font-medium text-gray-700 mb-2">
             Rejection Reason <span className="text-red-500">*</span>
           </label>
           <textarea

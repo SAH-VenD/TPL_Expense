@@ -30,7 +30,11 @@ export function ExpenseEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { data: expense, isLoading: expenseLoading, error: expenseError } = useGetExpenseQuery(id!, {
+  const {
+    data: expense,
+    isLoading: expenseLoading,
+    error: expenseError,
+  } = useGetExpenseQuery(id!, {
     skip: !id,
   });
   const { data: categories, isLoading: categoriesLoading } = useGetCategoriesQuery();
@@ -76,7 +80,10 @@ export function ExpenseEditPage() {
   }, [expense]);
 
   // Only allow editing DRAFT or REJECTED expenses
-  const canEdit = expense?.status === 'DRAFT' || expense?.status === 'REJECTED' || expense?.status === 'CLARIFICATION_REQUESTED';
+  const canEdit =
+    expense?.status === 'DRAFT' ||
+    expense?.status === 'REJECTED' ||
+    expense?.status === 'CLARIFICATION_REQUESTED';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,10 +157,7 @@ export function ExpenseEditPage() {
       <div className="max-w-3xl mx-auto space-y-6">
         <PageHeader
           title="Loading..."
-          breadcrumbs={[
-            { label: 'Expenses', href: '/expenses' },
-            { label: 'Edit' },
-          ]}
+          breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'Edit' }]}
         />
         <div className="flex items-center justify-center h-64">
           <Spinner size="lg" />
@@ -168,10 +172,7 @@ export function ExpenseEditPage() {
       <div className="max-w-3xl mx-auto space-y-6">
         <PageHeader
           title="Error"
-          breadcrumbs={[
-            { label: 'Expenses', href: '/expenses' },
-            { label: 'Edit' },
-          ]}
+          breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'Edit' }]}
         />
         <Alert variant="error" title="Failed to load expense">
           The expense could not be found or you don&apos;t have permission to view it.
@@ -192,7 +193,8 @@ export function ExpenseEditPage() {
           ]}
         />
         <Alert variant="warning" title="Cannot edit expense">
-          This expense cannot be edited because it has been submitted for approval or is in a non-editable status ({expense.status}).
+          This expense cannot be edited because it has been submitted for approval or is in a
+          non-editable status ({expense.status}).
         </Alert>
       </div>
     );
@@ -225,7 +227,9 @@ export function ExpenseEditPage() {
           <div className="mt-1 px-3 py-2 bg-gray-100 rounded-md text-gray-700">
             {formData.type === 'OUT_OF_POCKET' ? 'Out of Pocket' : 'Petty Cash'}
           </div>
-          <p className="mt-1 text-xs text-gray-500">Expense type cannot be changed after creation</p>
+          <p className="mt-1 text-xs text-gray-500">
+            Expense type cannot be changed after creation
+          </p>
         </div>
 
         <div>
@@ -264,9 +268,7 @@ export function ExpenseEditPage() {
             <label className="block text-sm font-medium text-gray-700">Currency</label>
             <select
               value={formData.currency}
-              onChange={(e) =>
-                setFormData({ ...formData, currency: e.target.value as Currency })
-              }
+              onChange={(e) => setFormData({ ...formData, currency: e.target.value as Currency })}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
               <option value="PKR">PKR</option>
@@ -385,9 +387,7 @@ export function ExpenseEditPage() {
             >
               <span className="text-3xl block mb-2">📎</span>
               <span className="font-medium">Click to add more receipts</span>
-              <span className="block text-sm text-gray-500 mt-1">
-                JPG, PNG, PDF up to 10MB
-              </span>
+              <span className="block text-sm text-gray-500 mt-1">JPG, PNG, PDF up to 10MB</span>
             </label>
           </div>
         </div>

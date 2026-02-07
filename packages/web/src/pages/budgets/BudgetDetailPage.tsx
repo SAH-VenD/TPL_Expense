@@ -62,10 +62,9 @@ export const BudgetDetailPage: React.FC = () => {
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
 
   const { data: budget, isLoading, isError, refetch } = useGetBudgetQuery(id!);
-  const {
-    data: utilization,
-    isLoading: isUtilizationLoading,
-  } = useGetBudgetUtilizationQuery(id!, { skip: !id });
+  const { data: utilization, isLoading: isUtilizationLoading } = useGetBudgetUtilizationQuery(id!, {
+    skip: !id,
+  });
 
   const [updateBudget, { isLoading: isUpdating }] = useUpdateBudgetMutation();
   const [deleteBudget, { isLoading: isDeleting }] = useDeleteBudgetMutation();
@@ -154,10 +153,7 @@ export const BudgetDetailPage: React.FC = () => {
       <div className="space-y-6">
         <PageHeader
           title="Loading..."
-          breadcrumbs={[
-            { label: 'Budgets', href: '/budgets' },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Budgets', href: '/budgets' }, { label: 'Details' }]}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -199,10 +195,7 @@ export const BudgetDetailPage: React.FC = () => {
       <div className="space-y-6">
         <PageHeader
           title="Error"
-          breadcrumbs={[
-            { label: 'Budgets', href: '/budgets' },
-            { label: 'Details' },
-          ]}
+          breadcrumbs={[{ label: 'Budgets', href: '/budgets' }, { label: 'Details' }]}
         />
         <Alert variant="error" title="Failed to load budget">
           <p className="mt-1">We could not retrieve the budget details. Please try again.</p>
@@ -249,15 +242,12 @@ export const BudgetDetailPage: React.FC = () => {
       <PageHeader
         title={budget.name}
         subtitle={`${budget.type.toLowerCase().replace('_', ' ')} Budget - ${budget.period.toLowerCase().replace('_', ' ')}`}
-        breadcrumbs={[
-          { label: 'Budgets', href: '/budgets' },
-          { label: budget.name },
-        ]}
+        breadcrumbs={[{ label: 'Budgets', href: '/budgets' }, { label: budget.name }]}
         actions={
           <span
             className={clsx(
               'px-3 py-1 text-sm font-medium rounded-full',
-              budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              budget.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800',
             )}
           >
             {budget.isActive ? 'Active' : 'Inactive'}
@@ -286,7 +276,9 @@ export const BudgetDetailPage: React.FC = () => {
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Start Date</dt>
-                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.startDate)}</dd>
+                <dd className="text-sm font-medium text-gray-900">
+                  {formatDate(budget.startDate)}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">End Date</dt>
@@ -371,7 +363,7 @@ export const BudgetDetailPage: React.FC = () => {
                   <p
                     className={clsx(
                       'text-xl font-semibold',
-                      remainingAmount >= 0 ? 'text-green-600' : 'text-red-600'
+                      remainingAmount >= 0 ? 'text-green-600' : 'text-red-600',
                     )}
                   >
                     {formatCurrency(remainingAmount, budget.currency)}
@@ -384,7 +376,10 @@ export const BudgetDetailPage: React.FC = () => {
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-sm font-medium text-gray-700">Budget Utilization</span>
                   <span
-                    className={clsx('text-sm font-semibold', getUtilizationTextColor(utilizationPercent))}
+                    className={clsx(
+                      'text-sm font-semibold',
+                      getUtilizationTextColor(utilizationPercent),
+                    )}
                   >
                     {utilizationPercent.toFixed(1)}%
                   </span>
@@ -393,7 +388,7 @@ export const BudgetDetailPage: React.FC = () => {
                   <div
                     className={clsx(
                       'h-full rounded-full transition-all duration-500',
-                      getUtilizationColor(utilizationPercent)
+                      getUtilizationColor(utilizationPercent),
                     )}
                     style={{ width: `${cappedUtilization}%` }}
                   />
@@ -402,7 +397,8 @@ export const BudgetDetailPage: React.FC = () => {
                   <span>0%</span>
                   <span
                     className={clsx(
-                      utilizationPercent >= budget.warningThreshold && 'text-yellow-600 font-medium'
+                      utilizationPercent >= budget.warningThreshold &&
+                        'text-yellow-600 font-medium',
                     )}
                   >
                     Warning: {budget.warningThreshold}%
@@ -420,8 +416,8 @@ export const BudgetDetailPage: React.FC = () => {
               )}
               {utilization?.isAtWarningThreshold && !utilization?.isOverBudget && (
                 <Alert variant="warning" title="Budget Warning">
-                  This budget has reached {utilizationPercent.toFixed(1)}% utilization, exceeding the
-                  warning threshold of {budget.warningThreshold}%.
+                  This budget has reached {utilizationPercent.toFixed(1)}% utilization, exceeding
+                  the warning threshold of {budget.warningThreshold}%.
                 </Alert>
               )}
             </div>
@@ -433,11 +429,15 @@ export const BudgetDetailPage: React.FC = () => {
             <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-gray-500">Created</dt>
-                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.createdAt)}</dd>
+                <dd className="text-sm font-medium text-gray-900">
+                  {formatDate(budget.createdAt)}
+                </dd>
               </div>
               <div>
                 <dt className="text-sm text-gray-500">Last Updated</dt>
-                <dd className="text-sm font-medium text-gray-900">{formatDate(budget.updatedAt)}</dd>
+                <dd className="text-sm font-medium text-gray-900">
+                  {formatDate(budget.updatedAt)}
+                </dd>
               </div>
             </dl>
           </Card>
@@ -524,10 +524,10 @@ export const BudgetDetailPage: React.FC = () => {
                         Math.ceil(
                           (new Date(budget.endDate).getTime() -
                             new Date(budget.startDate).getTime()) /
-                            (1000 * 60 * 60 * 24)
-                        )
+                            (1000 * 60 * 60 * 24),
+                        ),
                       ),
-                    budget.currency
+                    budget.currency,
                   )}
                 </span>
               </div>
@@ -538,8 +538,8 @@ export const BudgetDetailPage: React.FC = () => {
                     0,
                     Math.ceil(
                       (new Date(budget.endDate).getTime() - new Date().getTime()) /
-                        (1000 * 60 * 60 * 24)
-                    )
+                        (1000 * 60 * 60 * 24),
+                    ),
                   )}
                 </span>
               </div>

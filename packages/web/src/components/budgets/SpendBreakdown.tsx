@@ -87,21 +87,22 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
     if (sortBy === 'amount') return b.amount - a.amount;
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
-  const paginatedExpenses = sortedExpenses.slice(
-    page * pageSize,
-    (page + 1) * pageSize
-  );
+  const paginatedExpenses = sortedExpenses.slice(page * pageSize, (page + 1) * pageSize);
   const totalPages = Math.ceil(topExpenses.length / pageSize);
 
-  const CategoryTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: CategoryBreakdown }> }) => {
+  const CategoryTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ payload: CategoryBreakdown }>;
+  }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-white border border-gray-200 shadow-lg rounded-lg p-3">
           <p className="font-medium text-gray-900">{data.category}</p>
-          <p className="text-sm text-gray-600">
-            {formatCurrency(data.amount, budget.currency)}
-          </p>
+          <p className="text-sm text-gray-600">{formatCurrency(data.amount, budget.currency)}</p>
           <p className="text-xs text-gray-500">{data.percentage.toFixed(1)}%</p>
         </div>
       );
@@ -109,24 +110,26 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
     return null;
   };
 
-  const UserTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: UserBreakdown }> }) => {
+  const UserTooltip = ({
+    active,
+    payload,
+  }: {
+    active?: boolean;
+    payload?: Array<{ payload: UserBreakdown }>;
+  }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-white border border-gray-200 shadow-lg rounded-lg p-3">
           <p className="font-medium text-gray-900">{data.userName}</p>
-          <p className="text-sm text-gray-600">
-            {formatCurrency(data.amount, budget.currency)}
-          </p>
+          <p className="text-sm text-gray-600">{formatCurrency(data.amount, budget.currency)}</p>
         </div>
       );
     }
     return null;
   };
 
-  const topUsersBySpend = [...byUser]
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 10);
+  const topUsersBySpend = [...byUser].sort((a, b) => b.amount - a.amount).slice(0, 10);
 
   if (byCategory.length === 0 && byUser.length === 0 && topExpenses.length === 0) {
     return (
@@ -143,9 +146,7 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
         {/* Spend by Category - Pie Chart */}
         {byCategory.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Spend by Category
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Spend by Category</h3>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -164,10 +165,7 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
                     labelLine={false}
                   >
                     {byCategory.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip content={<CategoryTooltip />} />
@@ -189,9 +187,7 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
         {/* Spend by User - Bar Chart */}
         {topUsersBySpend.length > 0 && (
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Top Spenders
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Spenders</h3>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -216,12 +212,7 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
                     }
                   />
                   <Tooltip content={<UserTooltip />} />
-                  <Bar
-                    dataKey="amount"
-                    fill="#3B82F6"
-                    radius={[0, 4, 4, 0]}
-                    barSize={20}
-                  />
+                  <Bar dataKey="amount" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -274,18 +265,10 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
               <tbody className="bg-white divide-y divide-gray-200">
                 {paginatedExpenses.map((expense) => (
                   <tr key={expense.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">
-                      {expense.description}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {expense.category}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {expense.userName}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
-                      {formatDate(expense.date)}
-                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">{expense.description}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{expense.category}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{expense.userName}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{formatDate(expense.date)}</td>
                     <td className="px-4 py-3 text-sm text-gray-900 text-right font-medium">
                       {formatCurrency(expense.amount, budget.currency)}
                     </td>
@@ -300,8 +283,8 @@ export const SpendBreakdown: React.FC<SpendBreakdownProps> = ({
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-500">
                 Showing {page * pageSize + 1} to{' '}
-                {Math.min((page + 1) * pageSize, topExpenses.length)} of{' '}
-                {topExpenses.length} expenses
+                {Math.min((page + 1) * pageSize, topExpenses.length)} of {topExpenses.length}{' '}
+                expenses
               </p>
               <div className="flex gap-2">
                 <button

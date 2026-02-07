@@ -56,7 +56,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         : acceptedFiles.slice(0, 1);
       onChange(newFiles);
     },
-    [value, onChange, multiple, maxFiles]
+    [value, onChange, multiple, maxFiles],
   );
 
   const removeFile = (index: number) => {
@@ -87,7 +87,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           isDragReject && 'border-red-500 bg-red-50',
           error && 'border-red-500',
           isDisabled && 'opacity-50 cursor-not-allowed bg-gray-50',
-          !isDragActive && !error && !isDisabled && 'border-gray-300 hover:border-gray-400'
+          !isDragActive && !error && !isDisabled && 'border-gray-300 hover:border-gray-400',
         )}
       >
         <input {...getInputProps()} />
@@ -101,8 +101,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             )
           ) : (
             <>
-              <span className="font-medium text-primary-600">Click to upload</span> or drag and
-              drop
+              <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
             </>
           )}
         </p>
