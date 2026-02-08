@@ -27,7 +27,7 @@ All 12 backend modules implemented with comprehensive test coverage:
 | 4 | Approval Workflow | Complete (emergency approvals, SUPER_APPROVER) |
 | 5 | Voucher Management | Complete (3 pages) |
 | 6 | Budget Management | Complete (3 pages + tests) |
-| 7 | Reports & Analytics | Complete (6 report types + XLSX/CSV export) |
+| 7 | Reports & Analytics | Complete (6 report types + XLSX/CSV/PDF export) |
 | 8 | Administration | Complete (4 pages, connected to APIs) |
 | 9 | OCR & Receipt Processing | Complete (camera capture, auto-populate) |
 | 10 | Pre-Approval Workflow | Complete (3 pages + travel details) |
@@ -41,9 +41,14 @@ All 12 backend modules implemented with comprehensive test coverage:
 - **Emergency Approvals:** UI with justification requirement (min 20 chars, waived for CEO)
 - **Role constants:** Consistent frontend/backend role groups (APPROVING_ROLES, APPROVAL_READ_ROLES, EMERGENCY_APPROVAL_ROLES, etc.)
 
+### Phase 3: Backend Integrations - COMPLETE
+- **Password Reset:** Secure token-based flow with SHA256 hashing, anti-enumeration, password history enforcement
+- **Email Notifications:** Fire-and-forget integration in approvals (approve/reject/clarify) and expenses (submit)
+- **PDF Export:** Real PDFKit implementation with styled tables, auto page-break, landscape A4
+
 ### QA/Polish - COMPLETE
 - All admin pages connected to real APIs (Categories, Audit Logs, Settings)
-- Report exports working (XLSX/CSV blob downloads)
+- Report exports working (XLSX/CSV/PDF)
 - ESLint configured for web package
 - 150+ E2E tests across 11 Playwright spec files
 - Profile page with password change

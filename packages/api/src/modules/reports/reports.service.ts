@@ -22,6 +22,7 @@ import {
 } from './dto/report-responses.dto';
 import { ExpenseStatus, VoucherStatus, ApprovalAction, RoleType, User } from '@prisma/client';
 import * as ExcelJS from 'exceljs';
+import * as PDFDocument from 'pdfkit';
 
 /**
  * Month names for display
@@ -1417,14 +1418,166 @@ export class ReportsService {
   }
 
   /**
-   * Generate PDF export (placeholder)
+   * Generate PDF export
    */
-  private generatePdf(reportType: string, _data: unknown[]) {
-    // TODO: Implement PDF generation with pdfkit
-    return {
-      buffer: Buffer.from('PDF generation not implemented'),
-      contentType: 'application/pdf',
-      filename: `${reportType}-${Date.now()}.pdf`,
-    };
+  private async generatePdf(reportType: string, data: unknown[]) {
+    return new Promise<{ buffer: Buffer; contentType: string; filename: string }>(
+      (resolve, reject) => {
+        try {
+          const doc = new PDFDocument({
+            margin: 40,
+            size: 'A4',
+            layout: 'landscape',
+            bufferPages: true,
+          });
+          const chunks: Buffer[] = [];
+
+          doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+          doc.on('end', () => {
+            resolve({
+              buffer: Buffer.concat(chunks),
+              contentType: 'application/pdf',
+              filename: `${reportType}-${Date.now()}.pdf`,
+            });
+          });
+          doc.on('error', reject);
+
+          // Title
+          const title = reportType.replaceAll('_', ' ').replaceAll(/\b\w/g, (c) => c.toUpperCase());
+          doc.fontSize(18).font('Helvetica-Bold').text(title, { align: 'center' });
+          doc.moveDown(0.5);
+          doc
+            .fontSize(10)
+            .font('Helvetica')
+            .text(
+              `Generated: ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`,
+              { align: 'center' },
+            );
+          doc.moveDown(1);
+
+          // Separator line
+          doc
+            .moveTo(40, doc.y)
+            .lineTo(doc.page.width - 40, doc.y)
+            .stroke('#cccccc');
+          doc.moveDown(1);
+
+          if (data.length === 0) {
+            doc.fontSize(12).text('No data available for this report.', { align: 'center' });
+            doc.end();
+            return;
+          }
+
+          // Extract headers from first row
+          const firstRow = data[0] as Record<string, unknown>;
+          const allHeaders = Object.keys(firstRow);
+          const headers = allHeaders.slice(0, 8); // Max 8 columns for landscape A4
+          const tableWidth = doc.page.width - 80; // 40px margin each side
+          const colWidth = tableWidth / headers.length;
+          const startX = 40;
+
+          // Summary line
+          doc
+            .fontSize(9)
+            .font('Helvetica')
+            .text(`Total records: ${data.length}`, { align: 'left' });
+          doc.moveDown(0.5);
+
+          // Table header row
+          const headerY = doc.y;
+          doc.fontSize(8).font('Helvetica-Bold');
+
+          // Header background
+          doc.rect(startX, headerY - 2, tableWidth, 16).fill('#f3f4f6');
+          doc.fillColor('#111827');
+
+          headers.forEach((header, i) => {
+            const label = header
+              .replaceAll(/([A-Z])/g, ' $1')
+              .replaceAll(/^./g, (c) => c.toUpperCase())
+              .trim();
+            doc.text(label, startX + i * colWidth + 4, headerY, {
+              width: colWidth - 8,
+              ellipsis: true,
+            });
+          });
+
+          doc.y = headerY + 18;
+
+          // Data rows
+          doc.font('Helvetica').fontSize(7);
+          let rowIndex = 0;
+
+          for (const row of data) {
+            const record = row as Record<string, unknown>;
+
+            // Check for page break
+            if (doc.y > doc.page.height - 60) {
+              doc.addPage();
+              doc.y = 40;
+
+              // Repeat header on new page
+              const newHeaderY = doc.y;
+              doc.fontSize(8).font('Helvetica-Bold');
+              doc.rect(startX, newHeaderY - 2, tableWidth, 16).fill('#f3f4f6');
+              doc.fillColor('#111827');
+              headers.forEach((header, i) => {
+                const label = header
+                  .replaceAll(/([A-Z])/g, ' $1')
+                  .replaceAll(/^./g, (c) => c.toUpperCase())
+                  .trim();
+                doc.text(label, startX + i * colWidth + 4, newHeaderY, {
+                  width: colWidth - 8,
+                  ellipsis: true,
+                });
+              });
+              doc.y = newHeaderY + 18;
+              doc.font('Helvetica').fontSize(7);
+            }
+
+            // Alternate row background
+            if (rowIndex % 2 === 1) {
+              doc.rect(startX, doc.y - 2, tableWidth, 14).fill('#f9fafb');
+              doc.fillColor('#111827');
+            }
+
+            const rowY = doc.y;
+            headers.forEach((header, i) => {
+              let cellText: string;
+              const val = record[header];
+              if (val === null || val === undefined) {
+                cellText = '';
+              } else if (val instanceof Date) {
+                cellText = val.toLocaleDateString();
+              } else if (typeof val === 'object') {
+                cellText = JSON.stringify(val);
+              } else {
+                cellText = String(val);
+              }
+
+              doc.text(cellText.substring(0, 40), startX + i * colWidth + 4, rowY, {
+                width: colWidth - 8,
+                ellipsis: true,
+              });
+            });
+
+            doc.y = rowY + 14;
+            rowIndex++;
+          }
+
+          // Footer
+          doc.moveDown(2);
+          doc
+            .fontSize(8)
+            .font('Helvetica')
+            .fillColor('#6b7280')
+            .text('TPL Expense Management System', { align: 'center' });
+
+          doc.end();
+        } catch (err) {
+          reject(err);
+        }
+      },
+    );
   }
 }

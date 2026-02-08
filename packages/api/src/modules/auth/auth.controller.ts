@@ -72,6 +72,7 @@ export class AuthController {
   @Post('reset-password')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @Throttle({ short: { limit: 5, ttl: 60000 } }) // 5 attempts per minute
   @ApiOperation({ summary: 'Reset password with token' })
   @ApiResponse({ status: 200, description: 'Password reset successful' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })

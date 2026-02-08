@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
@@ -18,10 +19,16 @@ import {
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { EMERGENCY_APPROVAL_ROLES } from '../../common/constants/roles';
+import { EmailService } from '../notifications/email.service';
 
 @Injectable()
 export class ApprovalsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ApprovalsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   // ==================== PENDING APPROVALS ====================
 
@@ -173,6 +180,9 @@ export class ApprovalsService {
       // Log emergency approval to audit log for compliance tracking
       await this.logEmergencyApproval(user, dto.expenseId, dto.emergencyReason);
 
+      // Send approval email (emergency always fully approves)
+      this.sendApprovalNotification(dto.expenseId, 'approved');
+
       return {
         message: 'Emergency approval granted',
         isEmergencyApproval: true,
@@ -231,6 +241,11 @@ export class ApprovalsService {
         });
       }
     });
+
+    // Only send approval email when fully approved (not partial tier advancement)
+    if (!nextTier) {
+      this.sendApprovalNotification(dto.expenseId, 'approved');
+    }
 
     return {
       message: nextTier
@@ -305,6 +320,9 @@ export class ApprovalsService {
       }),
     ]);
 
+    // Send rejection email notification
+    this.sendApprovalNotification(dto.expenseId, 'rejected', dto.reason);
+
     return { message: 'Expense rejected' };
   }
 
@@ -345,6 +363,33 @@ export class ApprovalsService {
         },
       }),
     ]);
+
+    // Send email notification about clarification request
+    try {
+      const expenseWithSubmitter = await this.prisma.expense.findUnique({
+        where: { id: dto.expenseId },
+        include: { submitter: true },
+      });
+      if (expenseWithSubmitter?.submitter?.email) {
+        this.emailService
+          .sendEmail({
+            to: expenseWithSubmitter.submitter.email,
+            subject: 'Clarification Requested for Your Expense',
+            html: `
+            <p>Hello ${this.escapeHtml(expenseWithSubmitter.submitter.firstName)},</p>
+            <p>A clarification has been requested for your expense "${this.escapeHtml(expenseWithSubmitter.description || '')}" (${expenseWithSubmitter.amount} ${expenseWithSubmitter.currency}).</p>
+            <p><strong>Question:</strong> ${this.escapeHtml(dto.question)}</p>
+            <p>Please review and respond at your earliest convenience.</p>
+          `,
+          })
+          .catch((err) => this.logger.error('Failed to send clarification email', err?.stack));
+      }
+    } catch (emailErr) {
+      this.logger.warn(
+        'Email notification failed during clarification',
+        (emailErr as Error)?.message,
+      );
+    }
 
     return { message: 'Clarification requested' };
   }
@@ -399,6 +444,41 @@ export class ApprovalsService {
     ]);
 
     return { message: 'Expense resubmitted successfully' };
+  }
+
+  // ==================== EMAIL HELPERS ====================
+
+  private async sendApprovalNotification(
+    expenseId: string,
+    type: 'approved' | 'rejected',
+    reason?: string,
+  ): Promise<void> {
+    try {
+      const expense = await this.prisma.expense.findUnique({
+        where: { id: expenseId },
+        include: { submitter: true },
+      });
+      if (!expense?.submitter?.email) return;
+      if (type === 'approved') {
+        this.emailService
+          .sendExpenseApprovedEmail(expense.submitter, expense)
+          .catch((err) => this.logger.error('Failed to send approval email', err?.stack));
+      } else {
+        this.emailService
+          .sendExpenseRejectedEmail(expense.submitter, expense, reason!)
+          .catch((err) => this.logger.error('Failed to send rejection email', err?.stack));
+      }
+    } catch (err) {
+      this.logger.warn('Email notification lookup failed', (err as Error)?.message);
+    }
+  }
+
+  private escapeHtml(text: string): string {
+    return text
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
   }
 
   // ==================== APPROVAL TIERS ====================

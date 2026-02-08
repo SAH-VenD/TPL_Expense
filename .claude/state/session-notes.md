@@ -1,6 +1,39 @@
 # Session Notes
 
-## Session: 2026-02-08
+## Session: 2026-02-08 (Afternoon)
+
+### Session Focus
+**Phase 3: Backend Integrations** - Password Reset, Email Notifications, PDF Export
+
+### Completed This Session
+- Implemented password reset flow (secure SHA256 token hashing, anti-enumeration, password history)
+- Integrated email notifications into approvals (approve/reject/clarify) and expenses (submit)
+- Implemented real PDF export with PDFKit (styled tables, landscape A4, auto page-break)
+- Created ResetPasswordPage frontend with token extraction from URL params
+- Added @types/pdfkit for TypeScript type safety
+- Fixed all test specs (mock User objects, EmailService injection, PDF test assertion)
+- Used multi-agent workflow: 3 parallel agents on separate feature branches
+
+### Feature Branches (all merged to main)
+- `feat/password-reset` → `6c604c9`
+- `feat/email-notifications` → `0e53a43`
+- `feat/pdf-export` → `6cde755`
+
+### Files Modified
+| Feature | Files |
+|---------|-------|
+| Password Reset | schema.prisma, auth.module.ts, auth.service.ts, auth.service.spec.ts, change-password.dto.ts, ResetPasswordPage.tsx, App.tsx, approvals.service.spec.ts, vouchers.service.spec.ts |
+| Email Notifications | approvals.module.ts, approvals.service.ts, expenses.module.ts, expenses.service.ts |
+| PDF Export | reports.service.ts, reports.service.spec.ts, package.json |
+
+### Test Results
+- 357 tests passing (all 6 test suites)
+- TypeScript clean on both API and web packages
+- Lint clean (0 errors)
+
+---
+
+## Session: 2026-02-08 (Morning)
 
 ### Session Focus
 **PROJECT FEATURE-COMPLETE** - Documentation update, commit, and merge.

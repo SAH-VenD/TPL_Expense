@@ -10,6 +10,7 @@ import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 
 // Main pages
 import { DashboardPage } from './pages/dashboard/DashboardPage';
@@ -59,6 +60,7 @@ function App() {
           element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />}
         />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
       </Route>
 
       {/* Protected routes */}

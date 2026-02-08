@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
 import { UserStatus, RoleType } from '@prisma/client';
 import { ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
@@ -45,6 +46,10 @@ describe('AuthService', () => {
     }),
   };
 
+  const mockEmailService = {
+    sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -52,6 +57,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: JwtService, useValue: mockJwtService },
         { provide: ConfigService, useValue: mockConfigService },
+        { provide: EmailService, useValue: mockEmailService },
       ],
     }).compile();
 

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ApprovalsService } from './approvals.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
 import {
   ExpenseStatus,
   ApprovalAction,
@@ -74,6 +75,8 @@ describe('ApprovalsService', () => {
     mustChangePassword: false,
     passwordChangedAt: null,
     passwordHistory: [],
+    resetToken: null,
+    resetTokenExpiry: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -97,6 +100,8 @@ describe('ApprovalsService', () => {
     mustChangePassword: false,
     passwordChangedAt: null,
     passwordHistory: [],
+    resetToken: null,
+    resetTokenExpiry: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -176,9 +181,19 @@ describe('ApprovalsService', () => {
     updatedAt: new Date(),
   };
 
+  const mockEmailService = {
+    sendExpenseApprovedEmail: jest.fn().mockResolvedValue(undefined),
+    sendExpenseRejectedEmail: jest.fn().mockResolvedValue(undefined),
+    sendEmail: jest.fn().mockResolvedValue(undefined),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ApprovalsService, { provide: PrismaService, useValue: mockPrismaService }],
+      providers: [
+        ApprovalsService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: EmailService, useValue: mockEmailService },
+      ],
     }).compile();
 
     service = module.get<ApprovalsService>(ApprovalsService);
@@ -606,6 +621,7 @@ describe('ApprovalsService', () => {
           approvalHistory: [],
           submitter: mockEmployee,
         })
+        .mockResolvedValueOnce({ ...mockExpense, submitter: mockEmployee }) // email notification lookup
         .mockResolvedValueOnce(null); // Second expense not found
 
       mockPrismaService.approvalTier.findMany.mockResolvedValue([mockTier1]);

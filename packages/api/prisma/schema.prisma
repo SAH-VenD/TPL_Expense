@@ -141,6 +141,8 @@ model User {
   mustChangePassword  Boolean     @default(false)
   passwordChangedAt   DateTime?
   passwordHistory     String[]    @default([])
+  resetToken          String?
+  resetTokenExpiry    DateTime?
 
   // Organizational
   departmentId        String?
@@ -175,6 +177,7 @@ model User {
   @@index([managerId])
   @@index([status])
   @@index([role])
+  @@index([resetToken])
 }
 
 model RefreshToken {

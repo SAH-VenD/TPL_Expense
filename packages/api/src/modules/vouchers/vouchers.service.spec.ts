@@ -55,6 +55,8 @@ describe('VouchersService', () => {
     mustChangePassword: false,
     passwordChangedAt: null,
     passwordHistory: [],
+    resetToken: null,
+    resetTokenExpiry: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
