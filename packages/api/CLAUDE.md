@@ -75,14 +75,25 @@ See `.env.example` for required variables. Key ones:
 ## Implemented Modules
 | Module | Status | Tests | Notes |
 |--------|--------|-------|-------|
-| auth | Complete | Unit | JWT login/register/refresh |
+| auth | Complete | Unit | JWT login/register/refresh/change-password |
 | users | Complete | Unit | CRUD + role-based access |
 | categories | Complete | Unit | Hierarchical CRUD (tree) |
 | departments | Complete | Unit | Hierarchical CRUD (tree) |
 | storage | Complete | Unit | S3/LocalStorage providers |
 | expenses | Complete | Unit | Expense CRUD with splits |
-| receipts | Complete | Unit | File uploads, OCR prep |
-| approvals | Complete | 35 unit, 31 E2E | Multi-tier workflow, delegation |
+| receipts | Complete | Unit | File uploads, OCR processing endpoints |
+| approvals | Complete | 35 unit, 31 E2E | Multi-tier workflow, delegation, emergency approvals |
 | vouchers | Complete | 114 unit, 24 E2E | Petty cash lifecycle |
 | budgets | Complete | 85 unit | Utilization, enforcement |
 | reports | Complete | 52 unit, 70+ E2E | Analytics, dashboards, exports |
+| pre-approvals | Complete | - | Pre-approval workflow with travel details |
+
+## RBAC Role Hierarchy
+- **EMPLOYEE** - Basic expense submission
+- **APPROVER** - Department-scoped approvals
+- **SUPER_APPROVER** - Cross-department approver, org-wide visibility, emergency approvals
+- **FINANCE** - Org-wide visibility, budget management, high-value approvals
+- **CEO** - Highest tier approver, emergency approvals without justification
+- **ADMIN** - System administration, NO approval rights (separation of duties)
+
+Role constants defined in `src/common/constants/roles.ts`.

@@ -223,6 +223,52 @@ export class AuthService {
     return { message: 'Password reset successful' };
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Verify current password
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isCurrentValid) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    // Validate new password strength
+    this.validatePasswordStrength(newPassword);
+
+    // Check password history (prevent reuse of last 3 passwords)
+    const passwordHistory = (user.passwordHistory as string[]) || [];
+    for (const oldHash of passwordHistory.slice(-3)) {
+      const isReused = await bcrypt.compare(newPassword, oldHash);
+      if (isReused) {
+        throw new BadRequestException('Cannot reuse any of your last 3 passwords');
+      }
+    }
+
+    // Hash new password and update
+    const newHash = await bcrypt.hash(newPassword, this.BCRYPT_ROUNDS);
+    const updatedHistory = [...passwordHistory, newHash];
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: newHash,
+        passwordHistory: updatedHistory,
+        passwordChangedAt: new Date(),
+      },
+    });
+
+    // Log audit event
+    await this.logAudit(userId, 'PASSWORD_CHANGE', 'User', userId);
+
+    return { message: 'Password changed successfully' };
+  }
+
   async updateActivity(userId: string) {
     await this.prisma.user.update({
       where: { id: userId },

@@ -23,6 +23,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { ReceiptsService } from './receipts.service';
+import { OcrService } from '../ocr/ocr.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../../common/types/request';
 
@@ -31,7 +32,10 @@ import { AuthenticatedRequest } from '../../common/types/request';
 @UseGuards(JwtAuthGuard)
 @Controller('receipts')
 export class ReceiptsController {
-  constructor(private readonly receiptsService: ReceiptsService) {}
+  constructor(
+    private readonly receiptsService: ReceiptsService,
+    private readonly ocrService: OcrService,
+  ) {}
 
   @Post(':expenseId')
   @ApiOperation({ summary: 'Upload a receipt for an expense' })
@@ -106,6 +110,30 @@ export class ReceiptsController {
   @ApiResponse({ status: 404, description: 'Receipt not found' })
   getDownloadUrl(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
     return this.receiptsService.getDownloadUrl(id, req.user);
+  }
+
+  @Post(':id/process-ocr')
+  @ApiOperation({ summary: 'Trigger OCR processing on a receipt' })
+  @ApiParam({ name: 'id', description: 'Receipt ID' })
+  @ApiResponse({ status: 200, description: 'OCR results' })
+  @ApiResponse({ status: 404, description: 'Receipt not found' })
+  processOcr(@Param('id') id: string) {
+    return this.ocrService.processReceipt(id);
+  }
+
+  @Get(':id/ocr-data')
+  @ApiOperation({ summary: 'Get OCR extraction results for a receipt' })
+  @ApiParam({ name: 'id', description: 'Receipt ID' })
+  @ApiResponse({ status: 200, description: 'OCR data' })
+  @ApiResponse({ status: 404, description: 'Receipt not found' })
+  async getOcrData(@Param('id') id: string) {
+    const receipt = await this.receiptsService.findOneInternal(id);
+    return {
+      receiptId: receipt.id,
+      ocrStatus: receipt.ocrStatus,
+      ocrResult: receipt.ocrResult,
+      ocrConfidence: receipt.ocrConfidence,
+    };
   }
 
   @Delete(':id')

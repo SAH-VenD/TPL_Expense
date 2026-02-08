@@ -7,6 +7,7 @@ Multi-tier expense approval workflow with delegation support, history tracking, 
 - Completed: 2026-01-30
 - Tests: 35 unit tests, 31 E2E tests
 - QA Update: 2026-02-02 (API connections, delegate modal fixes)
+- RBAC Update: 2026-02-08 (SUPER_APPROVER role, emergency approvals)
 
 ## Key Files
 - `approvals.service.ts` - Core approval logic with tier-based workflow
@@ -29,7 +30,14 @@ SUBMITTED → PENDING_APPROVAL → APPROVED
 ### Multi-Tier System
 - Tiers defined by amount thresholds and approver roles
 - Sequential approval through tiers based on `amountInPKR`
-- Each tier maps to a role: APPROVER, FINANCE, ADMIN
+- Each tier maps to a role: APPROVER, SUPER_APPROVER, FINANCE, CEO
+
+### Emergency Approvals
+- Bypass tier requirements for urgent expenses
+- Available to: CEO, SUPER_APPROVER, FINANCE
+- CEO does not require justification
+- SUPER_APPROVER and FINANCE require min 20 character justification
+- Frontend: Emergency button + modal in ApprovalQueuePage
 
 ### Delegation
 - Time-bound delegation (start/end dates)
@@ -44,6 +52,8 @@ SUBMITTED → PENDING_APPROVAL → APPROVED
 4. **Rejection Reason**: Required for all rejections
 5. **Clarification Question**: Required when requesting clarification
 6. **Resubmission**: Only owner can resubmit REJECTED or CLARIFICATION_REQUESTED expenses
+7. **Emergency Approval**: Bypasses tier requirements; requires justification (except CEO)
+8. **ADMIN Read-Only**: ADMIN can view approval queue but cannot approve/reject (separation of duties)
 
 ## API Endpoints
 

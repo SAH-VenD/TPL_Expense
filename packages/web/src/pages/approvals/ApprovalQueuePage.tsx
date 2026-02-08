@@ -5,6 +5,7 @@ import {
   XMarkIcon,
   QuestionMarkCircleIcon,
   ArrowPathIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,7 +16,7 @@ import {
   useBulkApproveMutation,
   useRequestClarificationMutation,
 } from '@/features/approvals/services/approvals.service';
-import { Skeleton, ConfirmDialog, showToast, PageHeader } from '@/components/ui';
+import { Skeleton, ConfirmDialog, showToast, PageHeader, Modal, ModalBody, ModalFooter } from '@/components/ui';
 import { useRolePermissions } from '@/hooks';
 import type { Expense } from '@/features/expenses/services/expenses.service';
 
@@ -38,7 +39,7 @@ const formatRelativeDate = (dateString: string): string => {
 
 export function ApprovalQueuePage() {
   const navigate = useNavigate();
-  const { canApprove } = useRolePermissions();
+  const { canApprove, canEmergencyApprove, isCEO } = useRolePermissions();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -50,6 +51,11 @@ export function ApprovalQueuePage() {
   const [clarifyQuestion, setClarifyQuestion] = useState('');
   const [actionExpenseId, setActionExpenseId] = useState<string | null>(null);
   const [isBulkAction, setIsBulkAction] = useState(false);
+
+  // Emergency approval modal
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [emergencyExpenseId, setEmergencyExpenseId] = useState<string | null>(null);
+  const [emergencyReason, setEmergencyReason] = useState('');
 
   // RTK Query hooks
   const { data, isLoading, isError, isFetching, refetch } = useGetPendingApprovalsQuery({
@@ -91,6 +97,36 @@ export function ApprovalQueuePage() {
       setSelectedIds(selectedIds.filter((id) => id !== expenseId));
     } catch (error: any) {
       showToast.error(error?.data?.message || 'Failed to approve expense');
+    }
+  };
+
+  // Emergency approve - opens modal
+  const handleEmergencyClick = (expenseId: string) => {
+    setEmergencyExpenseId(expenseId);
+    setEmergencyReason('');
+    setShowEmergencyModal(true);
+  };
+
+  // Confirm emergency approval
+  const confirmEmergencyApprove = async () => {
+    if (!emergencyExpenseId) return;
+    // CEO doesn't need a reason; others need ≥20 chars
+    if (!isCEO && emergencyReason.trim().length < 20) return;
+
+    try {
+      await approveExpense({
+        expenseId: emergencyExpenseId,
+        isEmergencyApproval: true,
+        emergencyReason: isCEO ? undefined : emergencyReason,
+      }).unwrap();
+      showToast.success('Emergency approval granted');
+      setSelectedIds(selectedIds.filter((id) => id !== emergencyExpenseId));
+    } catch {
+      showToast.error('Failed to perform emergency approval');
+    } finally {
+      setShowEmergencyModal(false);
+      setEmergencyExpenseId(null);
+      setEmergencyReason('');
     }
   };
 
@@ -452,6 +488,17 @@ export function ApprovalQueuePage() {
                           <QuestionMarkCircleIcon className="h-4 w-4 mr-1" />
                           Clarify
                         </button>
+                        {canEmergencyApprove && (
+                          <button
+                            onClick={() => handleEmergencyClick(expense.id)}
+                            disabled={isActionInProgress}
+                            className="px-3 py-1 text-sm bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 inline-flex items-center"
+                            title="Emergency Approval (bypasses tier requirements)"
+                          >
+                            <BoltIcon className="h-4 w-4 mr-1" />
+                            Emergency
+                          </button>
+                        )}
                       </div>
                     </td>
                   )}
@@ -561,6 +608,78 @@ export function ApprovalQueuePage() {
           />
         </div>
       </ConfirmDialog>
+
+      {/* Emergency Approval Modal */}
+      {showEmergencyModal && (
+        <Modal
+          isOpen
+          onClose={() => {
+            setShowEmergencyModal(false);
+            setEmergencyExpenseId(null);
+            setEmergencyReason('');
+          }}
+          title="Emergency Approval"
+          size="md"
+        >
+          <ModalBody>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-orange-800 font-medium">
+                Emergency approvals bypass tier requirements and immediately approve the expense.
+              </p>
+            </div>
+            {!isCEO && (
+              <div>
+                <label
+                  htmlFor="emergency-reason"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Justification <span className="text-red-500">*</span>
+                  <span className="text-gray-400 font-normal ml-1">(min 20 characters)</span>
+                </label>
+                <textarea
+                  id="emergency-reason"
+                  value={emergencyReason}
+                  onChange={(e) => setEmergencyReason(e.target.value)}
+                  rows={3}
+                  className="input w-full"
+                  placeholder="Provide justification for this emergency approval..."
+                  required
+                />
+                {emergencyReason.length > 0 && emergencyReason.length < 20 && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {20 - emergencyReason.length} more character(s) needed
+                  </p>
+                )}
+              </div>
+            )}
+            {isCEO && (
+              <p className="text-sm text-gray-600">
+                As CEO, you can perform emergency approvals without providing justification.
+              </p>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <button
+              onClick={() => {
+                setShowEmergencyModal(false);
+                setEmergencyExpenseId(null);
+                setEmergencyReason('');
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmEmergencyApprove}
+              disabled={isApproving || (!isCEO && emergencyReason.trim().length < 20)}
+              className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 inline-flex items-center"
+            >
+              <BoltIcon className="h-4 w-4 mr-1" />
+              {isApproving ? 'Approving...' : 'Confirm Emergency Approval'}
+            </button>
+          </ModalFooter>
+        </Modal>
+      )}
     </div>
   );
 }

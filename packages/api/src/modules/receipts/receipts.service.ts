@@ -161,6 +161,21 @@ export class ReceiptsService {
   }
 
   /**
+   * Get a receipt by ID (internal use, no auth check)
+   */
+  async findOneInternal(id: string) {
+    const receipt = await this.prisma.receipt.findUnique({
+      where: { id },
+    });
+
+    if (!receipt) {
+      throw new NotFoundException(`Receipt with ID ${id} not found`);
+    }
+
+    return receipt;
+  }
+
+  /**
    * Get all receipts for an expense
    */
   async findByExpense(expenseId: string, user: User) {

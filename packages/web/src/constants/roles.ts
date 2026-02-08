@@ -61,7 +61,7 @@ export const ORG_WIDE_VISIBILITY_ROLES: RoleType[] = ['CEO', 'SUPER_APPROVER', '
 /**
  * Roles that can access reports and analytics.
  */
-export const REPORTING_ROLES: RoleType[] = ['FINANCE', 'CEO', 'ADMIN'];
+export const REPORTING_ROLES: RoleType[] = ['SUPER_APPROVER', 'FINANCE', 'CEO', 'ADMIN'];
 
 /**
  * Roles that can view admin navigation (Users, Settings, Audit Logs).

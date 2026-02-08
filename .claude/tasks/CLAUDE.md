@@ -7,9 +7,8 @@ This folder contains task planning documents for the TPL Expense project. This C
 ## Quick Reference
 
 ### Current Active Work
-- **Phase 2**: Frontend Implementation (~80% complete)
+- **Phase 2**: Frontend Implementation - COMPLETE
 - **Master Plan**: [phase2-overview.md](./phase2-overview.md)
-- **Active Task**: [employee-dashboard-widget-visibility.md](./employee-dashboard-widget-visibility.md)
 
 ### Epic Status & WBS Files
 
@@ -24,14 +23,13 @@ This folder contains task planning documents for the TPL Expense project. This C
 | 6b. Budget Pages | P2 | Complete | [epic-06b-budget-pages.md](./epic-06b-budget-pages.md) |
 | 7. Reports | P2 | Complete | [epic-07-reports.md](./epic-07-reports.md) |
 | 8. Admin | P2 | Complete | [epic-08-admin.md](./epic-08-admin.md) |
-| 9-11. Advanced | P3 | Pending | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
-| RBAC Overhaul | P0 | Planning | [epic-rbac-overhaul.md](./epic-rbac-overhaul.md) |
+| 9. OCR & Receipt | P3 | Complete | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
+| 10. Pre-Approval | P3 | Complete | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
+| 11. Notifications | P3 | Complete | [epic-09-11-advanced.md](./epic-09-11-advanced.md) |
+| RBAC Overhaul | P0 | Complete | [epic-rbac-overhaul.md](./epic-rbac-overhaul.md) |
 
-### Remaining Work
-- **QA Testing**: Role-based widget visibility (in progress)
-- **Epic 9**: OCR Integration (not started)
-- **Epic 10**: Pre-Approval Workflow (not started)
-- **RBAC Overhaul**: Enhanced role access control (planning)
+### All Work Complete
+All epics and the RBAC overhaul have been implemented. The project is feature-complete.
 
 ### Branching Strategy
 Each epic has its own feature branch. Create branch from `main` when starting an epic:

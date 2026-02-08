@@ -1,5 +1,47 @@
 # Session Notes
 
+## Session: 2026-02-08
+
+### Session Focus
+**PROJECT FEATURE-COMPLETE** - Documentation update, commit, and merge.
+
+### Completed This Session
+- Updated all CLAUDE.md files to reflect completed status
+- Committed and merged all remaining work to main
+
+### Completed in Previous Sessions (2026-02-07/08)
+
+#### Profile Page Password Change
+- Backend: `PATCH /auth/change-password` endpoint with `ChangePasswordDto`
+- Frontend: Password change form in ProfilePage
+
+#### Epic 9: OCR & Receipt Processing
+- Backend: OCR processing endpoints in receipts controller
+- Frontend: `CameraCapture` component for camera/file upload
+- Frontend: `OcrPreview` component for reviewing extracted data
+- Frontend: OCR integration in ExpenseCreatePage (auto-populate form fields)
+- RTK Query: `uploadReceipt` and `processOcr` endpoints in expensesApi
+
+#### Epic 10: Pre-Approval Workflow
+- Frontend: `PreApprovalListPage` with status filtering and inline approve/reject
+- Frontend: `PreApprovalRequestPage` with category, amount, purpose, expiry, travel details
+- Frontend: `PreApprovalDetailPage` with timeline, approve/reject actions
+- RTK Query: `preApprovalsApi` service (6 endpoints)
+- Routes: `/pre-approvals`, `/pre-approvals/request`, `/pre-approvals/:id`
+- Sidebar navigation: Pre-Approvals link for ALL_ROLES
+
+#### RBAC Overhaul
+- Added SUPER_APPROVER to `REPORTING_ROLES` (frontend)
+- Added `isEmergencyApproval` and `emergencyReason` fields to `ApproveDto`
+- Built emergency approval UI in `ApprovalQueuePage` (modal with justification)
+- CEO emergency approvals without justification
+- ADMIN read-only access to approval queue (separation of duties)
+
+### Branch
+- `feat/profile-password-ocr-preapproval` → merged to `main`
+
+---
+
 ## Session: 2026-02-01
 
 ### Session Focus

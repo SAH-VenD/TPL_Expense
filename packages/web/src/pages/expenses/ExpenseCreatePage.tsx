@@ -1,14 +1,19 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CameraIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useGetCategoriesQuery } from '@/features/admin/services/admin.service';
 import {
   useCreateExpenseMutation,
   useSubmitExpenseMutation,
   useUploadReceiptMutation,
+  useProcessReceiptOcrMutation,
 } from '@/features/expenses/services/expenses.service';
-import type { Currency, ExpenseType } from '@/features/expenses/services/expenses.service';
+import type { Currency, ExpenseType, OcrResult } from '@/features/expenses/services/expenses.service';
 import { showToast, PageHeader } from '@/components/ui';
 import { DatePicker } from '@/components/ui/DatePicker';
+import { CameraCapture } from '@/components/expenses/CameraCapture';
+import { OcrPreview } from '@/components/expenses/OcrPreview';
+import type { OcrApplyData } from '@/components/expenses/OcrPreview';
 
 interface ExpenseFormData {
   type: ExpenseType;
@@ -27,11 +32,15 @@ export function ExpenseCreatePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [submitMode, setSubmitMode] = useState<'draft' | 'submit'>('draft');
+  const [showCamera, setShowCamera] = useState(false);
+  const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
+  const [isProcessingOcr, setIsProcessingOcr] = useState(false);
 
   const { data: categories, isLoading: categoriesLoading } = useGetCategoriesQuery();
   const [createExpense, { isLoading: isCreating }] = useCreateExpenseMutation();
   const [submitExpense, { isLoading: isSubmitting }] = useSubmitExpenseMutation();
   const [uploadReceipt, { isLoading: isUploading }] = useUploadReceiptMutation();
+  const [processOcr] = useProcessReceiptOcrMutation();
 
   const loading = isCreating || isSubmitting || isUploading;
 
@@ -104,11 +113,72 @@ export function ExpenseCreatePage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
       setFormData({
         ...formData,
-        receipts: [...formData.receipts, ...Array.from(e.target.files)],
+        receipts: [...formData.receipts, ...newFiles],
       });
+      // Trigger OCR on first image file added
+      const imageFile = newFiles.find((f) => f.type.startsWith('image/'));
+      if (imageFile && !ocrResult) {
+        triggerOcrForFile(imageFile);
+      }
     }
+  };
+
+  const handleCameraCapture = (file: File) => {
+    setShowCamera(false);
+    setFormData((prev) => ({
+      ...prev,
+      receipts: [...prev.receipts, file],
+    }));
+    triggerOcrForFile(file);
+  };
+
+  const triggerOcrForFile = async (file: File) => {
+    setIsProcessingOcr(true);
+    try {
+      // Create a temporary expense to upload the receipt for OCR
+      const tempExpense = await createExpense({
+        type: formData.type || 'OUT_OF_POCKET',
+        categoryId: formData.categoryId || categories?.find((c) => c.isActive)?.id || '',
+        description: 'OCR processing - auto-generated',
+        amount: 0,
+        currency: formData.currency || 'PKR',
+        expenseDate: new Date().toISOString().split('T')[0],
+      }).unwrap();
+
+      // Upload the file
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+      const receipt = await uploadReceipt({
+        expenseId: tempExpense.id,
+        file: uploadData,
+      }).unwrap();
+
+      // Trigger OCR processing
+      const result = await processOcr(receipt.id).unwrap();
+      setOcrResult(result);
+      showToast.success('Receipt scanned successfully');
+    } catch {
+      // OCR is best-effort - don't block the user
+      showToast.error('Could not process receipt automatically. Please fill in details manually.');
+    } finally {
+      setIsProcessingOcr(false);
+    }
+  };
+
+  const handleOcrApply = (data: Partial<OcrApplyData>) => {
+    setFormData((prev) => ({
+      ...prev,
+      ...(data.amount && { amount: data.amount }),
+      ...(data.taxAmount && { taxAmount: data.taxAmount }),
+      ...(data.expenseDate && { expenseDate: data.expenseDate }),
+      ...(data.invoiceNumber && { invoiceNumber: data.invoiceNumber }),
+      ...(data.description && { description: data.description }),
+    }));
+    setOcrResult(null);
+    showToast.success('OCR data applied to form');
   };
 
   const activeCategories = categories?.filter((cat) => cat.isActive) || [];
@@ -154,6 +224,22 @@ export function ExpenseCreatePage() {
         {/* Step 1: Details */}
         {step === 1 && (
           <div className="space-y-6">
+            {/* OCR Preview */}
+            {ocrResult && (
+              <OcrPreview
+                ocrResult={ocrResult}
+                onApply={handleOcrApply}
+                onDismiss={() => setOcrResult(null)}
+              />
+            )}
+
+            {isProcessingOcr && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <SparklesIcon className="h-5 w-5 text-blue-600 animate-pulse" />
+                <span className="text-sm text-blue-700">Scanning receipt with OCR...</span>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700">Expense Type</label>
               <select
@@ -277,38 +363,86 @@ export function ExpenseCreatePage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload Receipts
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  multiple
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="receipt-upload"
-                />
-                <label
-                  htmlFor="receipt-upload"
-                  className="cursor-pointer text-blue-600 hover:text-blue-500"
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* File Upload */}
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    accept="image/*,.pdf"
+                    multiple
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="receipt-upload"
+                  />
+                  <label
+                    htmlFor="receipt-upload"
+                    className="cursor-pointer text-blue-600 hover:text-blue-500"
+                  >
+                    <span className="text-3xl block mb-2">📎</span>
+                    <span className="font-medium">Choose files</span>
+                    <span className="block text-sm text-gray-500 mt-1">
+                      JPG, PNG, PDF up to 10MB
+                    </span>
+                  </label>
+                </div>
+
+                {/* Camera Capture */}
+                <button
+                  type="button"
+                  onClick={() => setShowCamera(true)}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
                 >
-                  <span className="text-4xl block mb-2">📎</span>
-                  <span className="font-medium">Click to upload</span>
-                  <span className="block text-sm text-gray-500 mt-1">JPG, PNG, PDF up to 10MB</span>
-                </label>
+                  <CameraIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                  <span className="font-medium text-blue-600">Take a photo</span>
+                  <span className="block text-sm text-gray-500 mt-1">
+                    Use camera to capture receipt
+                  </span>
+                </button>
               </div>
               <p className="mt-2 text-sm text-amber-600">
-                Note: At least one receipt is required to submit for approval.
+                Note: At least one receipt is required to submit for approval. Images are
+                automatically scanned with OCR.
               </p>
             </div>
 
+            {isProcessingOcr && (
+              <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <SparklesIcon className="h-5 w-5 text-blue-600 animate-pulse" />
+                <span className="text-sm text-blue-700">
+                  Processing receipt with OCR... Results will appear on the Details step.
+                </span>
+              </div>
+            )}
+
             {formData.receipts.length > 0 && (
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-900">Uploaded Files</h3>
+                <h3 className="font-medium text-gray-900">
+                  Uploaded Files ({formData.receipts.length})
+                </h3>
                 {formData.receipts.map((file, index) => (
                   <div
                     key={index}
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
-                    <span className="text-sm text-gray-700">{file.name}</span>
+                    <div className="flex items-center gap-3">
+                      {file.type.startsWith('image/') ? (
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={file.name}
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">
+                          PDF
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-sm text-gray-700">{file.name}</span>
+                        <span className="block text-xs text-gray-400">
+                          {(file.size / 1024).toFixed(0)} KB
+                        </span>
+                      </div>
+                    </div>
                     <button
                       type="button"
                       onClick={() =>
@@ -317,7 +451,7 @@ export function ExpenseCreatePage() {
                           receipts: formData.receipts.filter((_, i) => i !== index),
                         })
                       }
-                      className="text-red-600 hover:text-red-800"
+                      className="text-red-600 hover:text-red-800 text-sm"
                     >
                       Remove
                     </button>
@@ -378,6 +512,12 @@ export function ExpenseCreatePage() {
                 <span className="text-gray-600">Date:</span>
                 <span className="font-medium">{formData.expenseDate}</span>
               </div>
+              {formData.invoiceNumber && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Invoice #:</span>
+                  <span className="font-medium">{formData.invoiceNumber}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-gray-600">Receipts:</span>
                 <span className="font-medium">{formData.receipts.length} file(s)</span>
@@ -423,6 +563,11 @@ export function ExpenseCreatePage() {
           </div>
         )}
       </form>
+
+      {/* Camera Modal */}
+      {showCamera && (
+        <CameraCapture onCapture={handleCameraCapture} onClose={() => setShowCamera(false)} />
+      )}
     </div>
   );
 }

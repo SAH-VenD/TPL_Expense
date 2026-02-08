@@ -12,6 +12,8 @@ export interface ApprovalFilters {
 export interface ApproveDto {
   expenseId: string;
   comment?: string;
+  isEmergencyApproval?: boolean;
+  emergencyReason?: string;
 }
 
 export interface RejectDto {

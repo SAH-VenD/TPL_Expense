@@ -80,7 +80,35 @@ export interface Receipt {
   fileSize: number;
   s3Key: string;
   url?: string;
+  ocrStatus?: string;
+  ocrResult?: OcrResult;
+  ocrConfidence?: number;
   uploadedAt: string;
+}
+
+export interface OcrResult {
+  vendorName?: string;
+  vendorAddress?: string;
+  date?: string;
+  amount?: number;
+  taxAmount?: number;
+  total?: number;
+  currency?: string;
+  invoiceNumber?: string;
+  lineItems?: Array<{
+    description: string;
+    quantity?: number;
+    unitPrice?: number;
+    amount: number;
+  }>;
+  confidence: number;
+}
+
+export interface OcrDataResponse {
+  receiptId: string;
+  ocrStatus: string | null;
+  ocrResult: OcrResult | null;
+  ocrConfidence: number | null;
 }
 
 export interface ExpenseSplit {
@@ -369,6 +397,20 @@ export const expensesApi = createApi({
       query: (expenseId) => `/expenses/${expenseId}/approvals`,
       providesTags: (_result, _error, expenseId) => [{ type: 'Expense', id: expenseId }],
     }),
+
+    // Trigger OCR processing on a receipt
+    processReceiptOcr: builder.mutation<OcrResult, string>({
+      query: (receiptId) => ({
+        url: `/receipts/${receiptId}/process-ocr`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Receipt'],
+    }),
+
+    // Get OCR extraction results for a receipt
+    getReceiptOcrData: builder.query<OcrDataResponse, string>({
+      query: (receiptId) => `/receipts/${receiptId}/ocr-data`,
+    }),
   }),
 });
 
@@ -387,4 +429,6 @@ export const {
   useBulkSubmitExpensesMutation,
   useBulkDeleteExpensesMutation,
   useGetExpenseApprovalsQuery,
+  useProcessReceiptOcrMutation,
+  useLazyGetReceiptOcrDataQuery,
 } = expensesApi;

@@ -35,6 +35,11 @@ import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 // Notification pages
 import { NotificationListPage } from './pages/notifications/NotificationListPage';
 
+// Pre-approval pages
+import { PreApprovalListPage } from './pages/pre-approvals/PreApprovalListPage';
+import { PreApprovalRequestPage } from './pages/pre-approvals/PreApprovalRequestPage';
+import { PreApprovalDetailPage } from './pages/pre-approvals/PreApprovalDetailPage';
+
 // Profile page
 import { ProfilePage } from './pages/profile/ProfilePage';
 
@@ -79,6 +84,9 @@ function App() {
         <Route path="/budgets/new" element={<BudgetCreatePage />} />
         <Route path="/budgets/:id" element={<BudgetDetailPage />} />
         <Route path="/reports" element={<ReportsPage />} />
+        <Route path="/pre-approvals" element={<PreApprovalListPage />} />
+        <Route path="/pre-approvals/request" element={<PreApprovalRequestPage />} />
+        <Route path="/pre-approvals/:id" element={<PreApprovalDetailPage />} />
         <Route path="/notifications" element={<NotificationListPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 

@@ -11,6 +11,7 @@ import {
 import clsx from 'clsx';
 import { useAppSelector } from '@/store/hooks';
 import { PageHeader, Card, showToast } from '@/components/ui';
+import { useChangePasswordMutation } from '@/features/auth/services/auth.service';
 
 type TabType = 'profile' | 'permissions' | 'password';
 
@@ -95,21 +96,20 @@ export function ProfilePage() {
   const initialTab = (searchParams.get('tab') as TabType) || 'profile';
   const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
-  // Password form state (UI only)
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
+  const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
   const handleTabChange = (tab: TabType) => {
     setActiveTab(tab);
     setSearchParams({ tab });
   };
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // UI placeholder - no backend integration
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       showToast.error('New passwords do not match');
       return;
@@ -118,8 +118,17 @@ export function ProfilePage() {
       showToast.error('Password must be at least 8 characters');
       return;
     }
-    showToast.success('Password change functionality coming soon');
-    setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    try {
+      await changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      }).unwrap();
+      showToast.success('Password changed successfully');
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      showToast.error(error.data?.message || 'Failed to change password');
+    }
   };
 
   const handleAvatarUpload = () => {
@@ -350,13 +359,13 @@ export function ProfilePage() {
             </div>
 
             <div className="pt-2">
-              <button type="submit" className="btn btn-primary">
-                Update Password
+              <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                {isChangingPassword ? 'Updating...' : 'Update Password'}
               </button>
             </div>
           </form>
           <p className="mt-4 text-sm text-gray-500">
-            Note: Password change functionality is coming soon.
+            Password must include uppercase, lowercase, number, and special character.
           </p>
         </Card>
       )}

@@ -11,33 +11,42 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Frontend: React 18 + TypeScript + Vite + Redux Toolkit + Tailwind CSS
 - Infrastructure: Docker Compose (Postgres, Redis, LocalStack S3/Textract, MailHog)
 
-## Current Status (as of 2026-02-06)
+## Current Status (as of 2026-02-08)
 
 ### Phase 1: Backend Implementation - COMPLETE
-All 11 backend modules implemented with comprehensive test coverage:
+All 12 backend modules implemented with comprehensive test coverage:
 - **Total:** 280+ unit tests, 100+ E2E tests
-- **Modules:** auth, users, categories, departments, storage, expenses, receipts, approvals, vouchers, budgets, reports
+- **Modules:** auth, users, categories, departments, storage, expenses, receipts, approvals, vouchers, budgets, reports, pre-approvals
 
-### Phase 2: Frontend Implementation - ~80% COMPLETE
+### Phase 2: Frontend Implementation - COMPLETE
 | Epic | Name | Status |
 |------|------|--------|
 | 1 | UI Component Library | Complete |
-| 2 | Dashboard | Complete (role-based visibility in progress) |
-| 3 | Expense Management | Complete (4 pages) |
-| 4 | Approval Workflow | Complete |
+| 2 | Dashboard | Complete (role-based widget visibility) |
+| 3 | Expense Management | Complete (4 pages + OCR integration) |
+| 4 | Approval Workflow | Complete (emergency approvals, SUPER_APPROVER) |
 | 5 | Voucher Management | Complete (3 pages) |
 | 6 | Budget Management | Complete (3 pages + tests) |
-| 7 | Reports & Analytics | Complete |
-| 8 | Administration | Complete (4 pages) |
-| 9 | OCR & Receipt Processing | Pending |
-| 10 | Pre-Approval Workflow | Pending |
+| 7 | Reports & Analytics | Complete (6 report types + XLSX/CSV export) |
+| 8 | Administration | Complete (4 pages, connected to APIs) |
+| 9 | OCR & Receipt Processing | Complete (camera capture, auto-populate) |
+| 10 | Pre-Approval Workflow | Complete (3 pages + travel details) |
 | 11 | Notifications & Alerts | Complete |
 
-### Remaining Work
-- **QA Testing:** Role-based widget visibility, E2E test expansion
-- **Epic 9:** OCR Integration (camera capture, auto-populate forms)
-- **Epic 10:** Pre-Approval Workflow
-- **RBAC Overhaul:** SUPER_APPROVER role, ADMIN separation of duties
+### RBAC Overhaul - COMPLETE
+- **6 roles:** EMPLOYEE, APPROVER, SUPER_APPROVER, FINANCE, CEO, ADMIN
+- **SUPER_APPROVER:** Cross-department approver with org-wide visibility and emergency approvals
+- **CEO:** Highest tier approver, emergency approvals without justification
+- **ADMIN:** System administration with read-only access to approvals (separation of duties)
+- **Emergency Approvals:** UI with justification requirement (min 20 chars, waived for CEO)
+- **Role constants:** Consistent frontend/backend role groups (APPROVING_ROLES, APPROVAL_READ_ROLES, EMERGENCY_APPROVAL_ROLES, etc.)
+
+### QA/Polish - COMPLETE
+- All admin pages connected to real APIs (Categories, Audit Logs, Settings)
+- Report exports working (XLSX/CSV blob downloads)
+- ESLint configured for web package
+- 150+ E2E tests across 11 Playwright spec files
+- Profile page with password change
 
 ## Repository Structure
 
@@ -306,7 +315,7 @@ The Prisma schema defines these core entity groups:
 
 **Key Enums:**
 - `UserStatus`: PENDING_APPROVAL, ACTIVE, INACTIVE, LOCKED
-- `RoleType`: EMPLOYEE, APPROVER, FINANCE, ADMIN
+- `RoleType`: EMPLOYEE, APPROVER, SUPER_APPROVER, FINANCE, CEO, ADMIN
 - `ExpenseStatus`: DRAFT, SUBMITTED, PENDING_APPROVAL, APPROVED, REJECTED, CLARIFICATION_REQUESTED, RESUBMITTED, PAID
 - `Currency`: PKR, GBP, USD, SAR, AED
 

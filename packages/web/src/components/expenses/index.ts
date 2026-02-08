@@ -16,3 +16,7 @@ export type { ApprovalTimelineProps } from './ApprovalTimeline';
 
 export { ExpenseActions } from './ExpenseActions';
 export type { ExpenseActionsProps } from './ExpenseActions';
+
+export { CameraCapture } from './CameraCapture';
+export { OcrPreview } from './OcrPreview';
+export type { OcrApplyData } from './OcrPreview';

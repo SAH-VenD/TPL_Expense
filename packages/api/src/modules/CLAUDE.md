@@ -7,18 +7,18 @@
 
 | Module | Path | Status | Tests | Description |
 |--------|------|--------|-------|-------------|
-| auth | `./auth/` | Complete | Unit | JWT authentication (access/refresh tokens) |
+| auth | `./auth/` | Complete | Unit | JWT authentication, password change |
 | users | `./users/` | Complete | Unit | User management with role-based access |
 | categories | `./categories/` | Complete | Unit | Expense categories (hierarchical tree) |
 | departments | `./departments/` | Complete | Unit | Organizational units (hierarchical tree) |
 | storage | `./storage/` | Complete | Unit | S3/LocalStorage file management |
 | expenses | `./expenses/` | Complete | Unit | Core expense records with splits |
-| receipts | `./receipts/` | Complete | Unit | Receipt uploads & OCR preparation |
-| approvals | `./approvals/` | Complete | 35 unit, 31 E2E | Multi-tier approval workflow with delegation |
+| receipts | `./receipts/` | Complete | Unit | Receipt uploads, OCR processing |
+| approvals | `./approvals/` | Complete | 35 unit, 31 E2E | Multi-tier workflow, delegation, emergency approvals |
 | vouchers | `./vouchers/` | Complete | 114 unit, 24 E2E | Petty cash voucher lifecycle |
 | budgets | `./budgets/` | Complete | 85 unit | Budget tracking with enforcement |
 | reports | `./reports/` | Complete | 52 unit, 70+ E2E | Analytics, dashboards, exports |
-| pre-approvals | `./pre-approvals/` | Pending | - | Pre-approval workflow (Phase 3) |
+| pre-approvals | `./pre-approvals/` | Complete | - | Pre-approval workflow with travel details |
 
 ## Standard Module Structure
 ```
