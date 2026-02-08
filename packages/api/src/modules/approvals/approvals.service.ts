@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
@@ -18,10 +19,16 @@ import {
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { EMERGENCY_APPROVAL_ROLES } from '../../common/constants/roles';
+import { EmailService } from '../notifications/email.service';
 
 @Injectable()
 export class ApprovalsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ApprovalsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   // ==================== PENDING APPROVALS ====================
 
@@ -173,6 +180,21 @@ export class ApprovalsService {
       // Log emergency approval to audit log for compliance tracking
       await this.logEmergencyApproval(user, dto.expenseId, dto.emergencyReason);
 
+      // Send email notification to expense submitter
+      try {
+        const expenseWithSubmitter = await this.prisma.expense.findUnique({
+          where: { id: dto.expenseId },
+          include: { submitter: true },
+        });
+        if (expenseWithSubmitter?.submitter?.email) {
+          this.emailService
+            .sendExpenseApprovedEmail(expenseWithSubmitter.submitter, expenseWithSubmitter)
+            .catch((err) => this.logger.error('Failed to send approval email', err?.stack));
+        }
+      } catch (emailErr) {
+        // Don't let email failures affect the approval workflow
+      }
+
       return {
         message: 'Emergency approval granted',
         isEmergencyApproval: true,
@@ -231,6 +253,21 @@ export class ApprovalsService {
         });
       }
     });
+
+    // Send email notification to expense submitter
+    try {
+      const expenseWithSubmitter = await this.prisma.expense.findUnique({
+        where: { id: dto.expenseId },
+        include: { submitter: true },
+      });
+      if (expenseWithSubmitter?.submitter?.email) {
+        this.emailService
+          .sendExpenseApprovedEmail(expenseWithSubmitter.submitter, expenseWithSubmitter)
+          .catch((err) => this.logger.error('Failed to send approval email', err?.stack));
+      }
+    } catch (emailErr) {
+      // Don't let email failures affect the approval workflow
+    }
 
     return {
       message: nextTier
@@ -305,6 +342,25 @@ export class ApprovalsService {
       }),
     ]);
 
+    // Send email notification to expense submitter about rejection
+    try {
+      const expenseWithSubmitter = await this.prisma.expense.findUnique({
+        where: { id: dto.expenseId },
+        include: { submitter: true },
+      });
+      if (expenseWithSubmitter?.submitter?.email) {
+        this.emailService
+          .sendExpenseRejectedEmail(
+            expenseWithSubmitter.submitter,
+            expenseWithSubmitter,
+            dto.reason,
+          )
+          .catch((err) => this.logger.error('Failed to send rejection email', err?.stack));
+      }
+    } catch (emailErr) {
+      // Don't let email failures affect the rejection workflow
+    }
+
     return { message: 'Expense rejected' };
   }
 
@@ -345,6 +401,30 @@ export class ApprovalsService {
         },
       }),
     ]);
+
+    // Send email notification about clarification request
+    try {
+      const expenseWithSubmitter = await this.prisma.expense.findUnique({
+        where: { id: dto.expenseId },
+        include: { submitter: true },
+      });
+      if (expenseWithSubmitter?.submitter?.email) {
+        this.emailService
+          .sendEmail({
+            to: expenseWithSubmitter.submitter.email,
+            subject: 'Clarification Requested for Your Expense',
+            html: `
+            <p>Hello ${expenseWithSubmitter.submitter.firstName},</p>
+            <p>A clarification has been requested for your expense "${expenseWithSubmitter.description}" (${expenseWithSubmitter.amount} ${expenseWithSubmitter.currency}).</p>
+            <p><strong>Question:</strong> ${dto.question}</p>
+            <p>Please review and respond at your earliest convenience.</p>
+          `,
+          })
+          .catch((err) => this.logger.error('Failed to send clarification email', err?.stack));
+      }
+    } catch (emailErr) {
+      // Don't let email failures affect the clarification workflow
+    }
 
     return { message: 'Clarification requested' };
   }

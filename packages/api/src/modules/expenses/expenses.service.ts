@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
   BadRequestException,
@@ -9,10 +10,16 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ExpenseFiltersDto } from './dto/expense-filters.dto';
 import { ExpenseStatus, RoleType, User, Prisma } from '@prisma/client';
+import { EmailService } from '../notifications/email.service';
 
 @Injectable()
 export class ExpensesService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ExpensesService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   async create(userId: string, createExpenseDto: CreateExpenseDto) {
     const expenseNumber = await this.generateExpenseNumber();
@@ -330,13 +337,30 @@ export class ExpensesService {
       throw new BadRequestException('At least one receipt is required');
     }
 
-    return this.prisma.expense.update({
+    const updatedExpense = await this.prisma.expense.update({
       where: { id },
       data: {
         status: ExpenseStatus.SUBMITTED,
         submittedAt: new Date(),
       },
     });
+
+    // Send email notification to manager about new expense submission
+    try {
+      const fullExpense = await this.prisma.expense.findUnique({
+        where: { id },
+        include: { submitter: { include: { manager: true } } },
+      });
+      if (fullExpense?.submitter?.manager?.email) {
+        this.emailService
+          .sendExpenseSubmittedEmail(fullExpense.submitter.manager, fullExpense)
+          .catch((err) => this.logger.error?.('Failed to send submission email', err?.stack));
+      }
+    } catch (emailErr) {
+      // Don't let email failures affect the submission workflow
+    }
+
+    return updatedExpense;
   }
 
   async resubmit(id: string, user: User) {
