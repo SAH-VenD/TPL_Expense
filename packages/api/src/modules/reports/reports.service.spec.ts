@@ -920,7 +920,7 @@ describe('ReportsService', () => {
       expect(result.filename).toContain('approval-turnaround');
     });
 
-    it('should return PDF placeholder', async () => {
+    it('should generate valid PDF', async () => {
       mockPrismaService.expense.findMany.mockResolvedValue([]);
 
       const result = await service.exportReport({
@@ -929,7 +929,8 @@ describe('ReportsService', () => {
       });
 
       expect(result.contentType).toBe('application/pdf');
-      expect(result.buffer.toString()).toContain('PDF generation not implemented');
+      expect(result.buffer).toBeInstanceOf(Buffer);
+      expect(result.buffer.toString().substring(0, 5)).toBe('%PDF-');
     });
 
     it('should handle empty data for CSV export', async () => {
