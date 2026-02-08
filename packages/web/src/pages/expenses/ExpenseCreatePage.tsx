@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CameraIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, SparklesIcon, PaperClipIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/20/solid';
 import { useGetCategoriesQuery } from '@/features/admin/services/admin.service';
 import {
   useCreateExpenseMutation,
@@ -9,11 +10,12 @@ import {
   useProcessReceiptOcrMutation,
 } from '@/features/expenses/services/expenses.service';
 import type { Currency, ExpenseType, OcrResult } from '@/features/expenses/services/expenses.service';
-import { showToast, PageHeader } from '@/components/ui';
+import { showToast, PageHeader, Button, Input, Textarea } from '@/components/ui';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { CameraCapture } from '@/components/expenses/CameraCapture';
 import { OcrPreview } from '@/components/expenses/OcrPreview';
 import type { OcrApplyData } from '@/components/expenses/OcrPreview';
+import { useUnsavedChanges } from '@/hooks';
 
 interface ExpenseFormData {
   type: ExpenseType;
@@ -28,6 +30,21 @@ interface ExpenseFormData {
   receipts: File[];
 }
 
+const initialFormData: ExpenseFormData = {
+  type: 'OUT_OF_POCKET',
+  categoryId: '',
+  vendorId: '',
+  description: '',
+  amount: '',
+  taxAmount: '',
+  currency: 'PKR',
+  expenseDate: new Date().toISOString().split('T')[0],
+  invoiceNumber: '',
+  receipts: [],
+};
+
+type FieldErrors = Partial<Record<'categoryId' | 'description' | 'amount', string>>;
+
 export function ExpenseCreatePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -35,6 +52,7 @@ export function ExpenseCreatePage() {
   const [showCamera, setShowCamera] = useState(false);
   const [ocrResult, setOcrResult] = useState<OcrResult | null>(null);
   const [isProcessingOcr, setIsProcessingOcr] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const { data: categories, isLoading: categoriesLoading } = useGetCategoriesQuery();
   const [createExpense, { isLoading: isCreating }] = useCreateExpenseMutation();
@@ -44,18 +62,62 @@ export function ExpenseCreatePage() {
 
   const loading = isCreating || isSubmitting || isUploading;
 
-  const [formData, setFormData] = useState<ExpenseFormData>({
-    type: 'OUT_OF_POCKET',
-    categoryId: '',
-    vendorId: '',
-    description: '',
-    amount: '',
-    taxAmount: '',
-    currency: 'PKR',
-    expenseDate: new Date().toISOString().split('T')[0],
-    invoiceNumber: '',
-    receipts: [],
-  });
+  const [formData, setFormData] = useState<ExpenseFormData>({ ...initialFormData });
+
+  // Track if form has been modified for unsaved changes warning
+  const isDirty = useMemo(() => {
+    return (
+      formData.categoryId !== '' ||
+      formData.description !== '' ||
+      formData.amount !== '' ||
+      formData.receipts.length > 0 ||
+      formData.invoiceNumber !== '' ||
+      formData.taxAmount !== ''
+    );
+  }, [formData]);
+
+  useUnsavedChanges(isDirty);
+
+  const validateField = (field: keyof FieldErrors, value: string) => {
+    const labels: Record<keyof FieldErrors, string> = {
+      categoryId: 'Category',
+      description: 'Description',
+      amount: 'Amount',
+    };
+    if (!value.trim()) {
+      setFieldErrors((prev) => ({ ...prev, [field]: `${labels[field]} is required` }));
+    } else {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const handleNextStep = () => {
+    // Validate required fields before proceeding
+    const errors: FieldErrors = {};
+    if (!formData.categoryId) errors.categoryId = 'Category is required';
+    if (!formData.description.trim()) errors.description = 'Description is required';
+    if (!formData.amount) errors.amount = 'Amount is required';
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // Focus the first error field
+      const firstErrorField = Object.keys(errors)[0];
+      const fieldMap: Record<string, string> = {
+        categoryId: '[data-field="categoryId"]',
+        description: '[data-field="description"]',
+        amount: '[data-field="amount"]',
+      };
+      const el = document.querySelector<HTMLElement>(fieldMap[firstErrorField]);
+      el?.focus();
+      return;
+    }
+
+    setStep(2);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,12 +252,9 @@ export function ExpenseCreatePage() {
         subtitle="Submit a new expense for reimbursement"
         breadcrumbs={[{ label: 'Expenses', href: '/expenses' }, { label: 'New Expense' }]}
         actions={
-          <button
-            onClick={() => navigate('/expenses')}
-            className="px-4 py-2 text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
+          <Button variant="secondary" onClick={() => navigate('/expenses')}>
             Cancel
-          </button>
+          </Button>
         }
       />
 
@@ -204,15 +263,19 @@ export function ExpenseCreatePage() {
         {['Details', 'Receipts', 'Review'].map((label, index) => (
           <div key={label} className="flex items-center">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                 step > index + 1
                   ? 'bg-green-600 text-white'
                   : step === index + 1
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-gray-200 text-gray-600'
               }`}
             >
-              {step > index + 1 ? '✓' : index + 1}
+              {step > index + 1 ? (
+                <CheckIcon className="h-5 w-5" aria-hidden="true" />
+              ) : (
+                index + 1
+              )}
             </div>
             <span className="ml-2 text-sm font-medium text-gray-600">{label}</span>
             {index < 2 && <div className="w-12 h-0.5 mx-4 bg-gray-200" />}
@@ -241,11 +304,11 @@ export function ExpenseCreatePage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Expense Type</label>
+              <label className="label">Expense Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as ExpenseType })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="input"
               >
                 <option value="OUT_OF_POCKET">Out of Pocket</option>
                 <option value="PETTY_CASH">Petty Cash</option>
@@ -253,11 +316,25 @@ export function ExpenseCreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="label">
+                Category
+                <span className="text-red-500 ml-0.5">*</span>
+              </label>
               <select
+                data-field="categoryId"
                 value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, categoryId: e.target.value });
+                  if (e.target.value) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.categoryId;
+                      return next;
+                    });
+                  }
+                }}
+                onBlur={() => validateField('categoryId', formData.categoryId)}
+                className={`input ${fieldErrors.categoryId ? 'input-error' : ''}`}
                 required
                 disabled={categoriesLoading}
               >
@@ -270,28 +347,42 @@ export function ExpenseCreatePage() {
                   </option>
                 ))}
               </select>
+              {fieldErrors.categoryId && (
+                <p className="mt-1 text-sm text-red-600">{fieldErrors.categoryId}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
+              <Textarea
+                data-field="description"
+                label="Description"
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={3}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                onChange={(e) => {
+                  setFormData({ ...formData, description: e.target.value });
+                  if (e.target.value.trim()) {
+                    setFieldErrors((prev) => {
+                      const next = { ...prev };
+                      delete next.description;
+                      return next;
+                    });
+                  }
+                }}
+                onBlur={() => validateField('description', formData.description)}
+                error={fieldErrors.description}
+                minRows={3}
                 required
               />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Currency</label>
+                <label className="label">Currency</label>
                 <select
                   value={formData.currency}
                   onChange={(e) =>
                     setFormData({ ...formData, currency: e.target.value as Currency })
                   }
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="input"
                 >
                   <option value="PKR">PKR</option>
                   <option value="USD">USD</option>
@@ -301,24 +392,34 @@ export function ExpenseCreatePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Amount</label>
-                <input
+                <Input
+                  data-field="amount"
+                  label="Amount"
                   type="number"
                   value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  onChange={(e) => {
+                    setFormData({ ...formData, amount: e.target.value });
+                    if (e.target.value) {
+                      setFieldErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.amount;
+                        return next;
+                      });
+                    }
+                  }}
+                  onBlur={() => validateField('amount', formData.amount)}
+                  error={fieldErrors.amount}
                   required
                   min="0"
                   step="0.01"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Tax Amount</label>
-                <input
+                <Input
+                  label="Tax Amount"
                   type="number"
                   value={formData.taxAmount}
                   onChange={(e) => setFormData({ ...formData, taxAmount: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   min="0"
                   step="0.01"
                 />
@@ -332,26 +433,21 @@ export function ExpenseCreatePage() {
                 onChange={(date) => setFormData({ ...formData, expenseDate: date })}
                 required
               />
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Invoice Number</label>
-                <input
-                  type="text"
-                  value={formData.invoiceNumber}
-                  onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+              <Input
+                label="Invoice Number"
+                type="text"
+                value={formData.invoiceNumber}
+                onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
+              />
             </div>
 
             <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                disabled={!formData.categoryId || !formData.description || !formData.amount}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              <Button
+                variant="primary"
+                onClick={handleNextStep}
               >
                 Next: Upload Receipts
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -360,9 +456,7 @@ export function ExpenseCreatePage() {
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload Receipts
-              </label>
+              <label className="label mb-2">Upload Receipts</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* File Upload */}
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -376,9 +470,9 @@ export function ExpenseCreatePage() {
                   />
                   <label
                     htmlFor="receipt-upload"
-                    className="cursor-pointer text-blue-600 hover:text-blue-500"
+                    className="cursor-pointer text-primary-600 hover:text-primary-500"
                   >
-                    <span className="text-3xl block mb-2">📎</span>
+                    <PaperClipIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
                     <span className="font-medium">Choose files</span>
                     <span className="block text-sm text-gray-500 mt-1">
                       JPG, PNG, PDF up to 10MB
@@ -390,10 +484,10 @@ export function ExpenseCreatePage() {
                 <button
                   type="button"
                   onClick={() => setShowCamera(true)}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-400 hover:bg-primary-50 transition-colors"
                 >
                   <CameraIcon className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                  <span className="font-medium text-blue-600">Take a photo</span>
+                  <span className="font-medium text-primary-600">Take a photo</span>
                   <span className="block text-sm text-gray-500 mt-1">
                     Use camera to capture receipt
                   </span>
@@ -443,38 +537,31 @@ export function ExpenseCreatePage() {
                         </span>
                       </div>
                     </div>
-                    <button
-                      type="button"
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50"
                       onClick={() =>
                         setFormData({
                           ...formData,
                           receipts: formData.receipts.filter((_, i) => i !== index),
                         })
                       }
-                      className="text-red-600 hover:text-red-800 text-sm"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>
             )}
 
             <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
+              <Button variant="secondary" onClick={() => setStep(1)}>
                 Back
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep(3)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
+              </Button>
+              <Button variant="primary" onClick={() => setStep(3)}>
                 Next: Review
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -534,30 +621,28 @@ export function ExpenseCreatePage() {
             )}
 
             <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-              >
+              <Button variant="secondary" onClick={() => setStep(2)}>
                 Back
-              </button>
+              </Button>
               <div className="space-x-4">
-                <button
+                <Button
+                  variant="secondary"
                   type="submit"
+                  loading={isCreating}
                   disabled={loading}
                   onClick={handleSaveAsDraft}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
                 >
-                  {isCreating ? 'Saving...' : 'Save as Draft'}
-                </button>
-                <button
+                  Save as Draft
+                </Button>
+                <Button
+                  variant="primary"
                   type="submit"
+                  loading={isSubmitting}
                   disabled={loading || formData.receipts.length === 0}
                   onClick={handleSubmitForApproval}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit for Approval'}
-                </button>
+                  Submit for Approval
+                </Button>
               </div>
             </div>
           </div>

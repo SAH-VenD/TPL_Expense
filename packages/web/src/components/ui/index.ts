@@ -1,4 +1,5 @@
 // Form Components
+export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './Button';
 export { Input, type InputProps } from './Input';
 export { Textarea, type TextareaProps } from './Textarea';
 export { Checkbox, type CheckboxProps } from './Checkbox';
@@ -16,7 +17,13 @@ export {
   type BadgeSize,
 } from './Badge';
 export { Modal, ModalBody, ModalFooter, type ModalProps, type ModalSize } from './Modal';
-export { DataTable, type DataTableProps, type Column } from './DataTable';
+export {
+  DataTable,
+  type DataTableProps,
+  type Column,
+  type SortConfig,
+  type SortDirection,
+} from './DataTable';
 export {
   Card,
   CardHeader,

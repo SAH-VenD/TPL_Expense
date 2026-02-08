@@ -18,6 +18,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label htmlFor={inputId} className="label">
             {label}
+            {props.required && <span className="text-red-500 ml-0.5">*</span>}
           </label>
         )}
         <div className="relative">

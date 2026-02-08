@@ -20,6 +20,7 @@ export interface SelectProps {
   helperText?: string;
   className?: string;
   id?: string;
+  required?: boolean;
 }
 
 export const Select: React.FC<SelectProps> = ({
@@ -33,6 +34,7 @@ export const Select: React.FC<SelectProps> = ({
   helperText,
   className,
   id,
+  required,
 }) => {
   const selectId = id || label?.toLowerCase().replace(/\s+/g, '-');
   const selectedOption = options.find((opt) => opt.value === value);
@@ -42,6 +44,7 @@ export const Select: React.FC<SelectProps> = ({
       {label && (
         <label htmlFor={selectId} className="label">
           {label}
+          {required && <span className="text-red-500 ml-0.5">*</span>}
         </label>
       )}
       <Listbox value={value || ''} onChange={onChange} disabled={disabled}>

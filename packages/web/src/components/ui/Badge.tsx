@@ -76,6 +76,11 @@ export const getStatusVariant = (status: string): BadgeVariant => {
     PAID: 'info',
     CLARIFICATION_REQUESTED: 'warning',
     RESUBMITTED: 'warning',
+    // Pre-approval / voucher statuses
+    PENDING: 'warning',
+    EXPIRED: 'default',
+    USED: 'info',
+    CANCELLED: 'default',
     // User statuses
     ACTIVE: 'success',
     INACTIVE: 'default',
@@ -83,7 +88,9 @@ export const getStatusVariant = (status: string): BadgeVariant => {
     // Role types
     EMPLOYEE: 'info',
     APPROVER: 'primary',
+    SUPER_APPROVER: 'primary',
     FINANCE: 'primary',
+    CEO: 'danger',
     ADMIN: 'danger',
   };
   return statusMap[status] || 'default';

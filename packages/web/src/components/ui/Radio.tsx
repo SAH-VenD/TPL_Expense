@@ -69,26 +69,28 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
 
     return (
       <div className="flex items-center">
-        <input
-          ref={ref}
-          id={radioId}
-          type="radio"
-          name={name}
-          value={value}
-          checked={checked}
-          disabled={disabled}
-          onChange={handleChange}
-          className={clsx(
-            'h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
-            className,
-          )}
-          {...props}
-        />
+        <div className="flex items-center min-h-[44px] min-w-[44px] justify-center">
+          <input
+            ref={ref}
+            id={radioId}
+            type="radio"
+            name={name}
+            value={value}
+            checked={checked}
+            disabled={disabled}
+            onChange={handleChange}
+            className={clsx(
+              'h-5 w-5 border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
+              className,
+            )}
+            {...props}
+          />
+        </div>
         {label && (
           <label
             htmlFor={radioId}
             className={clsx(
-              'ml-2 text-sm',
+              'ml-1 text-sm min-h-[44px] flex items-center',
               disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer',
             )}
           >

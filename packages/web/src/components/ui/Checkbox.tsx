@@ -21,13 +21,13 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
     return (
       <div className="flex items-start">
-        <div className="flex items-center h-5">
+        <div className="flex items-center min-h-[44px] min-w-[44px] justify-center">
           <input
             ref={checkboxRef}
             id={checkboxId}
             type="checkbox"
             className={clsx(
-              'h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
+              'h-5 w-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed',
               error && 'border-red-500',
               className,
             )}
@@ -39,7 +39,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           <label
             htmlFor={checkboxId}
             className={clsx(
-              'ml-2 text-sm',
+              'ml-1 text-sm min-h-[44px] flex items-center',
               props.disabled ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 cursor-pointer',
             )}
           >

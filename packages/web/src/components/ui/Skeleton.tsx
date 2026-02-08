@@ -57,7 +57,7 @@ export const SkeletonAvatar: React.FC<{ size?: number; className?: string }> = (
 }) => <Skeleton variant="circular" width={size} height={size} className={className} />;
 
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={clsx('card p-6 space-y-4', className)}>
+  <div className={clsx('card p-6 space-y-4', className)} aria-busy="true">
     <div className="flex items-center space-x-4">
       <SkeletonAvatar />
       <div className="flex-1 space-y-2">
@@ -74,7 +74,7 @@ export const SkeletonTable: React.FC<{ rows?: number; columns?: number; classNam
   columns = 4,
   className,
 }) => (
-  <div className={clsx('card overflow-hidden', className)}>
+  <div className={clsx('card overflow-hidden', className)} aria-busy="true">
     <div className="animate-pulse">
       <div className="h-12 bg-gray-100 flex items-center px-6 space-x-6">
         {[...Array(columns)].map((_, i) => (

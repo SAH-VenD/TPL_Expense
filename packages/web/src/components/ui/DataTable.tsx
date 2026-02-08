@@ -1,5 +1,13 @@
 import React from 'react';
 import clsx from 'clsx';
+import { ChevronUpIcon, ChevronDownIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
+
+export type SortDirection = 'asc' | 'desc';
+
+export interface SortConfig {
+  key: string;
+  direction: SortDirection;
+}
 
 export interface Column<T> {
   key: string;
@@ -8,6 +16,7 @@ export interface Column<T> {
   className?: string;
   headerClassName?: string;
   align?: 'left' | 'center' | 'right';
+  sortable?: boolean;
 }
 
 export interface DataTableProps<T> {
@@ -19,6 +28,8 @@ export interface DataTableProps<T> {
   loading?: boolean;
   className?: string;
   stickyHeader?: boolean;
+  sortConfig?: SortConfig;
+  onSort?: (key: string, direction: SortDirection) => void;
 }
 
 export function DataTable<T>({
@@ -30,6 +41,8 @@ export function DataTable<T>({
   loading,
   className,
   stickyHeader,
+  sortConfig,
+  onSort,
 }: DataTableProps<T>) {
   const alignmentClasses = {
     left: 'text-left',
@@ -37,9 +50,17 @@ export function DataTable<T>({
     right: 'text-right',
   };
 
+  const handleSort = (column: Column<T>) => {
+    if (!column.sortable || !onSort) return;
+    const key = column.key;
+    const direction: SortDirection =
+      sortConfig?.key === key && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    onSort(key, direction);
+  };
+
   if (loading) {
     return (
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden" aria-busy="true">
         <div className="animate-pulse">
           <div className="h-12 bg-gray-100" />
           {[...Array(5)].map((_, i) => (
@@ -54,7 +75,7 @@ export function DataTable<T>({
     <div className={clsx('card overflow-hidden', className)}>
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className={clsx('bg-gray-50', stickyHeader && 'sticky top-0')}>
+          <thead className={clsx('bg-gray-50', stickyHeader && 'sticky top-0 z-10')}>
             <tr>
               {columns.map((column) => (
                 <th
@@ -62,10 +83,34 @@ export function DataTable<T>({
                   className={clsx(
                     'px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider',
                     alignmentClasses[column.align || 'left'],
+                    column.sortable && onSort && 'cursor-pointer select-none hover:text-gray-700',
                     column.headerClassName,
                   )}
+                  onClick={column.sortable ? () => handleSort(column) : undefined}
+                  aria-sort={
+                    sortConfig?.key === column.key
+                      ? sortConfig.direction === 'asc'
+                        ? 'ascending'
+                        : 'descending'
+                      : undefined
+                  }
                 >
-                  {column.header}
+                  <span className="inline-flex items-center gap-1">
+                    {column.header}
+                    {column.sortable && onSort && (
+                      <span className="inline-flex" aria-hidden="true">
+                        {sortConfig?.key === column.key ? (
+                          sortConfig.direction === 'asc' ? (
+                            <ChevronUpIcon className="h-4 w-4" />
+                          ) : (
+                            <ChevronDownIcon className="h-4 w-4" />
+                          )
+                        ) : (
+                          <ChevronUpDownIcon className="h-4 w-4 text-gray-400" />
+                        )}
+                      </span>
+                    )}
+                  </span>
                 </th>
               ))}
             </tr>

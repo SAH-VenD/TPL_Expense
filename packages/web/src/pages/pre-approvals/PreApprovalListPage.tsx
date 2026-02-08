@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
 import {
@@ -9,7 +9,19 @@ import {
 } from '@/features/pre-approvals/services/pre-approvals.service';
 import type { PreApprovalStatus } from '@/features/pre-approvals/services/pre-approvals.service';
 import { useRolePermissions } from '@/hooks';
-import { PageHeader, Badge, getStatusVariant, Spinner, showToast, Modal, ModalBody, ModalFooter } from '@/components/ui';
+import {
+  PageHeader,
+  Badge,
+  getStatusVariant,
+  Spinner,
+  showToast,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  Button,
+  EmptyState,
+  Textarea,
+} from '@/components/ui';
 
 const statusOptions: { value: PreApprovalStatus | ''; label: string }[] = [
   { value: '', label: 'All Statuses' },
@@ -36,7 +48,8 @@ export function PreApprovalListPage() {
   const [approvePreApproval] = useApprovePreApprovalMutation();
   const [rejectPreApproval] = useRejectPreApprovalMutation();
 
-  const handleApprove = async (id: string) => {
+  const handleApprove = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
       await approvePreApproval({ id }).unwrap();
       showToast.success('Pre-approval approved');
@@ -57,6 +70,10 @@ export function PreApprovalListPage() {
     }
   };
 
+  const handleRowClick = (id: string) => {
+    navigate(`/pre-approvals/${id}`);
+  };
+
   const formatCurrency = (amount: number, currency = 'PKR') =>
     new Intl.NumberFormat('en-PK', {
       style: 'currency',
@@ -71,13 +88,13 @@ export function PreApprovalListPage() {
         subtitle="Request and manage pre-approvals for expenses"
         breadcrumbs={[{ label: 'Pre-Approvals' }]}
         actions={
-          <button
+          <Button
+            variant="primary"
             onClick={() => navigate('/pre-approvals/request')}
-            className="btn btn-primary flex items-center gap-2"
+            leftIcon={<PlusIcon className="h-5 w-5" />}
           >
-            <PlusIcon className="h-5 w-5" />
             Request Pre-Approval
-          </button>
+          </Button>
         }
       />
 
@@ -91,7 +108,16 @@ export function PreApprovalListPage() {
             {pendingApprovals.map((pa) => (
               <div
                 key={pa.id}
-                className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-100"
+                role="button"
+                tabIndex={0}
+                onClick={() => handleRowClick(pa.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(pa.id);
+                  }
+                }}
+                className="flex items-center justify-between bg-white rounded-lg p-3 border border-amber-100 cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <div>
                   <p className="text-sm font-medium text-gray-900">
@@ -102,18 +128,24 @@ export function PreApprovalListPage() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleApprove(pa.id)}
-                    className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={(e) => handleApprove(pa.id, e)}
+                    className="bg-green-600 hover:bg-green-700 focus:ring-green-500"
                   >
                     Approve
-                  </button>
-                  <button
-                    onClick={() => setRejectModal({ id: pa.id })}
-                    className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRejectModal({ id: pa.id });
+                    }}
                   >
                     Reject
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
@@ -126,7 +158,7 @@ export function PreApprovalListPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as PreApprovalStatus | '')}
-          className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="input w-auto"
         >
           {statusOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -142,46 +174,53 @@ export function PreApprovalListPage() {
           <Spinner size="lg" />
         </div>
       ) : !preApprovals || preApprovals.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow">
-          <p className="text-gray-500">No pre-approvals found.</p>
-          <button
-            onClick={() => navigate('/pre-approvals/request')}
-            className="mt-3 text-blue-600 hover:text-blue-700 font-medium text-sm"
-          >
-            Request your first pre-approval
-          </button>
+        <div className="bg-white rounded-lg shadow">
+          <EmptyState
+            title="No pre-approvals found"
+            description="Get started by requesting your first pre-approval."
+            action={
+              <Button
+                variant="primary"
+                onClick={() => navigate('/pre-approvals/request')}
+                leftIcon={<PlusIcon className="h-5 w-5" />}
+              >
+                Request Pre-Approval
+              </Button>
+            }
+          />
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Number
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Category
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Purpose
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Amount
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Expires
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {preApprovals.map((pa) => (
-                <tr key={pa.id} className="hover:bg-gray-50">
+                <tr
+                  key={pa.id}
+                  onClick={() => handleRowClick(pa.id)}
+                  className="hover:bg-gray-50 cursor-pointer"
+                >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
                     {pa.preApprovalNumber}
                   </td>
@@ -198,14 +237,6 @@ export function PreApprovalListPage() {
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {new Date(pa.expiresAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => navigate(`/pre-approvals/${pa.id}`)}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      View
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -217,34 +248,22 @@ export function PreApprovalListPage() {
       {rejectModal && (
         <Modal isOpen onClose={() => setRejectModal(null)} title="Reject Pre-Approval">
           <ModalBody>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Reason for rejection
-              </label>
-              <textarea
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                rows={3}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                placeholder="Please provide a reason..."
-                required
-              />
-            </div>
+            <Textarea
+              label="Reason for rejection"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Please provide a reason..."
+              required
+              minRows={3}
+            />
           </ModalBody>
           <ModalFooter>
-            <button
-              onClick={() => setRejectModal(null)}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-            >
+            <Button variant="secondary" onClick={() => setRejectModal(null)}>
               Cancel
-            </button>
-            <button
-              onClick={handleReject}
-              disabled={!rejectReason.trim()}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-            >
+            </Button>
+            <Button variant="danger" onClick={handleReject} disabled={!rejectReason.trim()}>
               Reject
-            </button>
+            </Button>
           </ModalFooter>
         </Modal>
       )}
