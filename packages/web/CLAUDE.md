@@ -78,16 +78,16 @@ export function FeaturePage() {
 
 ## Implementation Status
 
-### Implemented Pages (28 total)
+### Implemented Pages (29 total)
 | Area | Pages | Status |
 |------|-------|--------|
-| Auth | LoginPage, RegisterPage, ForgotPasswordPage | Complete |
+| Auth | LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage | Complete |
 | Dashboard | DashboardPage | Complete (role-based widget visibility) |
 | Expenses | ExpenseListPage, ExpenseCreatePage, ExpenseEditPage, ExpenseDetailPage | Complete (+ OCR camera capture) |
 | Approvals | ApprovalQueuePage | Complete (+ emergency approvals) |
 | Budgets | BudgetListPage, BudgetCreatePage, BudgetDetailPage | Complete (+ tests) |
 | Vouchers | VoucherListPage, VoucherDetailPage, VoucherRequestPage | Complete |
-| Reports | ReportsPage | Complete (6 report types + export) |
+| Reports | ReportsPage | Complete (6 report types + XLSX/CSV/PDF export) |
 | Admin | UsersPage, CategoriesPage, SettingsPage, AuditLogsPage | Complete (connected to APIs) |
 | Pre-Approvals | PreApprovalListPage, PreApprovalRequestPage, PreApprovalDetailPage | Complete |
 | Notifications | NotificationListPage | Complete |

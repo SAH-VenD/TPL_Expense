@@ -75,7 +75,7 @@ See `.env.example` for required variables. Key ones:
 ## Implemented Modules
 | Module | Status | Tests | Notes |
 |--------|--------|-------|-------|
-| auth | Complete | Unit | JWT login/register/refresh/change-password |
+| auth | Complete | Unit | JWT login/register/refresh/change-password/reset |
 | users | Complete | Unit | CRUD + role-based access |
 | categories | Complete | Unit | Hierarchical CRUD (tree) |
 | departments | Complete | Unit | Hierarchical CRUD (tree) |
@@ -85,7 +85,7 @@ See `.env.example` for required variables. Key ones:
 | approvals | Complete | 35 unit, 31 E2E | Multi-tier workflow, delegation, emergency approvals |
 | vouchers | Complete | 114 unit, 24 E2E | Petty cash lifecycle |
 | budgets | Complete | 85 unit | Utilization, enforcement |
-| reports | Complete | 52 unit, 70+ E2E | Analytics, dashboards, exports |
+| reports | Complete | 52 unit, 70+ E2E | Analytics, dashboards, XLSX/CSV/PDF exports |
 | pre-approvals | Complete | - | Pre-approval workflow with travel details |
 
 ## RBAC Role Hierarchy
