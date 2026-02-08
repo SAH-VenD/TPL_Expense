@@ -376,8 +376,8 @@ export class ApprovalsService {
             to: expenseWithSubmitter.submitter.email,
             subject: 'Clarification Requested for Your Expense',
             html: `
-            <p>Hello ${expenseWithSubmitter.submitter.firstName},</p>
-            <p>A clarification has been requested for your expense "${expenseWithSubmitter.description}" (${expenseWithSubmitter.amount} ${expenseWithSubmitter.currency}).</p>
+            <p>Hello ${this.escapeHtml(expenseWithSubmitter.submitter.firstName)},</p>
+            <p>A clarification has been requested for your expense "${this.escapeHtml(expenseWithSubmitter.description || '')}" (${expenseWithSubmitter.amount} ${expenseWithSubmitter.currency}).</p>
             <p><strong>Question:</strong> ${this.escapeHtml(dto.question)}</p>
             <p>Please review and respond at your earliest convenience.</p>
           `,

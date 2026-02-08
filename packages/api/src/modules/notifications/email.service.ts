@@ -59,11 +59,11 @@ export class EmailService {
       subject: `[Action Required] New Expense Submitted - ${expense.expenseNumber}`,
       html: `
         <h2>New Expense Requires Your Approval</h2>
-        <p><strong>Submitted by:</strong> ${expense.submitter.firstName} ${expense.submitter.lastName}</p>
+        <p><strong>Submitted by:</strong> ${this.escapeHtml(expense.submitter.firstName)} ${this.escapeHtml(expense.submitter.lastName)}</p>
         <p><strong>Expense Number:</strong> ${expense.expenseNumber}</p>
         <p><strong>Amount:</strong> ${expense.currency} ${expense.totalAmount}</p>
-        <p><strong>Category:</strong> ${expense.category?.name || 'N/A'}</p>
-        <p><strong>Description:</strong> ${expense.description}</p>
+        <p><strong>Category:</strong> ${this.escapeHtml(expense.category?.name || 'N/A')}</p>
+        <p><strong>Description:</strong> ${this.escapeHtml(expense.description)}</p>
         <br>
         <p>Please login to the Expense Management System to review and approve this expense.</p>
         <p><a href="${this.getAppUrl()}/approvals">View Pending Approvals</a></p>
@@ -95,7 +95,7 @@ export class EmailService {
         <h2>Your Expense Has Been Rejected</h2>
         <p><strong>Expense Number:</strong> ${expense.expenseNumber}</p>
         <p><strong>Amount:</strong> ${expense.currency} ${expense.totalAmount}</p>
-        <p><strong>Reason:</strong> ${reason}</p>
+        <p><strong>Reason:</strong> ${this.escapeHtml(reason)}</p>
         <br>
         <p>Please review the feedback and make necessary corrections before resubmitting.</p>
         <p><a href="${this.getAppUrl()}/expenses/${expense.id}">View Expense Details</a></p>
@@ -111,7 +111,7 @@ export class EmailService {
       subject: 'Password Reset Request',
       html: `
         <h2>Password Reset Request</h2>
-        <p>Hello ${user.firstName},</p>
+        <p>Hello ${this.escapeHtml(user.firstName)},</p>
         <p>You requested to reset your password. Click the link below to set a new password:</p>
         <p><a href="${resetUrl}">Reset Password</a></p>
         <p>This link will expire in 1 hour.</p>
