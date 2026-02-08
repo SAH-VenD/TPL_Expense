@@ -25,6 +25,8 @@ describe('VouchersService', () => {
       findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      count: jest.fn(),
+      groupBy: jest.fn(),
     },
     expense: {
       findUnique: jest.fn(),
@@ -76,6 +78,20 @@ describe('VouchersService', () => {
     id: 'admin-id',
     email: 'admin@tekcellent.com',
     role: RoleType.ADMIN,
+  };
+
+  const mockSuperApprover: User = {
+    ...mockEmployee,
+    id: 'super-approver-id',
+    email: 'superapprover@tekcellent.com',
+    role: RoleType.SUPER_APPROVER,
+  };
+
+  const mockCeo: User = {
+    ...mockEmployee,
+    id: 'ceo-id',
+    email: 'ceo@tekcellent.com',
+    role: RoleType.CEO,
   };
 
   const mockVoucher: Voucher = {
@@ -275,10 +291,12 @@ describe('VouchersService', () => {
   describe('findAll', () => {
     it('should return all vouchers for admin/finance', async () => {
       mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+      mockPrismaService.voucher.count.mockResolvedValue(1);
+      mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
       const result = await service.findAll(mockFinance);
 
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
       expect(mockPrismaService.voucher.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {}, // No requester filter for admin/finance
@@ -288,10 +306,12 @@ describe('VouchersService', () => {
 
     it('should return only user vouchers for employee', async () => {
       mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+      mockPrismaService.voucher.count.mockResolvedValue(1);
+      mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
       const result = await service.findAll(mockEmployee);
 
-      expect(result).toHaveLength(1);
+      expect(result.data).toHaveLength(1);
       expect(mockPrismaService.voucher.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { requesterId: mockEmployee.id },
@@ -301,6 +321,8 @@ describe('VouchersService', () => {
 
     it('should filter by status when provided', async () => {
       mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+      mockPrismaService.voucher.count.mockResolvedValue(1);
+      mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
       await service.findAll(mockEmployee, VoucherStatus.REQUESTED);
 
@@ -1508,6 +1530,8 @@ describe('VouchersService', () => {
     describe('findAll - role-based filtering', () => {
       it('should filter by requesterId for EMPLOYEE', async () => {
         mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
         await service.findAll(mockEmployee);
 
@@ -1522,6 +1546,8 @@ describe('VouchersService', () => {
 
       it('should not filter by requesterId for FINANCE', async () => {
         mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
         await service.findAll(mockFinance);
 
@@ -1534,6 +1560,8 @@ describe('VouchersService', () => {
 
       it('should not filter by requesterId for ADMIN', async () => {
         mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
         await service.findAll(mockAdmin);
 
@@ -1544,8 +1572,38 @@ describe('VouchersService', () => {
         );
       });
 
+      it('should not filter by requesterId for SUPER_APPROVER', async () => {
+        mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
+
+        await service.findAll(mockSuperApprover);
+
+        expect(mockPrismaService.voucher.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {},
+          }),
+        );
+      });
+
+      it('should not filter by requesterId for CEO', async () => {
+        mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
+
+        await service.findAll(mockCeo);
+
+        expect(mockPrismaService.voucher.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {},
+          }),
+        );
+      });
+
       it('should filter by requesterId for APPROVER', async () => {
         mockPrismaService.voucher.findMany.mockResolvedValue([mockVoucher]);
+        mockPrismaService.voucher.count.mockResolvedValue(1);
+        mockPrismaService.voucher.groupBy.mockResolvedValue([]);
 
         await service.findAll(mockApprover);
 

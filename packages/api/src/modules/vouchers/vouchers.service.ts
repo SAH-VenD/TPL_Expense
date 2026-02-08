@@ -13,6 +13,7 @@ import {
   LinkExpenseDto,
 } from './dto/voucher-actions.dto';
 import { VoucherStatus, RoleType, User, ExpenseStatus, ExpenseType } from '@prisma/client';
+import { ORG_WIDE_VISIBILITY_ROLES } from '../../common/constants/roles';
 
 @Injectable()
 export class VouchersService {
@@ -73,7 +74,7 @@ export class VouchersService {
   // ==================== QUERY VOUCHERS ====================
 
   async findAll(user: User, status?: VoucherStatus, page: number = 1, pageSize: number = 10) {
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
+    const isAdmin = ORG_WIDE_VISIBILITY_ROLES.includes(user.role);
 
     // Base where clause for user access (without status filter)
     const baseWhere = isAdmin ? {} : { requesterId: user.id };
@@ -154,7 +155,7 @@ export class VouchersService {
       throw new NotFoundException(`Voucher with ID ${id} not found`);
     }
 
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
+    const isAdmin = ORG_WIDE_VISIBILITY_ROLES.includes(user.role);
 
     if (!isAdmin && voucher.requesterId !== user.id) {
       throw new ForbiddenException('You do not have access to this voucher');
@@ -402,7 +403,7 @@ export class VouchersService {
     }
 
     // Rule 1: Only owner can settle (or finance/admin)
-    const isAdmin = user.role === RoleType.ADMIN || user.role === RoleType.FINANCE;
+    const isAdmin = ORG_WIDE_VISIBILITY_ROLES.includes(user.role);
     if (voucher.requesterId !== user.id && !isAdmin) {
       throw new ForbiddenException('Only the requester can settle this voucher');
     }
