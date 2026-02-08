@@ -177,6 +177,7 @@ model User {
   @@index([managerId])
   @@index([status])
   @@index([role])
+  @@index([resetToken])
 }
 
 model RefreshToken {

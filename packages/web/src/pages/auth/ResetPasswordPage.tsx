@@ -108,10 +108,14 @@ export function ResetPasswordPage() {
             type="password"
             autoComplete="new-password"
             required
+            minLength={8}
             className="input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <p className="mt-1 text-xs text-gray-500">
+            Min 8 characters with uppercase, lowercase, number, and special character
+          </p>
         </div>
 
         <div>

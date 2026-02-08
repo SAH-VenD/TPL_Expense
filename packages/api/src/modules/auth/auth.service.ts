@@ -200,8 +200,9 @@ export class AuthService {
     // Hash the token with SHA256 before storing in the database
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    // Set expiry to 1 hour from now
-    const resetExpiry = new Date(Date.now() + 60 * 60 * 1000);
+    // Set expiry using configurable duration (default 1 hour)
+    const expiryHours = this.configService.get<number>('PASSWORD_RESET_EXPIRATION_HOURS', 1);
+    const resetExpiry = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
 
     // Store hashed token and expiry in user record
     await this.prisma.user.update({
@@ -250,7 +251,13 @@ export class AuthService {
 
     // Hash the new password
     const newHash = await bcrypt.hash(newPassword, this.BCRYPT_ROUNDS);
-    const updatedHistory = [...passwordHistory, newHash];
+    const updatedHistory = [...passwordHistory, newHash].slice(-5);
+
+    // Invalidate all existing sessions (refresh tokens) for security
+    await this.prisma.refreshToken.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
 
     // Update user: set new password, clear reset token fields, update history
     await this.prisma.user.update({
@@ -307,7 +314,7 @@ export class AuthService {
 
     // Hash new password and update
     const newHash = await bcrypt.hash(newPassword, this.BCRYPT_ROUNDS);
-    const updatedHistory = [...passwordHistory, newHash];
+    const updatedHistory = [...passwordHistory, newHash].slice(-5);
 
     await this.prisma.user.update({
       where: { id: userId },

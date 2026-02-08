@@ -349,7 +349,7 @@ export class ExpensesService {
     try {
       const fullExpense = await this.prisma.expense.findUnique({
         where: { id },
-        include: { submitter: { include: { manager: true } } },
+        include: { submitter: { include: { manager: true } }, category: true },
       });
       if (fullExpense?.submitter?.manager?.email) {
         this.emailService
@@ -357,7 +357,7 @@ export class ExpensesService {
           .catch((err) => this.logger.error?.('Failed to send submission email', err?.stack));
       }
     } catch (emailErr) {
-      // Don't let email failures affect the submission workflow
+      this.logger.warn('Email notification failed', (emailErr as Error)?.message);
     }
 
     return updatedExpense;
