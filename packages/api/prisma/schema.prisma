@@ -141,6 +141,8 @@ model User {
   mustChangePassword  Boolean     @default(false)
   passwordChangedAt   DateTime?
   passwordHistory     String[]    @default([])
+  resetToken          String?
+  resetTokenExpiry    DateTime?
 
   // Organizational
   departmentId        String?

@@ -8,8 +8,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { EmailService } from '../notifications/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User, UserStatus } from '@prisma/client';
@@ -31,6 +33,7 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -188,39 +191,91 @@ export class AuthService {
 
     // Always return success to prevent email enumeration
     if (!user) {
-      return { message: 'If the email exists, a reset link has been sent.' };
+      return { message: 'If an account exists with that email, a reset link has been sent' };
     }
 
-    // Generate reset token with expiry
-    const resetToken = uuidv4();
-    const resetExpiry = new Date(
-      Date.now() +
-        this.configService.get<number>('PASSWORD_RESET_EXPIRATION_HOURS', 24) * 60 * 60 * 1000,
-    );
+    // Generate a cryptographically secure random token
+    const token = crypto.randomBytes(32).toString('hex');
 
-    // TODO: Store reset token and expiry in database, then send email
-    // For now, we log it with the logger for development
-    this.logger.debug(
-      `Password reset token for ${email}: ${resetToken}, expires: ${resetExpiry.toISOString()}`,
-    );
+    // Hash the token with SHA256 before storing in the database
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-    // TODO: Send email with reset link
+    // Set expiry to 1 hour from now
+    const resetExpiry = new Date(Date.now() + 60 * 60 * 1000);
 
-    return { message: 'If the email exists, a reset link has been sent.' };
+    // Store hashed token and expiry in user record
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: hashedToken,
+        resetTokenExpiry: resetExpiry,
+      },
+    });
+
+    // Send email with the raw (unhashed) token using fire-and-forget pattern
+    this.emailService
+      .sendPasswordResetEmail(user, token)
+      .catch((err) => this.logger.error('Failed to send reset email', err.stack));
+
+    return { message: 'If an account exists with that email, a reset link has been sent' };
   }
 
   async resetPassword(token: string, newPassword: string) {
-    // TODO: Implement token verification from database
+    // Hash the incoming token with SHA256 to compare with stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
+    // Find user where resetToken matches and token has not expired
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetToken: hashedToken,
+        resetTokenExpiry: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired reset token');
+    }
+
+    // Validate new password strength
     this.validatePasswordStrength(newPassword);
 
-    // This is a placeholder - in a real implementation, you'd:
-    // 1. Verify the token from database
-    // 2. Check if token is expired
-    // 3. Update user's password
-    // 4. Invalidate the token
+    // Check password history (prevent reuse of last 3 passwords)
+    const passwordHistory = (user.passwordHistory as string[]) || [];
+    for (const oldHash of passwordHistory.slice(-3)) {
+      const isReused = await bcrypt.compare(newPassword, oldHash);
+      if (isReused) {
+        throw new BadRequestException('Cannot reuse any of your last 3 passwords');
+      }
+    }
 
-    return { message: 'Password reset successful' };
+    // Hash the new password
+    const newHash = await bcrypt.hash(newPassword, this.BCRYPT_ROUNDS);
+    const updatedHistory = [...passwordHistory, newHash];
+
+    // Update user: set new password, clear reset token fields, update history
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newHash,
+        resetToken: null,
+        resetTokenExpiry: null,
+        passwordChangedAt: new Date(),
+        passwordHistory: updatedHistory,
+      },
+    });
+
+    // Create audit log
+    await this.prisma.auditLog.create({
+      data: {
+        action: 'PASSWORD_RESET',
+        entityType: 'User',
+        entityId: user.id,
+        userId: user.id,
+        newValue: { passwordReset: true },
+      },
+    });
+
+    return { message: 'Password has been reset successfully' };
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
