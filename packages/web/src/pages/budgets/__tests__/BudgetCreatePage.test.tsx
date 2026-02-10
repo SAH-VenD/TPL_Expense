@@ -64,12 +64,12 @@ describe('BudgetCreatePage', () => {
     expect(screen.getByRole('heading', { name: /create budget/i })).toBeInTheDocument();
   });
 
-  it('renders back link to /budgets', () => {
+  it('renders breadcrumb link to /budgets', () => {
     renderWithProviders(<BudgetCreatePage />);
 
-    const backLink = screen.getByRole('link', { name: /back to budgets/i });
-    expect(backLink).toBeInTheDocument();
-    expect(backLink).toHaveAttribute('href', '/budgets');
+    const budgetsLink = screen.getByRole('link', { name: /budgets/i });
+    expect(budgetsLink).toBeInTheDocument();
+    expect(budgetsLink).toHaveAttribute('href', '/budgets');
   });
 
   it('renders BudgetForm component with all form sections', () => {
@@ -97,7 +97,8 @@ describe('BudgetCreatePage', () => {
   it('renders cancel button', () => {
     renderWithProviders(<BudgetCreatePage />);
 
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    const cancelButtons = screen.getAllByRole('button', { name: /cancel/i });
+    expect(cancelButtons.length).toBeGreaterThanOrEqual(1);
   });
 
   it('form submission calls createBudget mutation', async () => {
@@ -240,8 +241,9 @@ describe('BudgetCreatePage', () => {
     const user = userEvent.setup();
     renderWithProviders(<BudgetCreatePage />);
 
-    const cancelButton = screen.getByRole('button', { name: /cancel/i });
-    await user.click(cancelButton);
+    // There are two Cancel buttons (PageHeader and BudgetForm), click the first one
+    const cancelButtons = screen.getAllByRole('button', { name: /cancel/i });
+    await user.click(cancelButtons[0]);
 
     expect(mockNavigate).toHaveBeenCalledWith('/budgets');
   });

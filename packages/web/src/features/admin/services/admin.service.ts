@@ -252,7 +252,7 @@ export const adminApi = createApi({
       { page?: number; action?: string; entityType?: string; userId?: string }
     >({
       query: (params) => ({
-        url: '/admin/audit-logs',
+        url: '/audit/logs',
         params,
       }),
       providesTags: ['AuditLog'],

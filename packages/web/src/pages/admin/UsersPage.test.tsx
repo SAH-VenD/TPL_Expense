@@ -170,22 +170,23 @@ describe('UsersPage', () => {
   });
 
   describe('Status Filter', () => {
-    it('should show filter buttons', () => {
+    it('should show status filter dropdown with default "All Users"', () => {
       renderWithProviders(<UsersPage />);
 
-      // Filter buttons show status values with underscores replaced by spaces
-      expect(screen.getByRole('button', { name: 'ALL' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'PENDING APPROVAL' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'ACTIVE' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'INACTIVE' })).toBeInTheDocument();
+      // The status filter is a Select (HeadlessUI Listbox) showing the selected label
+      expect(screen.getByText('All Users')).toBeInTheDocument();
     });
 
-    it('should filter users by status when clicked', async () => {
+    it('should filter users by status when option is selected', async () => {
       const user = userEvent.setup();
       renderWithProviders(<UsersPage />);
 
-      // Click on PENDING_APPROVAL filter
-      await user.click(screen.getByRole('button', { name: 'PENDING APPROVAL' }));
+      // Click the Select dropdown to open options
+      const filterButton = screen.getByText('All Users');
+      await user.click(filterButton);
+
+      // Click on "Pending Approval" option
+      await user.click(screen.getByText('Pending Approval'));
 
       // Only pending user should be visible
       expect(screen.getByText('Pending User')).toBeInTheDocument();
@@ -268,7 +269,9 @@ describe('UsersPage', () => {
       // Cancel
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(screen.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText(/are you sure/i)).not.toBeInTheDocument();
+      });
     });
   });
 
@@ -314,12 +317,15 @@ describe('UsersPage', () => {
       // Check that the modal title and form elements are present
       expect(screen.getByText('Add New User')).toBeInTheDocument();
       expect(screen.getByPlaceholderText('user@tekcellent.com')).toBeInTheDocument();
-      // Check for form elements - there should be text inputs and selects
+      // Check for form elements - there should be text inputs and HeadlessUI Listbox selects
       const form = screen.getByRole('button', { name: /create user/i }).closest('form');
       expect(form).toBeInTheDocument();
-      // Verify we have inputs for the form
+      // Verify we have inputs for the form (First Name, Last Name, Email)
       expect(form?.querySelectorAll('input').length).toBeGreaterThanOrEqual(3);
-      expect(form?.querySelectorAll('select').length).toBe(2); // Role and Department
+      // Role and Department are HeadlessUI Listbox components (not native <select>)
+      // They render as buttons with listbox role
+      const listboxButtons = form?.querySelectorAll('button[id]');
+      expect(listboxButtons?.length).toBeGreaterThanOrEqual(2); // Role and Department
     });
 
     it('should close modal when Cancel is clicked', async () => {
@@ -331,7 +337,9 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(screen.queryByText(/add new user/i)).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText(/add new user/i)).not.toBeInTheDocument();
+      });
     });
 
     it('should validate email domain', async () => {
@@ -340,16 +348,15 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: /add user/i }));
 
-      // Get the form and find the inputs within it
-      const form = screen.getByRole('button', { name: /create user/i }).closest('form');
-      const formInputs = form?.querySelectorAll('input[type="text"], input[type="email"]');
+      // Fill in form fields using the textbox inputs in the modal
+      // inputs[0] is search, modal inputs start after that
+      const allInputs = screen.getAllByRole('textbox');
+      const emailInput = screen.getByPlaceholderText('user@tekcellent.com');
 
-      // formInputs[0] = First Name, formInputs[1] = Last Name, formInputs[2] = Email
-      if (formInputs && formInputs.length >= 3) {
-        await user.type(formInputs[0] as HTMLInputElement, 'John');
-        await user.type(formInputs[1] as HTMLInputElement, 'Doe');
-        await user.type(formInputs[2] as HTMLInputElement, 'john@gmail.com');
-      }
+      // Type into the First Name and Last Name inputs (modal inputs after search)
+      await user.type(allInputs[1], 'John');
+      await user.type(allInputs[2], 'Doe');
+      await user.type(emailInput, 'john@gmail.com');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
 
@@ -455,7 +462,9 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(screen.queryByText('Edit User')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText('Edit User')).not.toBeInTheDocument();
+      });
     });
 
     it('should call updateUser mutation on valid submit', async () => {
@@ -559,7 +568,9 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: /cancel/i }));
 
-      expect(screen.queryByText('Delete User')).not.toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByText('Delete User')).not.toBeInTheDocument();
+      });
     });
 
     it('should call deleteUser mutation on confirm', async () => {

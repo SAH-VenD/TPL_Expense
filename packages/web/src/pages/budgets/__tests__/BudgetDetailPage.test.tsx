@@ -62,6 +62,19 @@ const mockBudgetWarning = {
   name: 'Warning Budget',
 };
 
+// Mock utilization data
+const mockUtilizationDefault = {
+  allocated: 1000000,
+  committed: 0,
+  spent: 0,
+  available: 1000000,
+  utilizationPercentage: 0,
+  expenseCount: 0,
+  pendingCount: 0,
+  isOverBudget: false,
+  isAtWarningThreshold: false,
+};
+
 // Mock query state
 let mockQueryState = {
   data: mockBudget as typeof mockBudget | undefined,
@@ -70,16 +83,32 @@ let mockQueryState = {
   refetch: vi.fn(),
 };
 
+let mockUtilizationState: {
+  data: typeof mockUtilizationDefault | null;
+  isLoading: boolean;
+} = {
+  data: mockUtilizationDefault,
+  isLoading: false,
+};
+
 // Mock mutation state
 const mockUpdateBudget = vi.fn();
 const mockDeleteBudget = vi.fn();
 const mockUpdateUnwrap = vi.fn();
 const mockDeleteUnwrap = vi.fn();
 
+const mockActivateBudget = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
+const mockCloseBudget = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
+const mockArchiveBudget = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
+
 vi.mock('@/features/budgets/services/budgets.service', () => ({
   useGetBudgetQuery: () => mockQueryState,
+  useGetBudgetUtilizationQuery: () => mockUtilizationState,
   useUpdateBudgetMutation: () => [mockUpdateBudget, { isLoading: false }],
   useDeleteBudgetMutation: () => [mockDeleteBudget, { isLoading: false }],
+  useActivateBudgetMutation: () => [mockActivateBudget, { isLoading: false }],
+  useCloseBudgetMutation: () => [mockCloseBudget, { isLoading: false }],
+  useArchiveBudgetMutation: () => [mockArchiveBudget, { isLoading: false }],
 }));
 
 // Mock the admin service for edit form
@@ -108,6 +137,10 @@ describe('BudgetDetailPage', () => {
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
+    };
+    mockUtilizationState = {
+      data: mockUtilizationDefault,
+      isLoading: false,
     };
     mockUpdateBudget.mockReturnValue({ unwrap: mockUpdateUnwrap });
     mockDeleteBudget.mockReturnValue({ unwrap: mockDeleteUnwrap });
@@ -156,7 +189,7 @@ describe('BudgetDetailPage', () => {
       expect(mockRefetch).toHaveBeenCalled();
     });
 
-    it('shows back link in error state', () => {
+    it('shows breadcrumb link to budgets in error state', () => {
       mockQueryState = {
         data: undefined,
         isLoading: false,
@@ -166,9 +199,9 @@ describe('BudgetDetailPage', () => {
 
       renderWithProviders(<BudgetDetailPage />);
 
-      const backLink = screen.getByRole('link', { name: /back to budgets/i });
-      expect(backLink).toBeInTheDocument();
-      expect(backLink).toHaveAttribute('href', '/budgets');
+      const budgetsLink = screen.getByRole('link', { name: /budgets/i });
+      expect(budgetsLink).toBeInTheDocument();
+      expect(budgetsLink).toHaveAttribute('href', '/budgets');
     });
   });
 
@@ -187,12 +220,12 @@ describe('BudgetDetailPage', () => {
       expect(screen.getAllByText(/quarterly/i).length).toBeGreaterThan(0);
     });
 
-    it('renders back link to /budgets', () => {
+    it('renders breadcrumb link to /budgets', () => {
       renderWithProviders(<BudgetDetailPage />);
 
-      const backLink = screen.getByRole('link', { name: /back to budgets/i });
-      expect(backLink).toBeInTheDocument();
-      expect(backLink).toHaveAttribute('href', '/budgets');
+      const budgetsLink = screen.getByRole('link', { name: /budgets/i });
+      expect(budgetsLink).toBeInTheDocument();
+      expect(budgetsLink).toHaveAttribute('href', '/budgets');
     });
 
     it('renders active status badge', () => {
@@ -231,13 +264,13 @@ describe('BudgetDetailPage', () => {
       expect(screen.getByText('Marketing')).toBeInTheDocument();
     });
 
-    it('renders financial summary with total, used, and remaining amounts', () => {
+    it('renders financial summary with allocated, spent, and available amounts', () => {
       renderWithProviders(<BudgetDetailPage />);
 
       expect(screen.getByText('Financial Summary')).toBeInTheDocument();
-      expect(screen.getByText('Total Budget')).toBeInTheDocument();
-      expect(screen.getByText('Used')).toBeInTheDocument();
-      expect(screen.getByText('Remaining')).toBeInTheDocument();
+      expect(screen.getByText('Allocated')).toBeInTheDocument();
+      expect(screen.getByText('Spent')).toBeInTheDocument();
+      expect(screen.getByText('Available')).toBeInTheDocument();
     });
 
     it('renders warning threshold percentage', () => {
@@ -257,6 +290,19 @@ describe('BudgetDetailPage', () => {
 
   describe('Utilization Progress Bar', () => {
     it('displays utilization progress bar', () => {
+      mockUtilizationState = {
+        data: {
+          ...mockUtilizationDefault,
+          allocated: 1000000,
+          spent: 750000,
+          available: 250000,
+          utilizationPercentage: 75,
+          expenseCount: 5,
+          pendingCount: 1,
+        },
+        isLoading: false,
+      };
+
       renderWithProviders(<BudgetDetailPage />);
 
       expect(screen.getByText('Budget Utilization')).toBeInTheDocument();
@@ -268,6 +314,20 @@ describe('BudgetDetailPage', () => {
       mockQueryState = {
         ...mockQueryState,
         data: mockBudgetWarning,
+      };
+      mockUtilizationState = {
+        data: {
+          ...mockUtilizationDefault,
+          allocated: 1000000,
+          spent: 800000,
+          available: 200000,
+          utilizationPercentage: 80,
+          expenseCount: 8,
+          pendingCount: 0,
+          isAtWarningThreshold: true,
+          isOverBudget: false,
+        },
+        isLoading: false,
       };
 
       renderWithProviders(<BudgetDetailPage />);
@@ -281,6 +341,20 @@ describe('BudgetDetailPage', () => {
         ...mockQueryState,
         data: mockBudgetExceeded,
       };
+      mockUtilizationState = {
+        data: {
+          ...mockUtilizationDefault,
+          allocated: 1000000,
+          spent: 1200000,
+          available: -200000,
+          utilizationPercentage: 120,
+          expenseCount: 10,
+          pendingCount: 0,
+          isOverBudget: true,
+          isAtWarningThreshold: true,
+        },
+        isLoading: false,
+      };
 
       renderWithProviders(<BudgetDetailPage />);
 
@@ -289,7 +363,7 @@ describe('BudgetDetailPage', () => {
     });
 
     it('does not show warning alert when below threshold', () => {
-      // With no utilization data, no warning alerts should appear
+      // Default utilization at 0% - below threshold, no warnings
       mockQueryState = {
         ...mockQueryState,
         data: mockBudget,

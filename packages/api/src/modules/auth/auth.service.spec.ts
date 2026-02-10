@@ -14,6 +14,7 @@ describe('AuthService', () => {
   const mockPrismaService = {
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -438,6 +439,213 @@ describe('AuthService', () => {
       });
 
       await expect(service.refreshTokens('expired-token')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
+  describe('forgotPassword', () => {
+    it('should return success message when user exists and send email', async () => {
+      const mockUser = { id: 'user-1', email: 'test@tekcellent.com', firstName: 'Test' };
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+
+      const result = await service.forgotPassword('test@tekcellent.com');
+
+      expect(result.message).toBe('If an account exists with that email, a reset link has been sent');
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: 'user-1' },
+          data: expect.objectContaining({
+            resetToken: expect.any(String),
+            resetTokenExpiry: expect.any(Date),
+          }),
+        }),
+      );
+      expect(mockEmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+        mockUser,
+        expect.any(String),
+      );
+    });
+
+    it('should return same message when user does not exist (anti-enumeration)', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      const result = await service.forgotPassword('nonexistent@tekcellent.com');
+
+      expect(result.message).toBe('If an account exists with that email, a reset link has been sent');
+      expect(mockPrismaService.user.update).not.toHaveBeenCalled();
+      expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+    });
+
+    it('should store hashed token, not raw token', async () => {
+      const mockUser = { id: 'user-1', email: 'test@tekcellent.com' };
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+
+      await service.forgotPassword('test@tekcellent.com');
+
+      const updateCall = mockPrismaService.user.update.mock.calls[0][0];
+      const storedToken = updateCall.data.resetToken;
+      // SHA256 hash is 64 hex chars; raw token is also 64 hex chars (32 bytes)
+      // The stored token should be a SHA256 hash (64 chars)
+      expect(storedToken).toHaveLength(64);
+
+      // The email should receive a DIFFERENT token (the raw one)
+      const emailToken = mockEmailService.sendPasswordResetEmail.mock.calls[0][1];
+      expect(emailToken).not.toBe(storedToken);
+    });
+  });
+
+  describe('resetPassword', () => {
+    const mockUser = {
+      id: 'user-1',
+      email: 'test@tekcellent.com',
+      passwordHash: '$2b$12$existinghash',
+      passwordHistory: ['$2b$12$oldhash1', '$2b$12$oldhash2'],
+      resetToken: 'hashed-token',
+      resetTokenExpiry: new Date(Date.now() + 3600000),
+    };
+
+    it('should reset password with valid token', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
+      mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 1 });
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+      mockPrismaService.auditLog.create.mockResolvedValue({});
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2b$12$newhash'));
+
+      const result = await service.resetPassword('raw-token', 'NewPass1!@');
+
+      expect(result.message).toBe('Password has been reset successfully');
+      expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            resetToken: null,
+            resetTokenExpiry: null,
+          }),
+        }),
+      );
+    });
+
+    it('should throw BadRequestException for invalid token', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(null);
+
+      await expect(service.resetPassword('invalid-token', 'NewPass1!@')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should invalidate all sessions on password reset', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
+      mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 2 });
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+      mockPrismaService.auditLog.create.mockResolvedValue({});
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2b$12$newhash'));
+
+      await service.resetPassword('raw-token', 'NewPass1!@');
+
+      expect(mockPrismaService.refreshToken.updateMany).toHaveBeenCalledWith({
+        where: { userId: 'user-1', revokedAt: null },
+        data: { revokedAt: expect.any(Date) },
+      });
+    });
+
+    it('should reject weak password', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
+
+      await expect(service.resetPassword('raw-token', 'weak')).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should reject reused password from history', async () => {
+      mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(true));
+
+      await expect(service.resetPassword('raw-token', 'NewPass1!@')).rejects.toThrow(
+        'Cannot reuse any of your last 3 passwords',
+      );
+    });
+
+    it('should trim password history to last 5 entries', async () => {
+      const userWithLongHistory = {
+        ...mockUser,
+        passwordHistory: ['h1', 'h2', 'h3', 'h4', 'h5'],
+      };
+      mockPrismaService.user.findFirst.mockResolvedValue(userWithLongHistory);
+      mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 0 });
+      mockPrismaService.user.update.mockResolvedValue(userWithLongHistory);
+      mockPrismaService.auditLog.create.mockResolvedValue({});
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2b$12$newhash'));
+
+      await service.resetPassword('raw-token', 'NewPass1!@');
+
+      const updateCall = mockPrismaService.user.update.mock.calls[0][0];
+      expect(updateCall.data.passwordHistory.length).toBeLessThanOrEqual(5);
+    });
+  });
+
+  describe('changePassword', () => {
+    const mockUser = {
+      id: 'user-1',
+      email: 'test@tekcellent.com',
+      passwordHash: '$2b$12$currenthash',
+      passwordHistory: ['$2b$12$old1'],
+    };
+
+    it('should change password with correct current password', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      mockPrismaService.user.update.mockResolvedValue(mockUser);
+      mockPrismaService.auditLog.create.mockResolvedValue({});
+      jest.spyOn(bcrypt, 'compare').mockImplementation((pass) => {
+        // First call checks current password (should pass), subsequent calls check history
+        if (pass === 'CurrentPass1!@') return Promise.resolve(true);
+        return Promise.resolve(false);
+      });
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2b$12$newhash'));
+
+      const result = await service.changePassword('user-1', 'CurrentPass1!@', 'NewPass1!@');
+
+      expect(result.message).toBe('Password changed successfully');
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+    });
+
+    it('should reject incorrect current password', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+      jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
+
+      await expect(
+        service.changePassword('user-1', 'WrongPass1!@', 'NewPass1!@'),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should reject non-existent user', async () => {
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.changePassword('nonexistent', 'Current1!@', 'NewPass1!@'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should trim password history to last 5 entries', async () => {
+      const userWithHistory = {
+        ...mockUser,
+        passwordHistory: ['h1', 'h2', 'h3', 'h4', 'h5'],
+      };
+      mockPrismaService.user.findUnique.mockResolvedValue(userWithHistory);
+      mockPrismaService.user.update.mockResolvedValue(userWithHistory);
+      mockPrismaService.auditLog.create.mockResolvedValue({});
+      jest.spyOn(bcrypt, 'compare').mockImplementation((pass) => {
+        if (pass === 'CurrentPass1!@') return Promise.resolve(true);
+        return Promise.resolve(false);
+      });
+      jest.spyOn(bcrypt, 'hash').mockImplementation(() => Promise.resolve('$2b$12$newhash'));
+
+      await service.changePassword('user-1', 'CurrentPass1!@', 'NewPass1!@');
+
+      const updateCall = mockPrismaService.user.update.mock.calls[0][0];
+      expect(updateCall.data.passwordHistory.length).toBeLessThanOrEqual(5);
     });
   });
 

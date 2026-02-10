@@ -124,8 +124,9 @@ export function AuditLogsPage() {
       <div className="bg-white rounded-lg shadow p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
+            <label htmlFor="action-filter" className="block text-sm font-medium text-gray-700 mb-1">Action</label>
             <select
+              id="action-filter"
               value={filters.action}
               onChange={(e) => handleFilterChange('action', e.target.value)}
               className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
@@ -138,8 +139,9 @@ export function AuditLogsPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Entity Type</label>
+            <label htmlFor="entity-type-filter" className="block text-sm font-medium text-gray-700 mb-1">Entity Type</label>
             <select
+              id="entity-type-filter"
               value={filters.entityType}
               onChange={(e) => handleFilterChange('entityType', e.target.value)}
               className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
