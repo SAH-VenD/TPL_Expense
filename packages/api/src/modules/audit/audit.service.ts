@@ -40,7 +40,8 @@ export class AuditService {
     page?: number;
     limit?: number;
   }) {
-    const { page = 1, limit = 50 } = filters;
+    const page = Number(filters.page) || 1;
+    const limit = Number(filters.limit) || 50;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -85,10 +86,12 @@ export class AuditService {
     return {
       data: logs,
       meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
+        pagination: {
+          total,
+          page,
+          pageSize: limit,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     };
   }

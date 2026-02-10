@@ -127,11 +127,11 @@ describe('AuditService', () => {
       const result = await service.getLogs({});
 
       expect(result.data).toHaveLength(1);
-      expect(result.meta).toEqual(
+      expect(result.meta.pagination).toEqual(
         expect.objectContaining({
           total: 1,
           page: 1,
-          limit: 50,
+          pageSize: 50,
           totalPages: 1,
         }),
       );
@@ -301,7 +301,7 @@ describe('AuditService', () => {
 
       const result = await service.getLogs({ limit: 50 });
 
-      expect(result.meta.totalPages).toBe(3);
+      expect(result.meta.pagination.totalPages).toBe(3);
     });
 
     it('should return empty data when no logs exist', async () => {
@@ -311,8 +311,8 @@ describe('AuditService', () => {
       const result = await service.getLogs({});
 
       expect(result.data).toEqual([]);
-      expect(result.meta.total).toBe(0);
-      expect(result.meta.totalPages).toBe(0);
+      expect(result.meta.pagination.total).toBe(0);
+      expect(result.meta.pagination.totalPages).toBe(0);
     });
   });
 
