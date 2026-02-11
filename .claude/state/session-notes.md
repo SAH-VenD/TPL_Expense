@@ -1,5 +1,48 @@
 # Session Notes
 
+## Session: 2026-02-11
+
+### Session Focus
+**API Test Coverage Expansion + Audit Logs Bug Fix**
+
+### Completed This Session
+
+#### API Unit Test Coverage (13 new test files)
+- Created specs for all previously untested modules: auth controller, users controller/service, categories controller/service, departments controller/service, storage service, notifications service, projects service, cost-centers service, vendors service, email service
+- Increased from ~280 tests to **796 tests** (20 suites) — all passing
+- Coverage: 55.4% statements, 76.1% branches (up from ~37%)
+
+#### Audit Logs 500 Error Fix
+- **Root cause:** NestJS `enableImplicitConversion` converts undefined query params to `NaN` for number types; destructuring defaults (`{ limit = 50 }`) only trigger on `undefined`, not `NaN`
+- **Fix 1:** Changed `const { page = 1, limit = 50 } = filters` to `const page = Number(filters.page) || 1` in `audit.service.ts`
+- **Fix 2:** Response format: Backend returned flat `meta: { total, page, limit }` but frontend expected `meta: { pagination: { page, pageSize, total } }` — aligned to standard format
+- **Fix 3:** Frontend URL was `/admin/audit-logs` but backend route is `/audit/logs` (fixed in previous session)
+
+#### Frontend Test Fixes
+- Fixed vitest config to exclude E2E files: `exclude: ['e2e/**', 'node_modules/**']`
+- Created `AuditLogsPage.test.tsx` with 29 tests
+- Added `htmlFor`/`id` accessibility attributes to AuditLogsPage filter labels
+- Total web tests: **110** (4 suites) — all passing
+
+### Test Results
+- API: 796 tests passing (20 suites)
+- Web: 110 tests passing (4 suites)
+- TypeScript clean on both packages
+- Lint clean
+
+### Files Modified
+| Area | Files |
+|------|-------|
+| Audit Fix | audit.service.ts, audit.service.spec.ts |
+| Vitest Config | vitest.config.ts |
+| Frontend | admin.service.ts (URL fix), AuditLogsPage.tsx (accessibility), AuditLogsPage.test.tsx (new) |
+| New Test Files | 13 spec files across api/src/modules/ |
+
+### Branch
+- Committed directly to `main` (`c53edad` for audit fix, `fa88391` for test coverage)
+
+---
+
 ## Session: 2026-02-08 (Afternoon)
 
 ### Session Focus

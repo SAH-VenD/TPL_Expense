@@ -1,8 +1,8 @@
-# TPL Expense - Remaining Features Summary
+# TPL Expense - Project Status Summary
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-11
 
-This document summarizes the feature roadmap and remaining work for the TPL Expense system.
+This document summarizes the project status for the TPL Expense system.
 
 ---
 
@@ -10,15 +10,17 @@ This document summarizes the feature roadmap and remaining work for the TPL Expe
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| Phase 1 | Backend Implementation | Complete |
-| Phase 2 | Frontend Implementation | ~80% Complete |
-| Phase 3 | Advanced Features | Not Started |
+| Phase 1 | Backend Implementation | COMPLETE |
+| Phase 2 | Frontend Implementation | COMPLETE |
+| Phase 3 | Backend Integrations | COMPLETE |
+| RBAC | Role-Based Access Control Overhaul | COMPLETE |
+| QA/Polish | Testing, bug fixes, ESLint | COMPLETE |
 
 ---
 
 ## Phase 1: Backend Implementation (COMPLETE)
 
-All 11 backend modules implemented with comprehensive test coverage.
+All 12 backend modules implemented with comprehensive test coverage.
 
 | # | Feature | Status | Tests | Completed |
 |---|---------|--------|-------|-----------|
@@ -34,13 +36,11 @@ All 11 backend modules implemented with comprehensive test coverage.
 | 10 | Budget Tracking | Complete | 85 unit | 2026-01-30 |
 | 11 | Reports & Analytics | Complete | 52 unit, 70+ E2E | 2026-02-01 |
 
-**Total:** 280+ unit tests, 100+ E2E tests
+**Total:** 796 unit tests (20 suites), 100+ E2E tests
 
 ---
 
-## Phase 2: Frontend Implementation (~80% COMPLETE)
-
-### Implemented (Epics 1-8, 11)
+## Phase 2: Frontend Implementation (COMPLETE)
 
 | Epic | Name | Pages | Services | Status |
 |------|------|-------|----------|--------|
@@ -52,77 +52,45 @@ All 11 backend modules implemented with comprehensive test coverage.
 | 6 | Budget Management | List, Create, Detail | budgetsApi | Complete |
 | 7 | Reports & Analytics | ReportsPage | reportsApi | Complete |
 | 8 | Administration | Users, Categories, Settings, AuditLogs | adminApi | Complete |
+| 9 | OCR & Receipt Processing | CameraCapture, OcrPreview | expensesApi | Complete |
+| 10 | Pre-Approval Workflow | List, Request, Detail | preApprovalsApi | Complete |
 | 11 | Notifications | NotificationListPage | notificationsApi | Complete |
 
-**Additional Pages:**
-- Auth: LoginPage, RegisterPage, ForgotPasswordPage
-- Profile: ProfilePage
+**Additional Pages:** LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage, ProfilePage
 
-**Total:** 25 pages, 8 RTK Query services
-
-### In Progress
-
-| Task | Status | Notes |
-|------|--------|-------|
-| Role-based widget visibility | In Progress | Dashboard widgets per role |
-| E2E test expansion | In Progress | Frontend integration tests |
-| QA testing all pages | In Progress | API connection verification |
-
-### Remaining (Epics 9-10)
-
-| Epic | Name | Status | Priority | Description |
-|------|------|--------|----------|-------------|
-| 9 | OCR & Receipt Processing | Not Started | P3 | Camera capture, OCR extraction, auto-populate forms |
-| 10 | Pre-Approval Workflow | Not Started | P3 | Pre-approval rules, automation flows |
+**Total:** 29 pages, 9 RTK Query services, 110 web unit tests (4 suites)
 
 ---
 
-## Phase 3: Advanced Features (NOT STARTED)
+## Phase 3: Backend Integrations (COMPLETE)
 
-### RBAC Overhaul (P0 - Security/Compliance)
+| Feature | Description | Completed |
+|---------|-------------|-----------|
+| Password Reset | SHA256 token hashing, anti-enumeration, password history | 2026-02-08 |
+| Email Notifications | Fire-and-forget in approvals/expenses | 2026-02-08 |
+| PDF Export | PDFKit with styled tables, landscape A4, auto page-break | 2026-02-08 |
 
-**Status:** Planning
-**Priority:** P0 (blocks other security work)
+---
 
-| Feature | Description |
-|---------|-------------|
-| SUPER_APPROVER Role | Emergency approval capability with audit trail |
-| ADMIN Separation | Remove ADMIN from approval workflows |
-| Department Scoping | APPROVER sees only their department's data |
-| Enhanced Audit | Track all permission-sensitive operations |
+## RBAC Overhaul (COMPLETE)
 
-### Epic 9: OCR Integration
+| Feature | Description | Completed |
+|---------|-------------|-----------|
+| SUPER_APPROVER Role | Cross-department approver, emergency approvals | 2026-02-08 |
+| CEO Role | Highest tier, emergency approvals without justification | 2026-02-08 |
+| ADMIN Separation | Read-only access to approvals (separation of duties) | 2026-02-08 |
+| Role Constants | Consistent APPROVING_ROLES, EMERGENCY_APPROVAL_ROLES, etc. | 2026-02-08 |
 
-**Status:** Not Started
-**Priority:** P3
+---
 
-| Component | Description |
-|-----------|-------------|
-| ScanReceiptButton | Camera + file upload interface |
-| OCRStatusDisplay | Processing visualization |
-| ReceiptPreviewCard | Confidence indicators |
-| Auto-populate | Fill expense form from OCR data |
-| Backend | LocalStack Textract emulation |
+## Test Coverage Summary
 
-### Epic 10: Pre-Approval Workflow
-
-**Status:** Not Started
-**Priority:** P3
-
-| Feature | Description |
-|---------|-------------|
-| Pre-approval Rules | Define criteria for automatic approval |
-| Automation Flows | Recurring expense handling |
-| Approval Shortcuts | Skip tiers for pre-approved items |
-
-### Future Considerations
-
-| Feature | Description |
-|---------|-------------|
-| Mobile App | Native mobile application |
-| Advanced Analytics | AI-powered insights, anomaly detection |
-| Real-time Collaboration | Live updates, notifications |
-| Multi-tenant Support | Organization isolation |
+| Package | Tests | Suites | Tool |
+|---------|-------|--------|------|
+| API Unit | 796 | 20 | Jest |
+| API E2E | 100+ | - | Supertest |
+| Web Unit | 110 | 4 | Vitest + RTL |
+| E2E | 150+ | 11 | Playwright |
 
 ---
 
@@ -133,36 +101,45 @@ Phase 1 (Complete)
     ↓
 Phase 2a (Complete): Epic 1 - UI Components
     ↓
-Phase 2b (Complete): Epics 2, 3, 5, 6, 8, 11 (Parallel)
+Phase 2b (Complete): Epics 2-8, 11 (Parallel)
     ↓
-Phase 2c (Complete): Epic 4 (after Epic 3), Epic 7 (after Epic 2)
+Phase 2c (Complete): Epics 9-10 (OCR, Pre-Approval)
     ↓
-Phase 2d (Remaining): Epics 9, 10
+RBAC Overhaul (Complete)
     ↓
-Phase 3: RBAC Overhaul, OCR, Pre-Approval
+Phase 3 (Complete): Password Reset, Email, PDF
+    ↓
+QA/Polish (Complete): Test coverage, bug fixes
 ```
 
 ---
 
-## Quick Reference
+## What's Working Now
+- Full backend API with all 12 modules (796 unit tests)
+- Frontend pages for all core workflows (29 pages)
+- Authentication and authorization with 6 roles
+- Expense submission and approval with emergency approvals
+- Voucher management with full lifecycle
+- Budget tracking with enforcement
+- Reports and analytics with XLSX/CSV/PDF export
+- OCR receipt scanning with auto-populate
+- Pre-approval workflow with travel details
+- Admin management (Users, Categories, Settings, Audit Logs)
+- Email notifications for approvals and expenses
+- Password reset with security best practices
 
-### What's Working Now
-- Full backend API with all 11 modules
-- Frontend pages for all core workflows
-- Authentication and authorization
-- Expense submission and approval
-- Voucher management
-- Budget tracking
-- Reports and analytics
-- Admin management
+## Future Considerations
+| Feature | Description |
+|---------|-------------|
+| Mobile App | Native mobile application |
+| Advanced Analytics | AI-powered insights, anomaly detection |
+| Real-time Collaboration | Live updates via WebSocket |
+| Multi-tenant Support | Organization isolation |
+| CI/CD Pipeline | GitHub Actions, Docker deployment |
 
-### What's Remaining
-1. **QA/Polish:** Role-based widget visibility, E2E tests
-2. **Epic 9:** OCR receipt scanning
-3. **Epic 10:** Pre-approval automation
-4. **RBAC:** Enhanced role security
+---
 
-### Critical Files
+## Critical Files
 - Project state: `.claude/state/project-state.json`
 - Phase 2 overview: `.claude/tasks/phase2-overview.md`
 - Epic WBS files: `.claude/tasks/epic-*.md`

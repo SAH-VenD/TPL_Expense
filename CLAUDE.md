@@ -11,11 +11,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Frontend: React 18 + TypeScript + Vite + Redux Toolkit + Tailwind CSS
 - Infrastructure: Docker Compose (Postgres, Redis, LocalStack S3/Textract, MailHog)
 
-## Current Status (as of 2026-02-08)
+## Current Status (as of 2026-02-11)
 
 ### Phase 1: Backend Implementation - COMPLETE
 All 12 backend modules implemented with comprehensive test coverage:
-- **Total:** 280+ unit tests, 100+ E2E tests
+- **Total:** 796 unit tests (20 suites), 100+ E2E tests
 - **Modules:** auth, users, categories, departments, storage, expenses, receipts, approvals, vouchers, budgets, reports, pre-approvals
 
 ### Phase 2: Frontend Implementation - COMPLETE
@@ -51,7 +51,13 @@ All 12 backend modules implemented with comprehensive test coverage:
 - Report exports working (XLSX/CSV/PDF)
 - ESLint configured for web package
 - 150+ E2E tests across 11 Playwright spec files
+- 110 web unit tests (4 suites) covering admin pages, budgets
 - Profile page with password change
+
+### Bug Fixes (2026-02-11)
+- **Audit Logs 500 Error:** NestJS `enableImplicitConversion` converted undefined query params to `NaN` for number types; fixed with `Number(x) || default` pattern in `audit.service.ts`
+- **Audit Logs Response Format:** Backend returned flat `meta` but frontend expected `meta.pagination` wrapper; aligned to standard `PaginatedResponse<T>` format
+- **Vitest E2E Collision:** Vitest was picking up Playwright E2E files; added `exclude: ['e2e/**']` to `vitest.config.ts`
 
 ## Repository Structure
 

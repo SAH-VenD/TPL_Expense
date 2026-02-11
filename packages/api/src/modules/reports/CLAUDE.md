@@ -186,5 +186,12 @@ npm run test:e2e -w @tpl-expense/api -- reports.e2e-spec
 - UTF-8 encoding
 
 ### PDF
-- Not yet implemented (placeholder)
-- TODO: Implement with pdfkit library
+- Implemented with PDFKit library (`@types/pdfkit` for TypeScript)
+- Styled tables with alternating row colors, auto page-break
+- Landscape A4 format with consistent margins
+- Column headers auto-generated from data keys
+
+### getSpendByCategory Return Format
+```typescript
+{ categoryId: string, categoryName: string, totalAmount: number, count: number, percentage: number }
+```

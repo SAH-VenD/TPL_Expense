@@ -1,23 +1,24 @@
 {
   "project_name": "tpl-expense",
   "created_at": "2026-01-28T00:00:00Z",
-  "last_updated": "2026-02-06T00:00:00Z",
+  "last_updated": "2026-02-11T00:00:00Z",
 
-  "current_phase": "phase-2",
-  "phase_description": "Frontend QA and completion - Phase 1 backend complete, Phase 2 frontend ~80% complete",
+  "current_phase": "complete",
+  "phase_description": "All phases complete — backend, frontend, integrations, QA/Polish",
 
   "phase_2_epics": {
     "epic-01-ui-components": { "status": "complete", "notes": "Components in use across all pages" },
-    "epic-02-dashboard": { "status": "complete", "notes": "DashboardPage with role-based visibility in progress" },
-    "epic-03-expenses": { "status": "complete", "notes": "4 pages: List, Create, Edit, Detail" },
-    "epic-04-approvals": { "status": "complete", "notes": "ApprovalQueuePage implemented" },
+    "epic-02-dashboard": { "status": "complete", "notes": "DashboardPage with role-based visibility" },
+    "epic-03-expenses": { "status": "complete", "notes": "4 pages: List, Create, Edit, Detail + OCR integration" },
+    "epic-04-approvals": { "status": "complete", "notes": "ApprovalQueuePage with emergency approvals, SUPER_APPROVER, CEO" },
     "epic-05-vouchers": { "status": "complete", "notes": "3 pages: List, Detail, Request" },
     "epic-06-budgets": { "status": "complete", "notes": "3 pages: List, Create, Detail + tests" },
-    "epic-07-reports": { "status": "complete", "notes": "ReportsPage implemented" },
+    "epic-07-reports": { "status": "complete", "notes": "ReportsPage with 6 report types, XLSX/CSV/PDF export" },
     "epic-08-admin": { "status": "complete", "notes": "4 pages: Users, Categories, Settings, AuditLogs" },
-    "epic-09-ocr": { "status": "pending", "notes": "Advanced feature - not started" },
-    "epic-10-preapproval": { "status": "pending", "notes": "Advanced feature - not started" },
-    "epic-11-notifications": { "status": "complete", "notes": "NotificationListPage implemented" }
+    "epic-09-ocr": { "status": "complete", "notes": "CameraCapture, OcrPreview components, auto-populate expense form" },
+    "epic-10-preapproval": { "status": "complete", "notes": "3 pages: List, Request, Detail with travel details" },
+    "epic-11-notifications": { "status": "complete", "notes": "NotificationListPage implemented" },
+    "rbac-overhaul": { "status": "complete", "notes": "6 roles, SUPER_APPROVER, CEO emergency approvals, ADMIN separation" }
   },
 
   "features": {
@@ -73,21 +74,62 @@
       "priority": 7,
       "completed_at": "2026-01-30",
       "dependencies": ["expenses", "approvals"],
-      "notes": "Full petty cash voucher lifecycle with overspend/underspend handling, expense linking, 114 unit tests"
+      "notes": "Full petty cash voucher lifecycle with overspend/underspend handling, expense linking"
     },
     "budgets": {
       "status": "complete",
       "priority": 8,
       "completed_at": "2026-01-30",
       "dependencies": ["expenses", "categories"],
-      "notes": "Comprehensive budget tracking with utilization, enforcement, transfers, status management, 85 unit tests"
+      "notes": "Comprehensive budget tracking with utilization, enforcement, transfers, status management"
     },
     "reports": {
       "status": "complete",
       "priority": 9,
       "completed_at": "2026-02-01",
       "dependencies": ["expenses", "budgets"],
-      "notes": "Comprehensive analytics with 14 endpoints, spend breakdowns, trends, approval metrics, dashboard, exports, 52 unit tests, 70+ E2E tests"
+      "notes": "Comprehensive analytics with 14 endpoints, spend breakdowns, trends, approval metrics, dashboard, exports"
+    },
+    "pre-approvals": {
+      "status": "complete",
+      "priority": 10,
+      "completed_at": "2026-02-08",
+      "dependencies": ["approvals"],
+      "notes": "Pre-approval rules, 3 frontend pages with travel details"
+    },
+    "ocr": {
+      "status": "complete",
+      "priority": 10,
+      "completed_at": "2026-02-08",
+      "dependencies": ["receipts", "expenses"],
+      "notes": "CameraCapture, OcrPreview, auto-populate expense form from OCR data"
+    },
+    "rbac-overhaul": {
+      "status": "complete",
+      "priority": 0,
+      "completed_at": "2026-02-08",
+      "notes": "6 roles, SUPER_APPROVER, CEO emergency approvals without justification, ADMIN read-only approvals"
+    },
+    "password-reset": {
+      "status": "complete",
+      "priority": 11,
+      "completed_at": "2026-02-08",
+      "dependencies": ["auth"],
+      "notes": "SHA256 token hashing, anti-enumeration, password history enforcement"
+    },
+    "email-notifications": {
+      "status": "complete",
+      "priority": 11,
+      "completed_at": "2026-02-08",
+      "dependencies": ["approvals", "expenses"],
+      "notes": "Fire-and-forget in approvals (approve/reject/clarify) and expenses (submit)"
+    },
+    "pdf-export": {
+      "status": "complete",
+      "priority": 11,
+      "completed_at": "2026-02-08",
+      "dependencies": ["reports"],
+      "notes": "PDFKit with styled tables, landscape A4, auto page-break"
     }
   },
 
@@ -102,58 +144,46 @@
 
   "recent_sessions": [
     {
+      "date": "2026-02-11",
+      "features_completed": ["test-coverage", "audit-logs-fix"],
+      "agents_used": ["general-purpose (parallel x4)"],
+      "notes": "Added 13 new API test files (500+ tests, now 796 total across 20 suites). Fixed audit logs 500 error: NaN pagination params from enableImplicitConversion + response format mismatch. Fixed vitest config to exclude E2E files. Created AuditLogsPage.test.tsx (29 tests). Web tests: 110 total (4 suites)."
+    },
+    {
+      "date": "2026-02-08",
+      "features_completed": ["password-reset", "email-notifications", "pdf-export"],
+      "agents_used": ["general-purpose (parallel x3)"],
+      "notes": "Phase 3 Backend Integrations: Password reset with SHA256 tokens, email notifications in approvals/expenses, real PDFKit PDF export. 3 parallel feature branches merged to main."
+    },
+    {
+      "date": "2026-02-08",
+      "features_completed": ["ocr", "pre-approvals", "rbac-overhaul", "profile-password"],
+      "agents_used": [],
+      "notes": "PROJECT FEATURE-COMPLETE. Epic 9 (OCR), Epic 10 (Pre-Approval), RBAC Overhaul, Profile password change. All CLAUDE.md files updated."
+    },
+    {
       "date": "2026-02-06",
       "features_completed": ["documentation-update"],
       "agents_used": [],
-      "notes": "Updated all CLAUDE.md files to reflect current state. Phase 1 backend complete (11 features, 280+ unit tests, 100+ E2E). Phase 2 frontend ~80% complete (25 pages, 8 services). Remaining: OCR, Pre-Approval, RBAC Overhaul."
+      "notes": "Updated all CLAUDE.md files to reflect current state."
     },
     {
       "date": "2026-02-02",
-      "features_completed": ["vouchers-qa"],
+      "features_completed": ["vouchers-qa", "approvals-qa", "expenses-qa"],
       "agents_used": [],
-      "notes": "Vouchers QA fixes: Fixed CreateVoucherDto alignment, added backend pagination, connected VoucherDetailPage to API, implemented settlement modal, expanded E2E tests from 7 to 24"
-    },
-    {
-      "date": "2026-02-02",
-      "features_completed": ["approvals-qa"],
-      "agents_used": [],
-      "notes": "Approvals QA fixes: Connected ApprovalQueuePage to API, fixed delegate modal, expanded E2E tests"
-    },
-    {
-      "date": "2026-02-02",
-      "features_completed": ["expenses-qa"],
-      "agents_used": [],
-      "notes": "Expenses QA fixes: Connected ExpenseDetailPage to API, fixed DTO alignments, added comprehensive E2E tests, database seeding with 50+ expenses"
+      "notes": "QA fixes: Connected pages to APIs, fixed DTOs, expanded E2E tests."
     },
     {
       "date": "2026-02-01",
       "features_completed": ["reports"],
       "agents_used": ["Backend-Engineer", "Qa-engineer"],
-      "notes": "PHASE 1 COMPLETE. Implemented comprehensive reports module with 14 endpoints, spend analytics, monthly trends, approval metrics, dashboard summary, XLSX/CSV exports, 52 unit tests, 70+ E2E tests"
+      "notes": "PHASE 1 COMPLETE. Reports module with 14 endpoints, 52 unit tests, 70+ E2E tests."
     },
     {
       "date": "2026-01-30",
-      "features_completed": ["vouchers"],
-      "agents_used": ["general-purpose"],
-      "notes": "Implemented petty cash voucher management with full lifecycle, business rules, overspend/underspend handling, and 114 unit tests"
-    },
-    {
-      "date": "2026-01-30",
-      "features_completed": ["approvals"],
-      "agents_used": [],
-      "notes": "Enhanced approvals module with multi-tier workflow, delegation system, approval history, bulk actions, and resubmission flow"
-    },
-    {
-      "date": "2026-01-30",
-      "features_completed": ["categories", "departments"],
-      "agents_used": ["backend-engineer (parallel x2)"],
-      "notes": "Implemented hierarchical CRUD for Categories and Departments using parallel agents"
-    },
-    {
-      "date": "2026-01-30",
-      "features_completed": ["storage", "expenses", "receipts"],
-      "agents_used": [],
-      "notes": "Integrated Storage with Receipts, added LocalStorage placeholder for AWS, fixed lint errors"
+      "features_completed": ["categories", "departments", "storage", "expenses", "receipts", "approvals", "vouchers", "budgets"],
+      "agents_used": ["backend-engineer (parallel x2)", "general-purpose"],
+      "notes": "Bulk backend implementation: hierarchical CRUD, storage, expenses, approvals, vouchers, budgets."
     }
   ],
 
@@ -163,7 +193,8 @@
     "Redux Toolkit + RTK Query for state management",
     "LocalStack for local AWS S3/Textract development",
     "CLAUDE.md files in subfolders for progressive disclosure",
-    "STORAGE_TYPE env var controls S3 vs local storage"
+    "STORAGE_TYPE env var controls S3 vs local storage",
+    "All phases complete as of 2026-02-11"
   ],
 
   "blockers": [],
@@ -198,6 +229,11 @@
       "date": "2026-01-30",
       "decision": "Implement tier-based approval system with role matching",
       "rationale": "Expenses are approved sequentially through tiers based on amount thresholds. Each tier matches approver role, with delegation support for flexibility."
+    },
+    {
+      "date": "2026-02-11",
+      "decision": "Use Number(x) || default instead of destructuring defaults for NestJS query params",
+      "rationale": "enableImplicitConversion converts undefined to NaN for number types; destructuring defaults only trigger on undefined, not NaN"
     }
   ]
 }
