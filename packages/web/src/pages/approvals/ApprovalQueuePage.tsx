@@ -18,6 +18,7 @@ import {
 } from '@/features/approvals/services/approvals.service';
 import { Skeleton, ConfirmDialog, showToast, PageHeader, Modal, ModalBody, ModalFooter } from '@/components/ui';
 import { useRolePermissions } from '@/hooks';
+import { getApiErrorMessage } from '@/utils/error';
 import type { Expense } from '@/features/expenses/services/expenses.service';
 
 const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
@@ -95,8 +96,8 @@ export function ApprovalQueuePage() {
       await approveExpense({ expenseId }).unwrap();
       showToast.success('Expense approved successfully');
       setSelectedIds(selectedIds.filter((id) => id !== expenseId));
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to approve expense');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to approve expense'));
     }
   };
 
@@ -138,8 +139,8 @@ export function ApprovalQueuePage() {
       const result = await bulkApprove({ expenseIds: selectedIds }).unwrap();
       showToast.success(`${result.approved} expense(s) approved successfully`);
       setSelectedIds([]);
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to approve expenses');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to approve expenses'));
     }
   };
 
@@ -182,8 +183,8 @@ export function ApprovalQueuePage() {
         showToast.success('Expense rejected');
         setSelectedIds(selectedIds.filter((id) => id !== actionExpenseId));
       }
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to reject expense');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to reject expense'));
     } finally {
       setShowRejectModal(false);
       setRejectReason('');
@@ -210,8 +211,8 @@ export function ApprovalQueuePage() {
       }).unwrap();
       showToast.success('Clarification requested');
       setSelectedIds(selectedIds.filter((id) => id !== actionExpenseId));
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to request clarification');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to request clarification'));
     } finally {
       setShowClarifyModal(false);
       setClarifyQuestion('');

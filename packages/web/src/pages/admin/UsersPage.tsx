@@ -104,7 +104,7 @@ export function UsersPage() {
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
   const [deleteUser, { isLoading: isDeleting }] = useDeleteUserMutation();
 
-  const users = usersData?.data || [];
+  const users = useMemo(() => usersData?.data || [], [usersData?.data]);
 
   const filteredUsers = useMemo(() => {
     return filter === 'ALL' ? users : users.filter((u) => u.status === filter);

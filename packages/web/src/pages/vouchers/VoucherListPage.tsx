@@ -112,7 +112,10 @@ export function VoucherListPage() {
   const pagination = vouchersResponse?.meta?.pagination;
   const totalPages = pagination?.totalPages || 1;
   const totalItems = pagination?.total || 0;
-  const statusCounts: Record<string, number> = vouchersResponse?.statusCounts || {};
+  const statusCounts: Record<string, number> = useMemo(
+    () => vouchersResponse?.statusCounts || {},
+    [vouchersResponse?.statusCounts],
+  );
 
   // Calculate total count for "ALL" tab from all individual status counts
   const totalStatusCount = useMemo(() => {

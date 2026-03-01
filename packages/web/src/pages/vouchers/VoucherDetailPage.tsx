@@ -27,6 +27,7 @@ import {
 } from '@/features/vouchers/types/vouchers.types';
 import type { LinkedExpense, SettleVoucherDto } from '@/features/vouchers/types/vouchers.types';
 import { useState, useEffect } from 'react';
+import { getApiErrorMessage } from '@/utils/error';
 
 export function VoucherDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -86,8 +87,8 @@ export function VoucherDetailPage() {
       showToast.success('Voucher settled successfully');
       setShowSettleModal(false);
       refetch();
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to settle voucher');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to settle voucher'));
     }
   };
 
