@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CameraIcon, SparklesIcon, PaperClipIcon } from '@heroicons/react/24/outline';
 import { CheckIcon } from '@heroicons/react/20/solid';
@@ -63,6 +63,23 @@ export function ExpenseCreatePage() {
   const loading = isCreating || isSubmitting || isUploading;
 
   const [formData, setFormData] = useState<ExpenseFormData>({ ...initialFormData });
+
+  // Track blob URLs to prevent memory leaks in the SPA
+  const blobUrlsRef = useRef<string[]>([]);
+
+  const createBlobUrl = useCallback((file: File): string => {
+    const url = URL.createObjectURL(file);
+    blobUrlsRef.current.push(url);
+    return url;
+  }, []);
+
+  // Revoke all blob URLs when the component unmounts
+  useEffect(() => {
+    return () => {
+      blobUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      blobUrlsRef.current = [];
+    };
+  }, []);
 
   // Track if form has been modified for unsaved changes warning
   const isDirty = useMemo(() => {
@@ -521,7 +538,7 @@ export function ExpenseCreatePage() {
                     <div className="flex items-center gap-3">
                       {file.type.startsWith('image/') ? (
                         <img
-                          src={URL.createObjectURL(file)}
+                          src={createBlobUrl(file)}
                           alt={file.name}
                           className="w-10 h-10 object-cover rounded"
                         />

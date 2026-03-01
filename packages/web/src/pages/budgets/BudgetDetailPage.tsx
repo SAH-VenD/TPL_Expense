@@ -22,15 +22,7 @@ import {
   useArchiveBudgetMutation,
   type CreateBudgetDto,
 } from '@/features/budgets/services/budgets.service';
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from '@/utils/format';
 
 const formatDate = (dateString: string): string => {
   return new Date(dateString).toLocaleDateString('en-PK', {

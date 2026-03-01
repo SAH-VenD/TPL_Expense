@@ -4,6 +4,7 @@ import { PencilIcon, TrashIcon, ArrowsRightLeftIcon } from '@heroicons/react/24/
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetListViewProps {
   budgets: Budget[];
@@ -15,15 +16,6 @@ export interface BudgetListViewProps {
   onDelete?: (budget: Budget) => void;
   onTransfer?: (budget: Budget) => void;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const getBudgetTypeBadgeVariant = (type: string) => {
   const variants: Record<string, 'primary' | 'info' | 'success' | 'warning' | 'default'> = {

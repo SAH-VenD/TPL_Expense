@@ -10,7 +10,7 @@ import {
   createTestUser,
   createTestCategory,
 } from './test-utils';
-import { RoleType, VoucherStatus, ExpenseType, ExpenseStatus } from '@prisma/client';
+import { RoleType, VoucherStatus, ExpenseType, ExpenseStatus, Currency } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 describe('Vouchers Workflow (e2e)', () => {
@@ -521,7 +521,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Petty cash expense for linking',
           expenseDate: new Date(),
           amount: new Decimal(10000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(10000),
           amountInPKR: new Decimal(10000),
           status: ExpenseStatus.APPROVED,
@@ -573,7 +573,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Out of pocket expense',
           expenseDate: new Date(),
           amount: new Decimal(10000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(10000),
           amountInPKR: new Decimal(10000),
           status: ExpenseStatus.APPROVED,
@@ -622,7 +622,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Expense for settlement',
           expenseDate: new Date(),
           amount: new Decimal(50000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(50000),
           amountInPKR: new Decimal(50000),
           status: ExpenseStatus.APPROVED,
@@ -674,7 +674,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Overspent expense',
           expenseDate: new Date(),
           amount: new Decimal(50000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(50000),
           amountInPKR: new Decimal(50000),
           status: ExpenseStatus.APPROVED,
@@ -724,7 +724,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Overspent expense',
           expenseDate: new Date(),
           amount: new Decimal(45000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(45000),
           amountInPKR: new Decimal(45000),
           status: ExpenseStatus.APPROVED,
@@ -775,7 +775,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Underspent expense',
           expenseDate: new Date(),
           amount: new Decimal(30000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(30000),
           amountInPKR: new Decimal(30000),
           status: ExpenseStatus.APPROVED,
@@ -825,7 +825,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Pending expense',
           expenseDate: new Date(),
           amount: new Decimal(50000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(50000),
           amountInPKR: new Decimal(50000),
           status: ExpenseStatus.SUBMITTED, // Still pending
@@ -876,7 +876,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Finance settlement expense',
           expenseDate: new Date(),
           amount: new Decimal(50000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(50000),
           amountInPKR: new Decimal(50000),
           status: ExpenseStatus.APPROVED,
@@ -1042,7 +1042,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Office supplies expense',
           expenseDate: new Date(),
           amount: new Decimal(30000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(30000),
           amountInPKR: new Decimal(30000),
           status: ExpenseStatus.APPROVED,
@@ -1323,7 +1323,7 @@ describe('Vouchers Workflow (e2e)', () => {
           description: 'Expense for detail test',
           expenseDate: new Date(),
           amount: new Decimal(25000),
-          currency: 'PKR' as any,
+          currency: Currency.PKR,
           totalAmount: new Decimal(25000),
           amountInPKR: new Decimal(25000),
           status: ExpenseStatus.APPROVED,
@@ -1379,10 +1379,11 @@ describe('Vouchers Workflow (e2e)', () => {
         .set('Authorization', `Bearer ${employeeToken}`);
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.data).toBeDefined();
+      expect(Array.isArray(response.body.data)).toBe(true);
 
       // Verify all returned vouchers have REQUESTED status
-      response.body.forEach((v: { status: VoucherStatus }) => {
+      response.body.data.forEach((v: { status: VoucherStatus }) => {
         expect(v.status).toBe(VoucherStatus.REQUESTED);
       });
 

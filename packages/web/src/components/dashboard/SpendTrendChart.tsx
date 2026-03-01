@@ -13,6 +13,7 @@ import { ChartBarIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { Card, CardHeader, CardTitle, EmptyState, Alert } from '@/components/ui';
 import { useGetMonthlyTrendQuery } from '@/features/reports/services/reports.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface SpendTrendChartProps {
   year?: number;
@@ -29,7 +30,7 @@ interface ChartDataPoint {
   previousYear?: number;
 }
 
-const formatCurrency = (value: number): string => {
+const formatShortCurrency = (value: number): string => {
   if (value >= 1000000) {
     return `${(value / 1000000).toFixed(1)}M`;
   }
@@ -37,15 +38,6 @@ const formatCurrency = (value: number): string => {
     return `${(value / 1000).toFixed(0)}K`;
   }
   return value.toFixed(0);
-};
-
-const formatTooltipValue = (value: number): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
 };
 
 interface CustomTooltipProps {
@@ -66,7 +58,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
       <p className="font-medium text-gray-900 mb-2">{label}</p>
       {payload.map((entry, index) => (
         <p key={index} className="text-sm" style={{ color: entry.color }}>
-          {entry.name}: {formatTooltipValue(entry.value)}
+          {entry.name}: {formatCurrency(entry.value)}
         </p>
       ))}
     </div>
@@ -171,7 +163,7 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
                 tickLine={{ stroke: '#E5E7EB' }}
               />
               <YAxis
-                tickFormatter={formatCurrency}
+                tickFormatter={formatShortCurrency}
                 tick={{ fill: '#6B7280', fontSize: 12 }}
                 axisLine={{ stroke: '#E5E7EB' }}
                 tickLine={{ stroke: '#E5E7EB' }}
@@ -211,8 +203,8 @@ export const SpendTrendChart: React.FC<SpendTrendChartProps> = ({
       </div>
       {data && hasData && (
         <div className="px-6 pb-4 flex items-center justify-between text-sm text-gray-500">
-          <span>YTD Total: {formatTooltipValue(data.ytdTotal)}</span>
-          <span>Monthly Avg: {formatTooltipValue(data.monthlyAverage)}</span>
+          <span>YTD Total: {formatCurrency(data.ytdTotal)}</span>
+          <span>Monthly Avg: {formatCurrency(data.monthlyAverage)}</span>
           {data.yoyChangePercentage !== undefined && (
             <span
               className={clsx(

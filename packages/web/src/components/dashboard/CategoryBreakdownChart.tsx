@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartPieIcon } from '@heroicons/react/24/outline';
 import { Card, CardHeader, CardTitle, Skeleton, EmptyState, Alert } from '@/components/ui';
 import { useGetSpendByCategoryQuery } from '@/features/reports/services/reports.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface CategoryBreakdownChartProps {
   dateRange?: { start: Date; end: Date };
@@ -31,15 +32,6 @@ interface CategoryChartData {
   percentage: number;
   color: string;
 }
-
-const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-};
 
 interface CustomTooltipProps {
   active?: boolean;

@@ -1,6 +1,7 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetUtilizationChartProps {
   budget: Budget;
@@ -12,15 +13,6 @@ const COLORS = {
   used: '#3B82F6', // blue-500
   remaining: '#10B981', // green-500
   exceeded: '#EF4444', // red-500
-};
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 };
 
 export const BudgetUtilizationChart: React.FC<BudgetUtilizationChartProps> = ({

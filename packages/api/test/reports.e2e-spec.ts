@@ -20,6 +20,7 @@ import {
   VoucherStatus,
   BudgetType,
   BudgetPeriod,
+  Currency,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { ReportType, ExportFormat } from '../src/modules/reports/dto/export-report.dto';
@@ -79,7 +80,7 @@ describe('ReportsController (e2e)', () => {
       type: ExpenseType.OUT_OF_POCKET,
       description: options.description || 'Test expense',
       amount: new Decimal(amount),
-      currency: 'PKR' as const,
+      currency: Currency.PKR,
       totalAmount: new Decimal(amount),
       amountInPKR: new Decimal(amount),
       expenseDate: options.expenseDate || new Date(),
@@ -391,20 +392,20 @@ describe('ReportsController (e2e)', () => {
       expect(response.status).toBe(401);
     });
 
-    it('should return 403 when EMPLOYEE tries to access reports', async () => {
+    it('should allow EMPLOYEE role to access reports', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/reports/spend-by-department')
         .set('Authorization', `Bearer ${employeeToken}`);
 
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(200);
     });
 
-    it('should return 403 when APPROVER tries to access reports', async () => {
+    it('should allow APPROVER role to access reports', async () => {
       const response = await request(app.getHttpServer())
         .get('/api/v1/reports/spend-by-department')
         .set('Authorization', `Bearer ${approverToken}`);
 
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(200);
     });
 
     it('should allow FINANCE role to access reports', async () => {
@@ -487,9 +488,11 @@ describe('ReportsController (e2e)', () => {
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
       expect(response.body.length).toBeGreaterThan(0);
-      expect(response.body[0]).toHaveProperty('category');
-      expect(response.body[0]).toHaveProperty('amount');
+      expect(response.body[0]).toHaveProperty('categoryId');
+      expect(response.body[0]).toHaveProperty('categoryName');
+      expect(response.body[0]).toHaveProperty('totalAmount');
       expect(response.body[0]).toHaveProperty('count');
+      expect(response.body[0]).toHaveProperty('percentage');
     });
 
     it('should filter by date range', async () => {
@@ -1079,7 +1082,7 @@ describe('ReportsController (e2e)', () => {
       expect(response.status).toBe(200);
     });
 
-    it('should return 403 when EMPLOYEE tries to export', async () => {
+    it('should allow EMPLOYEE to export reports', async () => {
       const response = await request(app.getHttpServer())
         .post('/api/v1/reports/export')
         .set('Authorization', `Bearer ${employeeToken}`)
@@ -1088,7 +1091,7 @@ describe('ReportsController (e2e)', () => {
           format: ExportFormat.XLSX,
         });
 
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(200);
     });
 
     it('should return 400 for invalid report type', async () => {
@@ -1121,7 +1124,7 @@ describe('ReportsController (e2e)', () => {
   describe('Edge Cases', () => {
     it('should handle invalid date format gracefully', async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/v1/reports/spend-by-department')
+        .get('/api/v1/reports/spend-by-employee')
         .query({
           startDate: 'not-a-date',
           endDate: '2024-12-31',

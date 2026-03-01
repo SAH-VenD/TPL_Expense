@@ -14,6 +14,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import { Alert } from '@/components/ui/Alert';
 import { showToast, PageHeader } from '@/components/ui';
 import { ReceiptViewerModal } from '@/components/expenses/ReceiptViewerModal';
+import { formatCurrency } from '@/utils/format';
 
 export function ExpenseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -173,15 +174,6 @@ export function ExpenseDetailPage() {
       </div>
     );
   }
-
-  const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-    return new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
 
   return (
     <div className="space-y-6">

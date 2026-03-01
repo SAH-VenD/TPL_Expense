@@ -18,6 +18,7 @@ import {
   ModalBody,
   ModalFooter,
 } from '@/components/ui';
+import { formatCurrency } from '@/utils/format';
 
 export function PreApprovalDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,13 +31,6 @@ export function PreApprovalDetailPage() {
 
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
-
-  const formatCurrency = (amount: number, currency = 'PKR') =>
-    new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(amount);
 
   const handleApprove = async () => {
     if (!pa) return;

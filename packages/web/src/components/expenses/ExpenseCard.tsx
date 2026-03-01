@@ -5,6 +5,7 @@ import { FolderIcon, ReceiptPercentIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { Badge, getStatusVariant } from '../ui/Badge';
 import type { Expense, ExpenseStatus } from '@/features/expenses/services/expenses.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface ExpenseCardProps {
   expense: Expense;
@@ -14,15 +15,6 @@ export interface ExpenseCardProps {
   compact?: boolean;
   view?: 'list' | 'grid';
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
 
 const formatRelativeDate = (dateString: string): string => {
   try {

@@ -7,7 +7,7 @@
 - **Database**: PostgreSQL 15 via Prisma ORM
 - **Auth**: JWT (RS256) with refresh tokens
 - **Port**: 3000
-- **Test Coverage**: 796 unit tests (20 suites), 100+ E2E tests
+- **Test Coverage**: 838 unit tests (22 suites), 100+ E2E tests
 - **Phase 3 Integrations**: Password reset, email notifications, PDF export
 - **Recent Fix**: Audit logs NaN pagination (`Number(x) || default` pattern)
 
@@ -99,3 +99,32 @@ See `.env.example` for required variables. Key ones:
 - **ADMIN** - System administration, NO approval rights (separation of duties)
 
 Role constants defined in `src/common/constants/roles.ts`.
+
+## E2E Test Conventions
+
+### Prisma Enum Values
+Always import and use Prisma enum values — never use string casts:
+```typescript
+// CORRECT:
+import { ExpenseType, Currency, ExpenseStatus } from '@prisma/client';
+currency: Currency.PKR,
+type: ExpenseType.OUT_OF_POCKET,
+
+// WRONG:
+currency: 'PKR' as any,
+type: 'STANDARD' as any,
+```
+
+### Response Format Assertions
+The API returns paginated responses as `{ data: [...], meta: { pagination: {...} } }`.
+Always assert on `response.body.data`, not `response.body` directly:
+```typescript
+// CORRECT:
+expect(Array.isArray(response.body.data)).toBe(true);
+expect(response.body.data[0]).toHaveProperty('id');
+
+// WRONG:
+expect(Array.isArray(response.body)).toBe(true);
+```
+
+Exception: Some endpoints return raw arrays (e.g., `/pending-approval`). Check the controller/service to confirm.

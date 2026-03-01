@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/Badge';
 import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetDetailHeaderProps {
   budget: Budget;
@@ -18,15 +19,6 @@ export interface BudgetDetailHeaderProps {
   onDelete?: () => void;
   onTransfer?: () => void;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-PK', {

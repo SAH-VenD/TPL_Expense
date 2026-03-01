@@ -2,6 +2,7 @@ import { DataTable, type Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { Voucher, VoucherStatus } from '@/features/vouchers/types/vouchers.types';
 import { VOUCHER_STATUS_CONFIG } from '@/features/vouchers/types/vouchers.types';
+import { formatCurrency } from '@/utils/format';
 
 interface VoucherTableProps {
   vouchers: Voucher[];
@@ -9,15 +10,10 @@ interface VoucherTableProps {
   onRowClick: (voucher: Voucher) => void;
 }
 
-function formatCurrency(amount: number | string | null | undefined): string {
+function formatVoucherCurrency(amount: number | string | null | undefined): string {
   if (amount === null || amount === undefined) return '-';
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency: 'PKR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(numAmount);
+  return formatCurrency(numAmount);
 }
 
 function formatDate(dateString: string | null | undefined): string {
@@ -60,7 +56,7 @@ export function VoucherTable({ vouchers, isLoading, onRowClick }: VoucherTablePr
       header: 'Requested',
       align: 'right',
       render: (voucher) => (
-        <span className="text-gray-900">{formatCurrency(voucher.requestedAmount)}</span>
+        <span className="text-gray-900">{formatVoucherCurrency(voucher.requestedAmount)}</span>
       ),
     },
     {
@@ -68,7 +64,7 @@ export function VoucherTable({ vouchers, isLoading, onRowClick }: VoucherTablePr
       header: 'Disbursed',
       align: 'right',
       render: (voucher) => (
-        <span className="text-gray-700">{formatCurrency(voucher.disbursedAmount)}</span>
+        <span className="text-gray-700">{formatVoucherCurrency(voucher.disbursedAmount)}</span>
       ),
     },
     {

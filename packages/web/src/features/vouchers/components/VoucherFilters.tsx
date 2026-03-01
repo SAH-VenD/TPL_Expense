@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import type { RoleType } from '@/features/auth/types/auth.types';
 import type { VoucherStatus } from '../types/vouchers.types';
 import { MAX_PETTY_CASH_AMOUNT } from '../types/vouchers.types';
+import { formatCurrency } from '@/utils/format';
 
 export interface VoucherFilterOptions {
   status?: VoucherStatus;
@@ -178,9 +179,8 @@ export const VoucherFilters: React.FC<VoucherFiltersProps> = ({
                 {(filters.minAmount !== undefined || filters.maxAmount !== undefined) && (
                   <div className="lg:col-span-2 flex items-end">
                     <p className="text-sm text-gray-500">
-                      Amount range: PKR {filters.minAmount?.toLocaleString() || '0'} - PKR{' '}
-                      {filters.maxAmount?.toLocaleString() ||
-                        MAX_PETTY_CASH_AMOUNT.toLocaleString()}
+                      Amount range: {formatCurrency(filters.minAmount ?? 0)} -{' '}
+                      {formatCurrency(filters.maxAmount ?? MAX_PETTY_CASH_AMOUNT)}
                     </p>
                   </div>
                 )}
