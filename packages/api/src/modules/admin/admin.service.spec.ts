@@ -33,10 +33,7 @@ describe('AdminService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AdminService,
-        { provide: PrismaService, useValue: mockPrismaService },
-      ],
+      providers: [AdminService, { provide: PrismaService, useValue: mockPrismaService }],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
@@ -382,9 +379,9 @@ describe('AdminService', () => {
         .mockResolvedValueOnce(100) // totalUsers
         .mockResolvedValueOnce(85); // activeUsers
       mockPrismaService.expense.count
-        .mockResolvedValueOnce(50)  // pendingApprovals (SUBMITTED)
+        .mockResolvedValueOnce(50) // pendingApprovals (SUBMITTED)
         .mockResolvedValueOnce(500) // totalExpenses
-        .mockResolvedValueOnce(50)  // pendingExpenses
+        .mockResolvedValueOnce(50) // pendingExpenses
         .mockResolvedValueOnce(300); // approvedExpenses
       mockPrismaService.voucher.count
         .mockResolvedValueOnce(10) // activeVouchers

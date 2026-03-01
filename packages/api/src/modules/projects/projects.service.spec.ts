@@ -18,10 +18,7 @@ describe('ProjectsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        ProjectsService,
-        { provide: PrismaService, useValue: mockPrismaService },
-      ],
+      providers: [ProjectsService, { provide: PrismaService, useValue: mockPrismaService }],
     }).compile();
 
     service = module.get<ProjectsService>(ProjectsService);
@@ -31,7 +28,13 @@ describe('ProjectsService', () => {
 
   describe('create', () => {
     it('should create a project with provided code', async () => {
-      const dto = { name: 'My Project', code: 'CUSTOM-CODE', description: 'Desc', startDate: '2026-01-01', endDate: '2026-12-31' };
+      const dto = {
+        name: 'My Project',
+        code: 'CUSTOM-CODE',
+        description: 'Desc',
+        startDate: '2026-01-01',
+        endDate: '2026-12-31',
+      };
       const expectedProject = { id: 'proj-1', ...dto };
       mockPrismaService.project.create.mockResolvedValue(expectedProject);
 

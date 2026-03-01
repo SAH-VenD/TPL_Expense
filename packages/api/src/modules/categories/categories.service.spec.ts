@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CategoriesService } from './categories.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 
 describe('CategoriesService', () => {
   let service: CategoriesService;
@@ -129,7 +125,9 @@ describe('CategoriesService', () => {
       mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
 
       await expect(service.create(createDto)).rejects.toThrow(ConflictException);
-      await expect(service.create(createDto)).rejects.toThrow("Category with code 'TRAVEL' already exists");
+      await expect(service.create(createDto)).rejects.toThrow(
+        "Category with code 'TRAVEL' already exists",
+      );
     });
 
     it('should throw NotFoundException when parent does not exist', async () => {
@@ -137,9 +135,9 @@ describe('CategoriesService', () => {
         .mockResolvedValueOnce(null) // code check
         .mockResolvedValueOnce(null); // parent check
 
-      await expect(
-        service.create({ ...createDto, parentId: 'non-existent' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.create({ ...createDto, parentId: 'non-existent' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when parent is inactive', async () => {
@@ -302,10 +300,7 @@ describe('CategoriesService', () => {
 
   describe('findTree', () => {
     it('should build a tree from all categories', async () => {
-      mockPrismaService.category.findMany.mockResolvedValue([
-        mockCategory,
-        mockChildCategory,
-      ]);
+      mockPrismaService.category.findMany.mockResolvedValue([mockCategory, mockChildCategory]);
 
       const result = await service.findTree();
 
@@ -725,7 +720,9 @@ describe('CategoriesService', () => {
         fail('Expected BadRequestException');
       } catch (error) {
         expect(error).toBeInstanceOf(BadRequestException);
-        expect(error.message).toContain('Cannot reactivate category while parent category is inactive');
+        expect(error.message).toContain(
+          'Cannot reactivate category while parent category is inactive',
+        );
       }
     });
 

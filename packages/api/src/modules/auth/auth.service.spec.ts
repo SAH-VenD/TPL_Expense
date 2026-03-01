@@ -450,7 +450,9 @@ describe('AuthService', () => {
 
       const result = await service.forgotPassword('test@tekcellent.com');
 
-      expect(result.message).toBe('If an account exists with that email, a reset link has been sent');
+      expect(result.message).toBe(
+        'If an account exists with that email, a reset link has been sent',
+      );
       expect(mockPrismaService.user.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'user-1' },
@@ -471,7 +473,9 @@ describe('AuthService', () => {
 
       const result = await service.forgotPassword('nonexistent@tekcellent.com');
 
-      expect(result.message).toBe('If an account exists with that email, a reset link has been sent');
+      expect(result.message).toBe(
+        'If an account exists with that email, a reset link has been sent',
+      );
       expect(mockPrismaService.user.update).not.toHaveBeenCalled();
       expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
     });
@@ -553,9 +557,7 @@ describe('AuthService', () => {
     it('should reject weak password', async () => {
       mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
 
-      await expect(service.resetPassword('raw-token', 'weak')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.resetPassword('raw-token', 'weak')).rejects.toThrow(BadRequestException);
     });
 
     it('should reject reused password from history', async () => {
@@ -615,9 +617,9 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(() => Promise.resolve(false));
 
-      await expect(
-        service.changePassword('user-1', 'WrongPass1!@', 'NewPass1!@'),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.changePassword('user-1', 'WrongPass1!@', 'NewPass1!@')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should reject non-existent user', async () => {

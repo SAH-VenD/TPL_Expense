@@ -33,10 +33,7 @@ describe('EmailService', () => {
     mockSendMail.mockResolvedValue({ messageId: 'test-message-id' });
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        EmailService,
-        { provide: ConfigService, useValue: mockConfigService },
-      ],
+      providers: [EmailService, { provide: ConfigService, useValue: mockConfigService }],
     }).compile();
 
     service = module.get<EmailService>(EmailService);
@@ -71,10 +68,7 @@ describe('EmailService', () => {
       (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
 
       const authModule: TestingModule = await Test.createTestingModule({
-        providers: [
-          EmailService,
-          { provide: ConfigService, useValue: configWithAuth },
-        ],
+        providers: [EmailService, { provide: ConfigService, useValue: configWithAuth }],
       }).compile();
 
       authModule.get<EmailService>(EmailService);
@@ -307,9 +301,7 @@ describe('EmailService', () => {
       await service.sendExpenseApprovedEmail(mockSubmitter, mockExpense);
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(
-        'https://expense.tekcellent.com/expenses/expense-id-456',
-      );
+      expect(callArgs.html).toContain('https://expense.tekcellent.com/expenses/expense-id-456');
     });
 
     it('should handle missing category gracefully', async () => {
@@ -365,9 +357,7 @@ describe('EmailService', () => {
       await service.sendExpenseRejectedEmail(mockSubmitter, mockExpense, 'Reason');
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(
-        'https://expense.tekcellent.com/expenses/expense-id-789',
-      );
+      expect(callArgs.html).toContain('https://expense.tekcellent.com/expenses/expense-id-789');
     });
 
     it('should escape rejection reason to prevent HTML injection', async () => {
@@ -430,9 +420,7 @@ describe('EmailService', () => {
       await service.sendPasswordResetEmail(maliciousUser, resetToken);
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(
-        '&lt;img src=x onerror=&quot;steal()&quot;&gt;',
-      );
+      expect(callArgs.html).toContain('&lt;img src=x onerror=&quot;steal()&quot;&gt;');
       expect(callArgs.html).not.toContain('<img');
     });
   });
@@ -499,9 +487,7 @@ describe('EmailService', () => {
       );
 
       const callArgs = mockSendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain(
-        'Receipt says &quot;Total &lt; $100&quot; &amp; is invalid',
-      );
+      expect(callArgs.html).toContain('Receipt says &quot;Total &lt; $100&quot; &amp; is invalid');
     });
   });
 
@@ -535,10 +521,7 @@ describe('EmailService', () => {
       (nodemailer.createTransport as jest.Mock).mockReturnValue(mockTransporter);
 
       const fallbackModule: TestingModule = await Test.createTestingModule({
-        providers: [
-          EmailService,
-          { provide: ConfigService, useValue: configWithoutFrontendUrl },
-        ],
+        providers: [EmailService, { provide: ConfigService, useValue: configWithoutFrontendUrl }],
       }).compile();
 
       const fallbackService = fallbackModule.get<EmailService>(EmailService);

@@ -14,10 +14,7 @@ describe('StorageService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        StorageService,
-        { provide: STORAGE_PROVIDER, useValue: mockStorageProvider },
-      ],
+      providers: [StorageService, { provide: STORAGE_PROVIDER, useValue: mockStorageProvider }],
     }).compile();
 
     service = module.get<StorageService>(StorageService);

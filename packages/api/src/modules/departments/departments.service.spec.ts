@@ -1,11 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DepartmentsService } from './departments.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import {
-  NotFoundException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 
 describe('DepartmentsService', () => {
   let service: DepartmentsService;
@@ -172,9 +168,9 @@ describe('DepartmentsService', () => {
         .mockResolvedValueOnce(null) // code check
         .mockResolvedValueOnce(null); // parent check
 
-      await expect(
-        service.create({ ...createDto, parentId: 'non-existent' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.create({ ...createDto, parentId: 'non-existent' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when parent is inactive', async () => {
@@ -262,9 +258,39 @@ describe('DepartmentsService', () => {
 
     it('should sort tree nodes alphabetically', async () => {
       mockPrismaService.department.findMany.mockResolvedValue([
-        { id: 'dept-z', name: 'Zebra', code: 'ZEB', description: null, parentId: null, isActive: true, createdAt: now, updatedAt: now, _count: { users: 0 } },
-        { id: 'dept-a', name: 'Alpha', code: 'ALP', description: null, parentId: null, isActive: true, createdAt: now, updatedAt: now, _count: { users: 0 } },
-        { id: 'dept-m', name: 'Mid', code: 'MID', description: null, parentId: null, isActive: true, createdAt: now, updatedAt: now, _count: { users: 0 } },
+        {
+          id: 'dept-z',
+          name: 'Zebra',
+          code: 'ZEB',
+          description: null,
+          parentId: null,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          _count: { users: 0 },
+        },
+        {
+          id: 'dept-a',
+          name: 'Alpha',
+          code: 'ALP',
+          description: null,
+          parentId: null,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          _count: { users: 0 },
+        },
+        {
+          id: 'dept-m',
+          name: 'Mid',
+          code: 'MID',
+          description: null,
+          parentId: null,
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          _count: { users: 0 },
+        },
       ]);
 
       const result = await service.findAll();
@@ -277,8 +303,28 @@ describe('DepartmentsService', () => {
     it('should sort child nodes alphabetically', async () => {
       mockPrismaService.department.findMany.mockResolvedValue([
         { ...mockDepartment, _count: { users: 0 } },
-        { id: 'dept-z', name: 'Zulu Team', code: 'ZULU', description: null, parentId: 'dept-1', isActive: true, createdAt: now, updatedAt: now, _count: { users: 0 } },
-        { id: 'dept-a', name: 'Alpha Team', code: 'ALPHA', description: null, parentId: 'dept-1', isActive: true, createdAt: now, updatedAt: now, _count: { users: 0 } },
+        {
+          id: 'dept-z',
+          name: 'Zulu Team',
+          code: 'ZULU',
+          description: null,
+          parentId: 'dept-1',
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          _count: { users: 0 },
+        },
+        {
+          id: 'dept-a',
+          name: 'Alpha Team',
+          code: 'ALPHA',
+          description: null,
+          parentId: 'dept-1',
+          isActive: true,
+          createdAt: now,
+          updatedAt: now,
+          _count: { users: 0 },
+        },
       ]);
 
       const result = await service.findAll();
@@ -306,8 +352,24 @@ describe('DepartmentsService', () => {
   describe('findAllFlat', () => {
     it('should return a flat list with user counts', async () => {
       mockPrismaService.department.findMany.mockResolvedValue([
-        { id: 'dept-1', name: 'Engineering', code: 'ENG', description: 'Eng', isActive: true, parentId: null, _count: { users: 10 } },
-        { id: 'dept-2', name: 'Frontend', code: 'FE', description: 'FE', isActive: true, parentId: 'dept-1', _count: { users: 5 } },
+        {
+          id: 'dept-1',
+          name: 'Engineering',
+          code: 'ENG',
+          description: 'Eng',
+          isActive: true,
+          parentId: null,
+          _count: { users: 10 },
+        },
+        {
+          id: 'dept-2',
+          name: 'Frontend',
+          code: 'FE',
+          description: 'FE',
+          isActive: true,
+          parentId: 'dept-1',
+          _count: { users: 5 },
+        },
       ]);
 
       const result = await service.findAllFlat();
@@ -409,9 +471,9 @@ describe('DepartmentsService', () => {
         .mockResolvedValueOnce(mockDepartment) // findExistingDepartment
         .mockResolvedValueOnce({ id: 'other-dept', name: 'Updated Engineering' }); // name uniqueness
 
-      await expect(
-        service.update('dept-1', { name: 'Updated Engineering' }),
-      ).rejects.toThrow(ConflictException);
+      await expect(service.update('dept-1', { name: 'Updated Engineering' })).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw ConflictException when changing to a duplicate code', async () => {
@@ -468,9 +530,9 @@ describe('DepartmentsService', () => {
         .mockResolvedValueOnce(mockDepartment) // findExistingDepartment
         .mockResolvedValueOnce(null); // parent lookup (validateParentExists)
 
-      await expect(
-        service.update('dept-1', { parentId: 'non-existent' }),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.update('dept-1', { parentId: 'non-existent' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException when new parent is inactive', async () => {
@@ -558,7 +620,9 @@ describe('DepartmentsService', () => {
       });
 
       // parentId is empty string (falsy but not undefined) - treated as "set parent to null"
-      const result = await service.update('dept-2', { parentId: '' } as unknown as { parentId: string });
+      const result = await service.update('dept-2', { parentId: '' } as unknown as {
+        parentId: string;
+      });
 
       expect(mockPrismaService.department.update).toHaveBeenCalled();
     });

@@ -61,9 +61,7 @@ describe('OcrService', () => {
     currency: 'PKR',
     invoiceNumber: 'INV-2026-001',
     confidence: 92,
-    lineItems: [
-      { description: 'Consulting services', quantity: 1, unitPrice: 5000, amount: 5000 },
-    ],
+    lineItems: [{ description: 'Consulting services', quantity: 1, unitPrice: 5000, amount: 5000 }],
   };
 
   const lowConfidenceResult: OcrResult = {
@@ -468,7 +466,9 @@ describe('OcrService', () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
       mockTextractProvider.analyzeExpense.mockRejectedValue(new Error('Service timeout'));
 
-      await expect(service.reprocessReceipt('receipt-1', mockUser)).rejects.toThrow('Service timeout');
+      await expect(service.reprocessReceipt('receipt-1', mockUser)).rejects.toThrow(
+        'Service timeout',
+      );
     });
   });
 });
