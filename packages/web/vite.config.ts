@@ -17,6 +17,19 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-redux': ['@reduxjs/toolkit', 'react-redux'],
+          'vendor-charts': ['recharts'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'vendor-utils': ['date-fns', 'clsx', 'axios'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {
