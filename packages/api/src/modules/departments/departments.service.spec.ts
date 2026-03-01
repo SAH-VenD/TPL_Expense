@@ -620,7 +620,7 @@ describe('DepartmentsService', () => {
       });
 
       // parentId is empty string (falsy but not undefined) - treated as "set parent to null"
-      const result = await service.update('dept-2', { parentId: '' } as unknown as {
+      await service.update('dept-2', { parentId: '' } as unknown as {
         parentId: string;
       });
 

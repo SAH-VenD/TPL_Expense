@@ -10,7 +10,7 @@ import {
   createTestUser,
   createTestCategory,
 } from './test-utils';
-import { RoleType, ExpenseStatus, ApprovalAction } from '@prisma/client';
+import { RoleType, ExpenseStatus, ApprovalAction, ExpenseType, Currency } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 // Helper function to create expense data
@@ -24,10 +24,10 @@ function createExpenseData(
     submitterId,
     categoryId,
     expenseNumber: `EXP-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-    type: 'STANDARD' as any,
+    type: ExpenseType.OUT_OF_POCKET,
     description,
     amount: new Decimal(amount),
-    currency: 'PKR' as any,
+    currency: Currency.PKR,
     totalAmount: new Decimal(amount),
     amountInPKR: new Decimal(amount),
     expenseDate: new Date(),

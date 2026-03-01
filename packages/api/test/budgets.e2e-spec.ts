@@ -18,6 +18,7 @@ import {
   BudgetEnforcement,
   ExpenseType,
   ExpenseStatus,
+  Currency,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -354,8 +355,8 @@ describe('Budgets Module (e2e)', () => {
         .set('Authorization', `Bearer ${financeToken}`);
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
-      const budget = response.body.find((b: { id: string }) => b.id === testBudgetId);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      const budget = response.body.data.find((b: { id: string }) => b.id === testBudgetId);
       expect(budget).toBeDefined();
     });
 
@@ -365,7 +366,7 @@ describe('Budgets Module (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`);
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
     });
 
     it('should list budgets for approver user', async () => {
@@ -374,7 +375,7 @@ describe('Budgets Module (e2e)', () => {
         .set('Authorization', `Bearer ${approverToken}`);
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body)).toBe(true);
+      expect(Array.isArray(response.body.data)).toBe(true);
     });
 
     it('should reject budget listing by employee', async () => {
@@ -391,7 +392,7 @@ describe('Budgets Module (e2e)', () => {
         .set('Authorization', `Bearer ${financeToken}`);
 
       expect(response.status).toBe(200);
-      response.body.forEach((budget: { type: BudgetType }) => {
+      response.body.data.forEach((budget: { type: BudgetType }) => {
         expect(budget.type).toBe(BudgetType.DEPARTMENT);
       });
     });
@@ -417,7 +418,7 @@ describe('Budgets Module (e2e)', () => {
         .set('Authorization', `Bearer ${financeToken}`);
 
       expect(response.status).toBe(200);
-      const found = response.body.find((b: { id: string }) => b.id === inactiveBudget.id);
+      const found = response.body.data.find((b: { id: string }) => b.id === inactiveBudget.id);
       expect(found).toBeDefined();
 
       // Cleanup
@@ -506,7 +507,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Test utilization expense',
           expenseDate: new Date(),
           amount: new Decimal(100000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(100000),
           amountInPKR: new Decimal(100000),
           status: ExpenseStatus.APPROVED,
@@ -562,7 +563,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Expense exceeding budget',
           expenseDate: new Date(),
           amount: new Decimal(60000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(60000),
           amountInPKR: new Decimal(60000),
           status: ExpenseStatus.APPROVED,
@@ -1020,7 +1021,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Large expense',
           expenseDate: new Date(),
           amount: new Decimal(450000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(450000),
           amountInPKR: new Decimal(450000),
           status: ExpenseStatus.APPROVED,
@@ -1136,7 +1137,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Threshold expense',
           expenseDate: new Date(),
           amount: new Decimal(75000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(75000),
           amountInPKR: new Decimal(75000),
           status: ExpenseStatus.APPROVED,
@@ -1187,7 +1188,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Hard block test',
           expenseDate: new Date(),
           amount: new Decimal(45000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(45000),
           amountInPKR: new Decimal(45000),
           status: ExpenseStatus.APPROVED,
@@ -1240,7 +1241,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Escalate test',
           expenseDate: new Date(),
           amount: new Decimal(45000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(45000),
           amountInPKR: new Decimal(45000),
           status: ExpenseStatus.APPROVED,
@@ -1570,7 +1571,7 @@ describe('Budgets Module (e2e)', () => {
           description: 'Tracking expense',
           expenseDate: new Date(),
           amount: new Decimal(40000),
-          currency: 'PKR',
+          currency: Currency.PKR,
           totalAmount: new Decimal(40000),
           amountInPKR: new Decimal(40000),
           status: ExpenseStatus.APPROVED,
