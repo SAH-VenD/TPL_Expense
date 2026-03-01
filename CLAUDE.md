@@ -29,6 +29,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Bundle Optimization:** Lazy-loaded routes (218 KB initial vs 1,286 KB before, 83% reduction), vendor chunk splitting
 - **CI/CD:** GitHub Actions pipeline with lint-build, unit tests (API + web), E2E tests with PostgreSQL
 
+### UI/UX Hardening (2026-03-02) - COMPLETE
+- **CI/CD Fixes:** Resolved lint error + 4 failing E2E test suites (enum casts, response format mismatches)
+- **Accessibility:** WCAG 2.1.1 keyboard navigation for DataTable rows, aria-labels on checkboxes, mobile nav toggle
+- **Code Consistency:** Shared `formatCurrency` utility (replaced 24 local copies), Heroicons everywhere (replaced emoji + inline SVGs), shared Pagination component
+- **UX Fixes:** Blob URL memory leak fix in ExpenseCreatePage, mobile-responsive approval cards
+
 ## Repository Structure
 
 ```
