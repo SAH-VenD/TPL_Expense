@@ -64,7 +64,9 @@ describe('validateEnvironment', () => {
       delete process.env.JWT_ACCESS_SECRET;
       delete process.env.JWT_REFRESH_SECRET;
 
-      expect(() => validateEnvironment()).toThrow(/DATABASE_URL.*JWT_ACCESS_SECRET.*JWT_REFRESH_SECRET/s);
+      expect(() => validateEnvironment()).toThrow(
+        /DATABASE_URL.*JWT_ACCESS_SECRET.*JWT_REFRESH_SECRET/s,
+      );
     });
   });
 
@@ -127,9 +129,7 @@ describe('validateEnvironment', () => {
 
       validateEnvironment();
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('FRONTEND_URL is not set'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('FRONTEND_URL is not set'));
     });
 
     it('should warn when SMTP_HOST is missing in production', () => {
@@ -142,9 +142,7 @@ describe('validateEnvironment', () => {
 
       validateEnvironment();
 
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('SMTP_HOST is not set'),
-      );
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('SMTP_HOST is not set'));
     });
 
     it('should not warn about production variables in development', () => {

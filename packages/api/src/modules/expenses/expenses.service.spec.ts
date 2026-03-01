@@ -2,14 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ExpensesService } from './expenses.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { EmailService } from '../notifications/email.service';
-import {
-  ExpenseStatus,
-  RoleType,
-  UserStatus,
-  User,
-  ExpenseType,
-  Currency,
-} from '@prisma/client';
+import { ExpenseStatus, RoleType, UserStatus, User, ExpenseType, Currency } from '@prisma/client';
 import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -560,7 +553,12 @@ describe('ExpensesService', () => {
   describe('findOne', () => {
     const expenseWithSubmitter = {
       ...mockExpense,
-      submitter: { id: 'employee-id', firstName: 'Test', lastName: 'Employee', departmentId: 'dept-1' },
+      submitter: {
+        id: 'employee-id',
+        firstName: 'Test',
+        lastName: 'Employee',
+        departmentId: 'dept-1',
+      },
       approvalHistory: [],
       comments: [],
       splits: [],
@@ -759,9 +757,7 @@ describe('ExpensesService', () => {
     it('should throw NotFoundException for non-existent expense', async () => {
       mockPrismaService.expense.findUnique.mockResolvedValue(null);
 
-      await expect(service.submit('non-existent', mockEmployee)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.submit('non-existent', mockEmployee)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when non-owner submits', async () => {
@@ -771,9 +767,7 @@ describe('ExpensesService', () => {
         receipts: [{ id: 'receipt-1' }],
       });
 
-      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(ForbiddenException);
       await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
         'only submit your own expenses',
       );
@@ -786,9 +780,7 @@ describe('ExpensesService', () => {
         receipts: [{ id: 'receipt-1' }],
       });
 
-      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(BadRequestException);
       await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
         'Only draft expenses',
       );
@@ -801,9 +793,7 @@ describe('ExpensesService', () => {
         receipts: [],
       });
 
-      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(BadRequestException);
       await expect(service.submit('expense-id', mockEmployee)).rejects.toThrow(
         'At least one receipt',
       );
@@ -859,9 +849,7 @@ describe('ExpensesService', () => {
         ...mockExpense,
         status: ExpenseStatus.SUBMITTED,
       });
-      mockEmailService.sendExpenseSubmittedEmail.mockRejectedValue(
-        new Error('SMTP error'),
-      );
+      mockEmailService.sendExpenseSubmittedEmail.mockRejectedValue(new Error('SMTP error'));
 
       const result = await service.submit('expense-id', mockEmployee);
 
@@ -1003,9 +991,7 @@ describe('ExpensesService', () => {
     it('should throw NotFoundException for non-existent expense', async () => {
       mockPrismaService.expense.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('non-existent', mockEmployee)).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(service.remove('non-existent', mockEmployee)).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when non-owner deletes', async () => {
@@ -1014,9 +1000,7 @@ describe('ExpensesService', () => {
         submitterId: 'other-user-id',
       });
 
-      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(ForbiddenException);
       await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(
         'only delete your own expenses',
       );
@@ -1028,9 +1012,7 @@ describe('ExpensesService', () => {
         status: ExpenseStatus.SUBMITTED,
       });
 
-      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(BadRequestException);
       await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(
         'Only draft expenses',
       );
@@ -1042,9 +1024,7 @@ describe('ExpensesService', () => {
         status: ExpenseStatus.APPROVED,
       });
 
-      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.remove('expense-id', mockEmployee)).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -1334,9 +1314,7 @@ describe('ExpensesService', () => {
     });
 
     it('should throw NotFoundException when some expenses not found', async () => {
-      mockPrismaService.expense.findMany.mockResolvedValue([
-        { ...mockExpense, id: 'expense-1' },
-      ]);
+      mockPrismaService.expense.findMany.mockResolvedValue([{ ...mockExpense, id: 'expense-1' }]);
 
       await expect(service.bulkDelete(mockEmployee.id, expenseIds)).rejects.toThrow(
         NotFoundException,

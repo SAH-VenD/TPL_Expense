@@ -90,10 +90,7 @@ describe('PreApprovalsService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        PreApprovalsService,
-        { provide: PrismaService, useValue: mockPrismaService },
-      ],
+      providers: [PreApprovalsService, { provide: PrismaService, useValue: mockPrismaService }],
     }).compile();
 
     service = module.get<PreApprovalsService>(PreApprovalsService);
@@ -386,9 +383,7 @@ describe('PreApprovalsService', () => {
       mockPrismaService.preApproval.findUnique.mockResolvedValue(preApprovalWithIncludes);
 
       await expect(service.findOne('pa-id', mockApprover)).rejects.toThrow(ForbiddenException);
-      await expect(service.findOne('pa-id', mockApprover)).rejects.toThrow(
-        'do not have access',
-      );
+      await expect(service.findOne('pa-id', mockApprover)).rejects.toThrow('do not have access');
     });
 
     it('should throw NotFoundException for non-existent pre-approval', async () => {
@@ -533,9 +528,7 @@ describe('PreApprovalsService', () => {
         status: PreApprovalStatus.PENDING,
       });
 
-      await expect(service.reject('pa-id', mockApprover, '')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(service.reject('pa-id', mockApprover, '')).rejects.toThrow(BadRequestException);
       await expect(service.reject('pa-id', mockApprover, '')).rejects.toThrow(
         'Rejection reason is required',
       );

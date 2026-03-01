@@ -1,9 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
-} from '@nestjs/common';
+import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { ReceiptsService } from './receipts.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
@@ -384,10 +380,7 @@ describe('ReceiptsService', () => {
 
       await service.getDownloadUrl('receipt-1', mockUser);
 
-      expect(mockStorageService.getSignedUrl).toHaveBeenCalledWith(
-        receiptWithExpense.s3Key,
-        3600,
-      );
+      expect(mockStorageService.getSignedUrl).toHaveBeenCalledWith(receiptWithExpense.s3Key, 3600);
     });
 
     it('should throw BadRequestException when signed URL generation fails', async () => {
