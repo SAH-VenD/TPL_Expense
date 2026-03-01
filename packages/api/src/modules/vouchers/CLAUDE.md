@@ -46,7 +46,7 @@ SETTLED
 2. **Maximum Amount**: 50,000 PKR limit
 3. **Purpose Length**: Minimum 10 characters
 4. **Disbursement**: Cannot exceed requested amount
-5. **Settlement Deadline**: 7 business days from disbursement
+5. **Settlement Deadline**: 7 business days (Mon-Fri, excluding weekends) from disbursement
 6. **Expense Linking**: Only PETTY_CASH type expenses, only owner can link
 7. **Overspend**: Requires justification when expenses > disbursed
 8. **Underspend**: Requires cash return confirmation
