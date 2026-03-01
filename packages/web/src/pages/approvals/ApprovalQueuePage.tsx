@@ -16,19 +16,11 @@ import {
   useBulkApproveMutation,
   useRequestClarificationMutation,
 } from '@/features/approvals/services/approvals.service';
-import { Skeleton, ConfirmDialog, showToast, PageHeader, Modal, ModalBody, ModalFooter } from '@/components/ui';
+import { Skeleton, ConfirmDialog, showToast, PageHeader, Modal, ModalBody, ModalFooter, Pagination } from '@/components/ui';
 import { useRolePermissions } from '@/hooks';
 import { getApiErrorMessage } from '@/utils/error';
+import { formatCurrency } from '@/utils/format';
 import type { Expense } from '@/features/expenses/services/expenses.service';
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatRelativeDate = (dateString: string): string => {
   try {
@@ -237,7 +229,21 @@ export function ApprovalQueuePage() {
           breadcrumbs={[{ label: 'Approvals' }]}
         />
         <div className="card overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
+          {/* Mobile skeleton */}
+          <div className="md:hidden divide-y divide-gray-200">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="p-4 space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton width={120} height={16} />
+                  <Skeleton width={80} height={16} />
+                </div>
+                <Skeleton width={200} height={14} />
+                <Skeleton width={160} height={12} />
+              </div>
+            ))}
+          </div>
+          {/* Desktop skeleton */}
+          <table className="hidden md:table min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3">
@@ -366,7 +372,111 @@ export function ApprovalQueuePage() {
 
       {/* Approval Queue */}
       <div className="card overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        {/* Mobile card layout */}
+        <div className="md:hidden divide-y divide-gray-200">
+          {pendingApprovals.map((expense: Expense) => {
+            const submitterName = expense.submitter
+              ? `${expense.submitter.firstName} ${expense.submitter.lastName}`
+              : 'Unknown';
+
+            return (
+              <div
+                key={expense.id}
+                className="p-4 hover:bg-gray-50"
+              >
+                <div className="flex items-start gap-3">
+                  {canApprove && (
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(expense.id)}
+                      onChange={() => handleSelect(expense.id)}
+                      aria-label={`Select expense ${expense.expenseNumber || expense.description || expense.id}`}
+                      className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                  )}
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => handleRowClick(expense.id)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleRowClick(expense.id);
+                      }
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="min-w-0">
+                        <p className="font-medium text-primary-600 text-sm">
+                          {expense.expenseNumber || `EXP-${expense.id.slice(0, 8)}`}
+                        </p>
+                        <p className="text-sm text-gray-700 truncate">
+                          {expense.description || 'No description'}
+                        </p>
+                      </div>
+                      <span className="font-semibold text-gray-900 text-sm ml-2 whitespace-nowrap">
+                        {formatCurrency(expense.totalAmount, expense.currency)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                      <span>{submitterName}</span>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>{expense.category?.name || 'Uncategorized'}</span>
+                      <span aria-hidden="true">&middot;</span>
+                      <span>
+                        {expense.submittedAt
+                          ? formatRelativeDate(expense.submittedAt)
+                          : formatRelativeDate(expense.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {canApprove && (
+                  <div className="flex flex-wrap gap-2 mt-3 pl-7">
+                    <button
+                      onClick={() => handleApprove(expense.id)}
+                      disabled={isActionInProgress}
+                      className="px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 inline-flex items-center"
+                    >
+                      <CheckIcon className="h-3.5 w-3.5 mr-1" />
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRejectClick(expense.id)}
+                      disabled={isActionInProgress}
+                      className="px-3 py-1.5 text-xs bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 inline-flex items-center"
+                    >
+                      <XMarkIcon className="h-3.5 w-3.5 mr-1" />
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleClarifyClick(expense.id)}
+                      disabled={isActionInProgress}
+                      className="px-3 py-1.5 text-xs bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50 inline-flex items-center"
+                    >
+                      <QuestionMarkCircleIcon className="h-3.5 w-3.5 mr-1" />
+                      Clarify
+                    </button>
+                    {canEmergencyApprove && (
+                      <button
+                        onClick={() => handleEmergencyClick(expense.id)}
+                        disabled={isActionInProgress}
+                        className="px-3 py-1.5 text-xs bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 inline-flex items-center"
+                      >
+                        <BoltIcon className="h-3.5 w-3.5 mr-1" />
+                        Emergency
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop table layout */}
+        <table className="hidden md:table min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               {canApprove && (
@@ -378,6 +488,7 @@ export function ApprovalQueuePage() {
                     }
                     onChange={handleSelectAll}
                     disabled={pendingApprovals.length === 0}
+                    aria-label="Select all approvals"
                     className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   />
                 </th>
@@ -415,6 +526,14 @@ export function ApprovalQueuePage() {
                   key={expense.id}
                   className="hover:bg-gray-50 cursor-pointer"
                   onClick={() => handleRowClick(expense.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleRowClick(expense.id);
+                    }
+                  }}
                 >
                   {canApprove && (
                     <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
@@ -422,6 +541,7 @@ export function ApprovalQueuePage() {
                         type="checkbox"
                         checked={selectedIds.includes(expense.id)}
                         onChange={() => handleSelect(expense.id)}
+                        aria-label={`Select expense ${expense.expenseNumber || expense.description || expense.id}`}
                         className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                       />
                     </td>
@@ -521,27 +641,13 @@ export function ApprovalQueuePage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-lg">
-          <div className="text-sm text-gray-500">
-            Page {page} of {totalPages}
-          </div>
-          <div className="space-x-2">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1 || isFetching}
-              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages || isFetching}
-              className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={page}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={setPage}
+        />
       )}
 
       {/* Reject Modal */}

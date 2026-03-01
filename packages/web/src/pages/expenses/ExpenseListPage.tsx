@@ -28,15 +28,7 @@ import type {
   ExpenseFilters as ExpenseFiltersType,
 } from '@/features/expenses/services/expenses.service';
 import { formatDistanceToNow, format } from 'date-fns';
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
+import { formatCurrency } from '@/utils/format';
 
 const formatRelativeDate = (dateString: string): string => {
   try {
@@ -182,6 +174,7 @@ export function ExpenseListPage() {
             type="checkbox"
             checked={selectedExpenses.size === expenses.length && expenses.length > 0}
             onChange={handleSelectAll}
+            aria-label="Select all expenses"
             className="h-4 w-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
           />
         ) as unknown as string,
@@ -191,6 +184,7 @@ export function ExpenseListPage() {
             checked={selectedExpenses.has(expense.id)}
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => handleSelectExpense(expense.id, e.target.checked)}
+            aria-label={`Select expense ${expense.expenseNumber || expense.description || expense.id}`}
             className="h-4 w-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
           />
         ),
