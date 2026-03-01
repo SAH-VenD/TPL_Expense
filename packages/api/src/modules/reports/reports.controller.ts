@@ -190,6 +190,6 @@ export class ReportsController {
 
     res.setHeader('Content-Type', file.contentType);
     res.setHeader('Content-Disposition', `attachment; filename="${file.filename}"`);
-    res.send(file.buffer);
+    res.status(200).send(file.buffer);
   }
 }

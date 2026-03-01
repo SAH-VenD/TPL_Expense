@@ -776,11 +776,18 @@ export class ApprovalsService {
     const expensesForUser: Expense[] = [];
 
     for (const expense of pendingExpenses) {
-      const requiredTier = await this.getRequiredApprovalTier(expense);
-      const { isAuthorized } = await this.checkApprovalAuthority(userId, expense, requiredTier);
+      try {
+        const requiredTier = await this.getRequiredApprovalTier(expense);
+        const { isAuthorized } = await this.checkApprovalAuthority(userId, expense, requiredTier);
 
-      if (isAuthorized) {
-        expensesForUser.push(expense);
+        if (isAuthorized) {
+          expensesForUser.push(expense);
+        }
+      } catch {
+        // Skip expenses with no matching approval tier configured
+        this.logger.warn(
+          `Skipping expense ${expense.id} in pending list: no matching approval tier`,
+        );
       }
     }
 
