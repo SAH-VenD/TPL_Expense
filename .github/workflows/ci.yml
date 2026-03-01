@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate --schema packages/api/prisma/schema.prisma
+
+      - run: npm run lint
+
+      - run: npm run build
+
+  test-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate --schema packages/api/prisma/schema.prisma
+
+      - run: npm run test -w @tpl-expense/api
+
+  test-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test -w @tpl-expense/web
+
+  test-e2e-api:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: expense_user
+          POSTGRES_PASSWORD: expense_pass
+          POSTGRES_DB: expense_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://expense_user:expense_pass@localhost:5432/expense_test
+      JWT_ACCESS_SECRET: ci-test-secret-key-minimum-length
+      JWT_REFRESH_SECRET: ci-test-refresh-key-minimum-length
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate --schema packages/api/prisma/schema.prisma
+
+      - run: npx prisma migrate deploy --schema packages/api/prisma/schema.prisma
+
+      - run: npm run test:e2e -w @tpl-expense/api -- --runInBand

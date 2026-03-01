@@ -1,6 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { User, RoleType } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TextractProvider, OcrResult } from './providers/textract.provider';
+
+/** Roles that can access any receipt for auditing purposes */
+const RECEIPT_AUDIT_ROLES: RoleType[] = [RoleType.ADMIN, RoleType.FINANCE];
 
 @Injectable()
 export class OcrService {
@@ -11,13 +15,21 @@ export class OcrService {
     private textractProvider: TextractProvider,
   ) {}
 
-  async processReceipt(receiptId: string): Promise<OcrResult> {
+  async processReceipt(receiptId: string, user: User): Promise<OcrResult> {
     const receipt = await this.prisma.receipt.findUnique({
       where: { id: receiptId },
+      include: { expense: true },
     });
 
     if (!receipt) {
-      throw new Error(`Receipt with ID ${receiptId} not found`);
+      throw new NotFoundException(`Receipt with ID ${receiptId} not found`);
+    }
+
+    const isOwner = receipt.expense.submitterId === user.id;
+    const canAudit = RECEIPT_AUDIT_ROLES.includes(user.role);
+
+    if (!isOwner && !canAudit) {
+      throw new ForbiddenException('You do not have permission to access this receipt');
     }
 
     this.logger.log(`Processing receipt: ${receiptId}`);
@@ -104,7 +116,7 @@ export class OcrService {
     this.logger.log(`Updated expense ${expenseId} from OCR data`);
   }
 
-  async reprocessReceipt(receiptId: string): Promise<OcrResult> {
-    return this.processReceipt(receiptId);
+  async reprocessReceipt(receiptId: string, user: User): Promise<OcrResult> {
+    return this.processReceipt(receiptId, user);
   }
 }

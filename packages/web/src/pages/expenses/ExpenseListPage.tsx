@@ -92,7 +92,7 @@ export function ExpenseListPage() {
   const [bulkSubmit, { isLoading: isBulkSubmitting }] = useBulkSubmitExpensesMutation();
   const [bulkDelete, { isLoading: isBulkDeleting }] = useBulkDeleteExpensesMutation();
 
-  const expenses = data?.data || [];
+  const expenses = React.useMemo(() => data?.data || [], [data?.data]);
   const pagination = data?.meta?.pagination;
 
   // Handle filter changes

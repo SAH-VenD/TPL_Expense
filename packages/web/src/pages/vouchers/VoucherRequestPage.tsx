@@ -7,6 +7,7 @@ import {
 import type { CreateVoucherDto } from '@/features/vouchers/types/vouchers.types';
 import { VOUCHER_ROUTES } from '@/features/vouchers/types/vouchers.types';
 import { showToast, PageHeader } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/error';
 
 export function VoucherRequestPage() {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ export function VoucherRequestPage() {
       const result = await createVoucher(data).unwrap();
       showToast.success('Voucher request submitted successfully');
       navigate(VOUCHER_ROUTES.DETAIL(result.id));
-    } catch (error: any) {
-      showToast.error(error?.data?.message || 'Failed to create voucher request');
+    } catch (error) {
+      showToast.error(getApiErrorMessage(error, 'Failed to create voucher request'));
     }
   };
 

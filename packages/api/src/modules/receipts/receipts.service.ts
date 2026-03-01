@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
+import { validateFileSignature } from '../../common/utils/file-validation';
 import { ExpenseStatus, User } from '@prisma/client';
 import { createHash } from 'crypto';
 
@@ -49,6 +50,11 @@ export class ReceiptsService {
 
     if (existingReceipt) {
       throw new BadRequestException('This receipt has already been uploaded');
+    }
+
+    // Validate file content matches declared MIME type
+    if (!validateFileSignature(file.buffer, file.mimetype)) {
+      throw new BadRequestException('File content does not match declared file type');
     }
 
     // Generate storage key and upload file

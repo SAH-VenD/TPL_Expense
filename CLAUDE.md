@@ -11,53 +11,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Frontend: React 18 + TypeScript + Vite + Redux Toolkit + Tailwind CSS
 - Infrastructure: Docker Compose (Postgres, Redis, LocalStack S3/Textract, MailHog)
 
-## Current Status (as of 2026-02-11)
+## Current Status (as of 2026-03-01)
 
-### Phase 1: Backend Implementation - COMPLETE
-All 12 backend modules implemented with comprehensive test coverage:
-- **Total:** 796 unit tests (20 suites), 100+ E2E tests
-- **Modules:** auth, users, categories, departments, storage, expenses, receipts, approvals, vouchers, budgets, reports, pre-approvals
+### All Development Phases - COMPLETE
+- **Backend:** 12 NestJS modules, 838 unit tests (22 suites), 100+ E2E tests
+- **Frontend:** 11 epics complete (dashboard, expenses, approvals, vouchers, budgets, reports, admin, OCR, pre-approvals, notifications)
+- **RBAC:** 6 roles (EMPLOYEE, APPROVER, SUPER_APPROVER, FINANCE, CEO, ADMIN) with emergency approvals
+- **Integrations:** Password reset, email notifications, PDF export
 
-### Phase 2: Frontend Implementation - COMPLETE
-| Epic | Name | Status |
-|------|------|--------|
-| 1 | UI Component Library | Complete |
-| 2 | Dashboard | Complete (role-based widget visibility) |
-| 3 | Expense Management | Complete (4 pages + OCR integration) |
-| 4 | Approval Workflow | Complete (emergency approvals, SUPER_APPROVER) |
-| 5 | Voucher Management | Complete (3 pages) |
-| 6 | Budget Management | Complete (3 pages + tests) |
-| 7 | Reports & Analytics | Complete (6 report types + XLSX/CSV/PDF export) |
-| 8 | Administration | Complete (4 pages, connected to APIs) |
-| 9 | OCR & Receipt Processing | Complete (camera capture, auto-populate) |
-| 10 | Pre-Approval Workflow | Complete (3 pages + travel details) |
-| 11 | Notifications & Alerts | Complete |
-
-### RBAC Overhaul - COMPLETE
-- **6 roles:** EMPLOYEE, APPROVER, SUPER_APPROVER, FINANCE, CEO, ADMIN
-- **SUPER_APPROVER:** Cross-department approver with org-wide visibility and emergency approvals
-- **CEO:** Highest tier approver, emergency approvals without justification
-- **ADMIN:** System administration with read-only access to approvals (separation of duties)
-- **Emergency Approvals:** UI with justification requirement (min 20 chars, waived for CEO)
-- **Role constants:** Consistent frontend/backend role groups (APPROVING_ROLES, APPROVAL_READ_ROLES, EMERGENCY_APPROVAL_ROLES, etc.)
-
-### Phase 3: Backend Integrations - COMPLETE
-- **Password Reset:** Secure token-based flow with SHA256 hashing, anti-enumeration, password history enforcement
-- **Email Notifications:** Fire-and-forget integration in approvals (approve/reject/clarify) and expenses (submit)
-- **PDF Export:** Real PDFKit implementation with styled tables, auto page-break, landscape A4
-
-### QA/Polish - COMPLETE
-- All admin pages connected to real APIs (Categories, Audit Logs, Settings)
-- Report exports working (XLSX/CSV/PDF)
-- ESLint configured for web package
-- 150+ E2E tests across 11 Playwright spec files
-- 110 web unit tests (4 suites) covering admin pages, budgets
-- Profile page with password change
-
-### Bug Fixes (2026-02-11)
-- **Audit Logs 500 Error:** NestJS `enableImplicitConversion` converted undefined query params to `NaN` for number types; fixed with `Number(x) || default` pattern in `audit.service.ts`
-- **Audit Logs Response Format:** Backend returned flat `meta` but frontend expected `meta.pagination` wrapper; aligned to standard `PaginatedResponse<T>` format
-- **Vitest E2E Collision:** Vitest was picking up Playwright E2E files; added `exclude: ['e2e/**']` to `vitest.config.ts`
+### Production Readiness (2026-03-01) - COMPLETE
+- **Security Hardening:**
+  - npm vulnerability remediation (0 critical, 0 high in production deps)
+  - Magic bytes file upload validation (JPEG, PNG, PDF, HEIC)
+  - Startup environment variable validation with Zod (rejects insecure defaults)
+  - OCR endpoint IDOR fix (ownership check + role-based bypass for ADMIN/FINANCE)
+- **Code Quality:** ESLint 0 warnings (was 10/10), typed error handling utility
+- **Bundle Optimization:** Lazy-loaded routes (218 KB initial vs 1,286 KB before, 83% reduction), vendor chunk splitting
+- **CI/CD:** GitHub Actions pipeline with lint-build, unit tests (API + web), E2E tests with PostgreSQL
 
 ## Repository Structure
 
@@ -344,18 +314,36 @@ Stop with: `docker-compose down`
 ## Testing Strategy
 
 ### Backend Tests
-- Unit tests use Jest with `@nestjs/testing`
-- E2E tests in `packages/api/test/` with supertest
+- **838 unit tests** (22 suites) using Jest with `@nestjs/testing`
+- **100+ E2E tests** in `packages/api/test/` with supertest
 - Test database setup in `test/test-utils.ts`
 
 ### Frontend Tests
-- Unit/integration tests use Vitest + React Testing Library
+- **110 unit tests** (4 suites) using Vitest + React Testing Library
 - Configuration in `vitest.config.ts`
+
+### CI/CD
+- GitHub Actions pipeline (`.github/workflows/ci.yml`)
+- 4 parallel jobs: lint-and-build, test-api, test-web, test-e2e-api
+- E2E tests run with PostgreSQL service container and `--runInBand`
+
+## Security
+
+### File Upload Validation
+- Magic bytes verification in `packages/api/src/common/utils/file-validation.ts`
+- Validates JPEG (FF D8 FF), PNG, PDF, HEIC signatures before S3 upload
+
+### Environment Validation
+- Startup validation in `packages/api/src/common/config/env-validation.ts`
+- Rejects insecure JWT secret defaults, validates DATABASE_URL format
+
+### OCR Authorization
+- Ownership check prevents IDOR — only receipt owner or ADMIN/FINANCE can access OCR
 
 ## Code Style
 
 - Prettier config in `.prettierrc` (single quotes, 100 char width, 2 space indent)
-- ESLint for both TypeScript packages
+- ESLint for both TypeScript packages (0 warnings enforced)
 - Run `npm run format` before committing
 
 ## Common Workflows
