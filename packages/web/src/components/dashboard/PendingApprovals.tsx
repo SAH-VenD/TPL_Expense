@@ -23,6 +23,7 @@ import {
   useRejectExpenseMutation,
 } from '@/features/approvals/services/approvals.service';
 import type { Expense } from '@/features/expenses/services/expenses.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface PendingApprovalsProps {
   limit?: number;
@@ -30,15 +31,6 @@ export interface PendingApprovalsProps {
   onReject?: (approvalId: string, reason: string) => void;
   className?: string;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatRelativeDate = (dateString: string): string => {
   try {

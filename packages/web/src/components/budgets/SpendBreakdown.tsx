@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import clsx from 'clsx';
 import type { Budget } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface CategoryBreakdown {
   category: string;
@@ -53,15 +54,6 @@ const COLORS = [
   '#06B6D4', // cyan-500
   '#F97316', // orange-500
 ];
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-PK', {

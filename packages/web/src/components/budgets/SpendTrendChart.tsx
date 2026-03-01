@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import clsx from 'clsx';
 import type { Budget } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface SpendTrendDataPoint {
   date: string;
@@ -25,15 +26,6 @@ export interface SpendTrendChartProps {
   usedAmount?: number;
   className?: string;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatShortCurrency = (amount: number) => {
   if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}M`;

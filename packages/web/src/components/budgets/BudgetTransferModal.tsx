@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Card } from '@/components/ui/Card';
 import { useGetBudgetsQuery } from '@/features/budgets/services/budgets.service';
 import type { Budget, BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetTransferData {
   sourceBudgetId: string;
@@ -25,15 +26,6 @@ export interface BudgetTransferModalProps {
   sourceUtilization?: BudgetUtilization;
   onTransfer: (data: BudgetTransferData) => Promise<void>;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR') => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 export const BudgetTransferModal: React.FC<BudgetTransferModalProps> = ({
   isOpen,

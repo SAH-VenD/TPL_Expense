@@ -3,21 +3,13 @@ import clsx from 'clsx';
 import { DataTable, Column } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { BudgetUtilization } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetUtilizationTableProps {
   budgets: BudgetUtilization[];
   isLoading: boolean;
   onRowClick: (budget: BudgetUtilization) => void;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const getBudgetTypeBadgeVariant = (
   type: string,

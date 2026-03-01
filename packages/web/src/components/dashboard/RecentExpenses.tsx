@@ -13,20 +13,12 @@ import {
   EmptyState,
 } from '@/components/ui';
 import { useGetExpensesQuery, type Expense } from '@/features/expenses/services/expenses.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface RecentExpensesProps {
   limit?: number;
   className?: string;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const formatRelativeDate = (dateString: string): string => {
   try {

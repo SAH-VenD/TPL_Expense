@@ -11,6 +11,7 @@ import {
   useGetBudgetSummaryQuery,
   type BudgetUtilization,
 } from '@/features/budgets/services/budgets.service';
+import { formatCurrency } from '@/utils/format';
 
 export interface BudgetOverviewProps {
   limit?: number;
@@ -28,15 +29,6 @@ interface BudgetDisplayItem {
   currency: string;
   warningThreshold: number;
 }
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
 
 const getUtilizationColor = (utilization: number): string => {
   if (utilization >= 90) return 'bg-red-500';

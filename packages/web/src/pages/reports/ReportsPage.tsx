@@ -1,5 +1,14 @@
-import { useState } from 'react';
+import { type ComponentType, useState } from 'react';
+import {
+  BuildingOfficeIcon,
+  ChartBarIcon,
+  BuildingStorefrontIcon,
+  ArrowTrendingUpIcon,
+  BanknotesIcon,
+  ClipboardDocumentListIcon,
+} from '@heroicons/react/24/outline';
 import { PageHeader, Spinner } from '@/components/ui';
+import { formatCurrency } from '@/utils/format';
 import {
   useGetSpendByDepartmentQuery,
   useGetSpendByCategoryQuery,
@@ -22,7 +31,7 @@ interface ReportConfig {
   id: ReportType;
   name: string;
   description: string;
-  icon: string;
+  icon: ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 const REPORTS: ReportConfig[] = [
@@ -30,37 +39,37 @@ const REPORTS: ReportConfig[] = [
     id: 'spend-by-department',
     name: 'Spend by Department',
     description: 'View expense breakdown by department',
-    icon: '🏢',
+    icon: BuildingOfficeIcon,
   },
   {
     id: 'spend-by-category',
     name: 'Spend by Category',
     description: 'Analyze spending across expense categories',
-    icon: '📊',
+    icon: ChartBarIcon,
   },
   {
     id: 'spend-by-vendor',
     name: 'Spend by Vendor',
     description: 'See which vendors receive the most payments',
-    icon: '🏪',
+    icon: BuildingStorefrontIcon,
   },
   {
     id: 'budget-vs-actual',
     name: 'Budget vs Actual',
     description: 'Compare budgeted amounts with actual spending',
-    icon: '📈',
+    icon: ArrowTrendingUpIcon,
   },
   {
     id: 'outstanding-advances',
     name: 'Outstanding Advances',
     description: 'Track unsettled petty cash advances',
-    icon: '💰',
+    icon: BanknotesIcon,
   },
   {
     id: 'tax-summary',
     name: 'Tax Summary',
     description: 'FBR compliance tax summary report',
-    icon: '📋',
+    icon: ClipboardDocumentListIcon,
   },
 ];
 
@@ -131,10 +140,6 @@ export function ReportsPage() {
       const error = err as { data?: { message?: string } };
       setExportError(error.data?.message || 'Failed to export report');
     }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `PKR ${amount.toLocaleString()}`;
   };
 
   const renderReportContent = () => {
@@ -418,7 +423,7 @@ export function ReportsPage() {
                 : 'border-gray-200 hover:border-gray-300 bg-white'
             }`}
           >
-            <span className="text-2xl block mb-2">{report.icon}</span>
+            <report.icon className="h-6 w-6 text-primary-600 mb-2" />
             <h3 className="font-medium text-gray-900">{report.name}</h3>
             <p className="text-sm text-gray-500 mt-1">{report.description}</p>
           </button>

@@ -12,6 +12,7 @@ import {
   type BudgetPeriod,
 } from '@/features/budgets/services/budgets.service';
 import clsx from 'clsx';
+import { formatCurrency } from '@/utils/format';
 
 // Budget-specific view preference hook
 const BUDGETS_VIEW_KEY = 'budgets_view';
@@ -35,15 +36,6 @@ const useBudgetViewPreference = (
   }, []);
 
   return [view, handleViewChange];
-};
-
-const formatCurrency = (amount: number, currency: string = 'PKR'): string => {
-  return new Intl.NumberFormat('en-PK', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
 };
 
 const getUtilizationColor = (utilization: number): string => {

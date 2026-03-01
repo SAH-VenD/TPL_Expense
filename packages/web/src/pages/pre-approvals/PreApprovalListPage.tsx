@@ -22,6 +22,7 @@ import {
   EmptyState,
   Textarea,
 } from '@/components/ui';
+import { formatCurrency } from '@/utils/format';
 
 const statusOptions: { value: PreApprovalStatus | ''; label: string }[] = [
   { value: '', label: 'All Statuses' },
@@ -73,13 +74,6 @@ export function PreApprovalListPage() {
   const handleRowClick = (id: string) => {
     navigate(`/pre-approvals/${id}`);
   };
-
-  const formatCurrency = (amount: number, currency = 'PKR') =>
-    new Intl.NumberFormat('en-PK', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 0,
-    }).format(amount);
 
   return (
     <div className="space-y-6">
