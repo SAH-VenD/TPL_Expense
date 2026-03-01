@@ -22,9 +22,11 @@ import {
   ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
+import { User } from '@prisma/client';
 import { ReceiptsService } from './receipts.service';
 import { OcrService } from '../ocr/ocr.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AuthenticatedRequest } from '../../common/types/request';
 
 @ApiTags('Receipts')
@@ -116,18 +118,20 @@ export class ReceiptsController {
   @ApiOperation({ summary: 'Trigger OCR processing on a receipt' })
   @ApiParam({ name: 'id', description: 'Receipt ID' })
   @ApiResponse({ status: 200, description: 'OCR results' })
+  @ApiResponse({ status: 403, description: 'Forbidden - not the receipt owner' })
   @ApiResponse({ status: 404, description: 'Receipt not found' })
-  processOcr(@Param('id') id: string) {
-    return this.ocrService.processReceipt(id);
+  processOcr(@CurrentUser() user: User, @Param('id') id: string) {
+    return this.ocrService.processReceipt(id, user);
   }
 
   @Get(':id/ocr-data')
   @ApiOperation({ summary: 'Get OCR extraction results for a receipt' })
   @ApiParam({ name: 'id', description: 'Receipt ID' })
   @ApiResponse({ status: 200, description: 'OCR data' })
+  @ApiResponse({ status: 403, description: 'Forbidden - not the receipt owner' })
   @ApiResponse({ status: 404, description: 'Receipt not found' })
-  async getOcrData(@Param('id') id: string) {
-    const receipt = await this.receiptsService.findOneInternal(id);
+  async getOcrData(@CurrentUser() user: User, @Param('id') id: string) {
+    const receipt = await this.receiptsService.findOne(id, user);
     return {
       receiptId: receipt.id,
       ocrStatus: receipt.ocrStatus,

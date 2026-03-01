@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { RoleType } from '@prisma/client';
 import { OcrService } from './ocr.service';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TextractProvider, OcrResult } from './providers/textract.provider';
@@ -24,6 +26,19 @@ describe('OcrService', () => {
     analyzeExpense: jest.fn(),
   };
 
+  const mockUser = {
+    id: 'user-1',
+    email: 'employee@tekcellent.com',
+    firstName: 'Jane',
+    lastName: 'Employee',
+    role: RoleType.EMPLOYEE,
+  } as any;
+
+  const mockExpense = {
+    id: 'expense-1',
+    submitterId: 'user-1',
+  };
+
   const mockReceipt = {
     id: 'receipt-1',
     expenseId: 'expense-1',
@@ -33,6 +48,7 @@ describe('OcrService', () => {
     ocrStatus: null,
     ocrResult: null,
     ocrConfidence: null,
+    expense: mockExpense,
   };
 
   const highConfidenceResult: OcrResult = {
@@ -88,7 +104,7 @@ describe('OcrService', () => {
       });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      const result = await service.processReceipt('receipt-1');
+      const result = await service.processReceipt('receipt-1', mockUser);
 
       expect(result).toEqual(highConfidenceResult);
       expect(mockTextractProvider.analyzeExpense).toHaveBeenCalledWith(mockReceipt.s3Key);
@@ -102,7 +118,7 @@ describe('OcrService', () => {
       mockPrismaService.vendor.create.mockResolvedValue({ id: 'vendor-1' });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       expect(mockPrismaService.receipt.update).toHaveBeenCalledWith({
         where: { id: 'receipt-1' },
@@ -124,7 +140,7 @@ describe('OcrService', () => {
       });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       expect(mockPrismaService.expense.update).toHaveBeenCalledWith({
         where: { id: 'expense-1' },
@@ -147,7 +163,7 @@ describe('OcrService', () => {
       mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
       expect(updateArgs.data.expenseDate).toEqual(new Date('2026-01-15'));
@@ -159,7 +175,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      const result = await service.processReceipt('receipt-1');
+      const result = await service.processReceipt('receipt-1', mockUser);
 
       expect(result).toEqual(lowConfidenceResult);
       expect(mockPrismaService.expense.update).toHaveBeenCalledWith({
@@ -177,7 +193,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       // The expense.update for low confidence should only set review flags, not data fields
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
@@ -188,8 +204,8 @@ describe('OcrService', () => {
     it('should throw error when receipt is not found', async () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(null);
 
-      await expect(service.processReceipt('nonexistent')).rejects.toThrow(
-        'Receipt with ID nonexistent not found',
+      await expect(service.processReceipt('nonexistent', mockUser)).rejects.toThrow(
+        NotFoundException,
       );
     });
 
@@ -197,7 +213,9 @@ describe('OcrService', () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
       mockTextractProvider.analyzeExpense.mockRejectedValue(new Error('Textract unavailable'));
 
-      await expect(service.processReceipt('receipt-1')).rejects.toThrow('Textract unavailable');
+      await expect(service.processReceipt('receipt-1', mockUser)).rejects.toThrow(
+        'Textract unavailable',
+      );
     });
 
     it('should auto-create vendor when vendor name extracted and no match found', async () => {
@@ -211,7 +229,7 @@ describe('OcrService', () => {
       });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       expect(mockPrismaService.vendor.create).toHaveBeenCalledWith({
         data: {
@@ -232,7 +250,7 @@ describe('OcrService', () => {
       });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       expect(mockPrismaService.vendor.create).not.toHaveBeenCalled();
       expect(mockPrismaService.vendor.findFirst).toHaveBeenCalledWith({
@@ -252,7 +270,7 @@ describe('OcrService', () => {
       mockPrismaService.vendor.create.mockResolvedValue({ id: 'new-vendor' });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       const createArgs = mockPrismaService.vendor.create.mock.calls[0][0];
       expect(createArgs.data.address).toBeUndefined();
@@ -268,7 +286,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
       expect(updateArgs.data.amount).toBe(1500);
@@ -288,7 +306,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       // Confidence === 80 should trigger auto-update (>= 80)
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
@@ -306,7 +324,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
       expect(updateArgs.data.ocrNeedsReview).toBe(true);
@@ -323,10 +341,78 @@ describe('OcrService', () => {
       mockPrismaService.receipt.update.mockResolvedValue({});
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.processReceipt('receipt-1');
+      await service.processReceipt('receipt-1', mockUser);
 
       const updateArgs = mockPrismaService.expense.update.mock.calls[0][0];
       expect(updateArgs.data.totalAmount).toBe(7500);
+    });
+
+    it('should throw ForbiddenException when non-owner, non-privileged user tries to process', async () => {
+      const otherUser = { ...mockUser, id: 'other-user' };
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+
+      await expect(service.processReceipt('receipt-1', otherUser)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should throw ForbiddenException with descriptive message for unauthorized access', async () => {
+      const otherUser = { ...mockUser, id: 'other-user' };
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+
+      await expect(service.processReceipt('receipt-1', otherUser)).rejects.toThrow(
+        'You do not have permission to access this receipt',
+      );
+    });
+
+    it('should allow ADMIN to process any receipt', async () => {
+      const adminUser = { ...mockUser, id: 'admin-1', role: RoleType.ADMIN };
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+      mockTextractProvider.analyzeExpense.mockResolvedValue(highConfidenceResult);
+      mockPrismaService.receipt.update.mockResolvedValue({});
+      mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
+      mockPrismaService.expense.update.mockResolvedValue({});
+
+      const result = await service.processReceipt('receipt-1', adminUser);
+
+      expect(result).toEqual(highConfidenceResult);
+    });
+
+    it('should allow FINANCE to process any receipt', async () => {
+      const financeUser = { ...mockUser, id: 'finance-1', role: RoleType.FINANCE };
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+      mockTextractProvider.analyzeExpense.mockResolvedValue(highConfidenceResult);
+      mockPrismaService.receipt.update.mockResolvedValue({});
+      mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
+      mockPrismaService.expense.update.mockResolvedValue({});
+
+      const result = await service.processReceipt('receipt-1', financeUser);
+
+      expect(result).toEqual(highConfidenceResult);
+    });
+
+    it('should deny APPROVER from processing another users receipt', async () => {
+      const approverUser = { ...mockUser, id: 'approver-1', role: RoleType.APPROVER };
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+
+      await expect(service.processReceipt('receipt-1', approverUser)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+
+    it('should include expense relation when looking up receipt', async () => {
+      mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
+      mockTextractProvider.analyzeExpense.mockResolvedValue(highConfidenceResult);
+      mockPrismaService.receipt.update.mockResolvedValue({});
+      mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
+      mockPrismaService.expense.update.mockResolvedValue({});
+
+      await service.processReceipt('receipt-1', mockUser);
+
+      expect(mockPrismaService.receipt.findUnique).toHaveBeenCalledWith({
+        where: { id: 'receipt-1' },
+        include: { expense: true },
+      });
     });
   });
 
@@ -340,7 +426,7 @@ describe('OcrService', () => {
       mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      const result = await service.reprocessReceipt('receipt-1');
+      const result = await service.reprocessReceipt('receipt-1', mockUser);
 
       expect(result).toEqual(highConfidenceResult);
       expect(mockTextractProvider.analyzeExpense).toHaveBeenCalledWith(mockReceipt.s3Key);
@@ -349,8 +435,8 @@ describe('OcrService', () => {
     it('should throw error when receipt not found during reprocess', async () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(null);
 
-      await expect(service.reprocessReceipt('nonexistent')).rejects.toThrow(
-        'Receipt with ID nonexistent not found',
+      await expect(service.reprocessReceipt('nonexistent', mockUser)).rejects.toThrow(
+        NotFoundException,
       );
     });
 
@@ -366,7 +452,7 @@ describe('OcrService', () => {
       mockPrismaService.vendor.findFirst.mockResolvedValue({ id: 'v1' });
       mockPrismaService.expense.update.mockResolvedValue({});
 
-      await service.reprocessReceipt('receipt-1');
+      await service.reprocessReceipt('receipt-1', mockUser);
 
       expect(mockPrismaService.receipt.update).toHaveBeenCalledWith({
         where: { id: 'receipt-1' },
@@ -382,7 +468,7 @@ describe('OcrService', () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
       mockTextractProvider.analyzeExpense.mockRejectedValue(new Error('Service timeout'));
 
-      await expect(service.reprocessReceipt('receipt-1')).rejects.toThrow('Service timeout');
+      await expect(service.reprocessReceipt('receipt-1', mockUser)).rejects.toThrow('Service timeout');
     });
   });
 });

@@ -46,8 +46,13 @@ describe('ReceiptsService', () => {
     status: ExpenseStatus.DRAFT,
   };
 
+  // Valid JPEG magic bytes (FF D8 FF) followed by padding
+  const jpegMagicBytes = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+  const jpegPadding = Buffer.alloc(500);
+  const validJpegBuffer = Buffer.concat([jpegMagicBytes, jpegPadding]);
+
   const mockFile: Express.Multer.File = {
-    buffer: Buffer.from('fake-file-content'),
+    buffer: validJpegBuffer,
     originalname: 'receipt.jpg',
     mimetype: 'image/jpeg',
     size: 1024 * 500, // 500KB
@@ -183,6 +188,23 @@ describe('ReceiptsService', () => {
       );
       await expect(service.upload('expense-1', mockUser, mockFile)).rejects.toThrow(
         'This receipt has already been uploaded',
+      );
+    });
+
+    it('should reject file when content does not match declared MIME type', async () => {
+      const spoofedFile: Express.Multer.File = {
+        ...mockFile,
+        buffer: Buffer.from('This is plain text, not a JPEG'),
+        mimetype: 'image/jpeg',
+      };
+      mockPrismaService.expense.findUnique.mockResolvedValue(mockExpense);
+      mockPrismaService.receipt.findFirst.mockResolvedValue(null);
+
+      await expect(service.upload('expense-1', mockUser, spoofedFile)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.upload('expense-1', mockUser, spoofedFile)).rejects.toThrow(
+        'File content does not match declared file type',
       );
     });
 

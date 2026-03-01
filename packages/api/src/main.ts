@@ -4,8 +4,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { validateEnvironment } from './common/config/env-validation';
 
 async function bootstrap() {
+  validateEnvironment();
+
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
