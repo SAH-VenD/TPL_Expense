@@ -364,6 +364,9 @@ model Expense {
   @@index([departmentId])
   @@index([voucherId])
   @@index([expenseNumber])
+  @@index([status, expenseDate])
+  @@index([submitterId, status])
+  @@index([status, categoryId])
 }
 
 model ExpenseSplit {
