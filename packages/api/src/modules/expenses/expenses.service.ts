@@ -11,6 +11,7 @@ import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { ExpenseFiltersDto } from './dto/expense-filters.dto';
 import { ExpenseStatus, RoleType, User, Prisma } from '@prisma/client';
 import { EmailService } from '../notifications/email.service';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 @Injectable()
 export class ExpensesService {
@@ -100,8 +101,7 @@ export class ExpensesService {
   }
 
   async findAll(user: User, filters: ExpenseFiltersDto) {
-    const { page = 1, limit = 20 } = filters;
-    const skip = (page - 1) * limit;
+    const { skip, take: limit } = getPaginationParams(filters.page, filters.limit);
 
     const where = this.buildExpenseWhereClause(user, filters);
     const orderBy = this.buildExpenseOrderBy(filters.sort);
@@ -127,7 +127,7 @@ export class ExpensesService {
       data: expenses,
       meta: {
         total,
-        page,
+        page: Math.max(1, Number(filters.page) || 1),
         limit,
         totalPages: Math.ceil(total / limit),
       },

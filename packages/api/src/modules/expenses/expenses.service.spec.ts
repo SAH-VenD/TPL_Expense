@@ -315,19 +315,19 @@ describe('ExpensesService', () => {
         expect.objectContaining({
           total: 1,
           page: 1,
-          limit: 20,
+          limit: 50,
           totalPages: 1,
         }),
       );
     });
 
-    it('should use default page=1 and limit=20', async () => {
+    it('should use default page=1 and limit=50 (from shared pagination utility)', async () => {
       await service.findAll(mockEmployee, {});
 
       expect(mockPrismaService.expense.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 0,
-          take: 20,
+          take: 50,
         }),
       );
     });

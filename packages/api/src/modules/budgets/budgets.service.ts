@@ -27,6 +27,7 @@ import {
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { BUDGET_WARNING_DEFAULT_THRESHOLD } from '../../common/constants/thresholds';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 @Injectable()
 export class BudgetsService {
@@ -85,6 +86,8 @@ export class BudgetsService {
     page: number = 1,
     pageSize: number = 10,
   ) {
+    const { skip, take } = getPaginationParams(page, pageSize);
+
     const where = {
       ...(activeOnly && { isActive: true }),
       ...(type && { type }),
@@ -106,8 +109,8 @@ export class BudgetsService {
           },
         },
         orderBy: { name: 'asc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip,
+        take,
       }),
       this.prisma.budget.count({ where }),
     ]);
@@ -116,10 +119,10 @@ export class BudgetsService {
       data,
       meta: {
         pagination: {
-          page,
-          pageSize,
+          page: Math.max(1, Number(page) || 1),
+          pageSize: take,
           total,
-          totalPages: Math.ceil(total / pageSize),
+          totalPages: Math.ceil(total / take),
         },
       },
     };

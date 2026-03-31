@@ -20,6 +20,7 @@ import {
   VOUCHER_SETTLEMENT_CALENDAR_DAYS,
   VOUCHER_RELATED_EXPENSES_LIMIT,
 } from '../../common/constants/thresholds';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 @Injectable()
 export class VouchersService {
@@ -75,6 +76,7 @@ export class VouchersService {
   // ==================== QUERY VOUCHERS ====================
 
   async findAll(user: User, status?: VoucherStatus, page: number = 1, pageSize: number = 10) {
+    const { skip, take } = getPaginationParams(page, pageSize);
     const isAdmin = ORG_WIDE_VISIBILITY_ROLES.includes(user.role);
 
     // Base where clause for user access (without status filter)
@@ -104,8 +106,8 @@ export class VouchersService {
           },
         },
         orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * pageSize,
-        take: pageSize,
+        skip,
+        take,
       }),
       this.prisma.voucher.count({ where }),
       // Get status counts for ALL vouchers (without status filter)
@@ -126,10 +128,10 @@ export class VouchersService {
       data,
       meta: {
         pagination: {
-          page,
-          pageSize,
+          page: Math.max(1, Number(page) || 1),
+          pageSize: take,
           total,
-          totalPages: Math.ceil(total / pageSize),
+          totalPages: Math.ceil(total / take),
         },
       },
       statusCounts,
