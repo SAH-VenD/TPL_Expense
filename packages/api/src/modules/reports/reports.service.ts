@@ -256,9 +256,11 @@ export class ReportsService {
           lte: endDate,
         },
       },
-      include: {
-        category: true,
-        vendor: true,
+      select: {
+        amount: true,
+        taxAmount: true,
+        totalAmount: true,
+        taxType: true,
       },
     });
 
