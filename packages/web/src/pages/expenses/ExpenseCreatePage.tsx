@@ -11,6 +11,7 @@ import {
 } from '@/features/expenses/services/expenses.service';
 import type { Currency, ExpenseType, OcrResult } from '@/features/expenses/services/expenses.service';
 import { showToast, PageHeader, Button, Input, Textarea } from '@/components/ui';
+import { getApiErrorMessage } from '@/utils/error';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { CameraCapture } from '@/components/expenses/CameraCapture';
 import { OcrPreview } from '@/components/expenses/OcrPreview';
@@ -170,11 +171,7 @@ export function ExpenseCreatePage() {
 
       navigate('/expenses');
     } catch (error) {
-      const errorMessage =
-        error && typeof error === 'object' && 'data' in error
-          ? (error as { data?: { message?: string } }).data?.message
-          : 'Failed to create expense';
-      showToast.error(errorMessage || 'Failed to create expense');
+      showToast.error(getApiErrorMessage(error, 'Failed to create expense'));
     }
   };
 
@@ -462,6 +459,7 @@ export function ExpenseCreatePage() {
               <Button
                 variant="primary"
                 onClick={handleNextStep}
+                disabled={loading}
               >
                 Next: Upload Receipts
               </Button>
