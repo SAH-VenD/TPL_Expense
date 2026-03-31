@@ -64,10 +64,13 @@ export class ReportsService {
         status: { in: APPROVED_STATUSES },
         ...dateFilter,
       },
-      include: {
+      select: {
+        totalAmount: true,
         submitter: {
-          include: {
-            department: true,
+          select: {
+            department: {
+              select: { name: true },
+            },
           },
         },
       },
@@ -82,10 +85,12 @@ export class ReportsService {
       {} as Record<string, number>,
     );
 
-    return Object.entries(departmentSpend).map(([department, amount]) => ({
-      department,
-      amount,
-    }));
+    return Object.entries(departmentSpend)
+      .map(([department, amount]) => ({
+        department,
+        amount,
+      }))
+      .sort((a, b) => b.amount - a.amount);
   }
 
   /**
