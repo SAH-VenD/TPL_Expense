@@ -2,6 +2,7 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from '@/services/api';
 import type { PaginatedResponse } from '@/types/api.types';
 import type { Expense } from '@/features/expenses/services/expenses.service';
+import { expensesApi } from '@/features/expenses/services/expenses.service';
 
 export interface ApprovalFilters {
   page?: number;
@@ -52,6 +53,7 @@ export const approvalsApi = createApi({
         },
       }),
       providesTags: ['Approval'],
+      keepUnusedDataFor: 60,
     }),
     approveExpense: builder.mutation<Expense, ApproveDto>({
       query: (data) => ({
@@ -60,6 +62,14 @@ export const approvalsApi = createApi({
         body: data,
       }),
       invalidatesTags: ['Approval'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(expensesApi.util.invalidateTags([{ type: 'Expense', id: 'LIST' }]));
+        } catch {
+          // If mutation failed, don't invalidate
+        }
+      },
     }),
     bulkApprove: builder.mutation<{ approved: number }, { expenseIds: string[]; comment?: string }>(
       {
@@ -69,6 +79,14 @@ export const approvalsApi = createApi({
           body: data,
         }),
         invalidatesTags: ['Approval'],
+        async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+          try {
+            await queryFulfilled;
+            dispatch(expensesApi.util.invalidateTags([{ type: 'Expense', id: 'LIST' }]));
+          } catch {
+            // If mutation failed, don't invalidate
+          }
+        },
       },
     ),
     rejectExpense: builder.mutation<Expense, RejectDto>({
@@ -78,6 +96,14 @@ export const approvalsApi = createApi({
         body: data,
       }),
       invalidatesTags: ['Approval'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(expensesApi.util.invalidateTags([{ type: 'Expense', id: 'LIST' }]));
+        } catch {
+          // If mutation failed, don't invalidate
+        }
+      },
     }),
     requestClarification: builder.mutation<Expense, ClarificationDto>({
       query: (data) => ({
@@ -86,6 +112,14 @@ export const approvalsApi = createApi({
         body: data,
       }),
       invalidatesTags: ['Approval'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(expensesApi.util.invalidateTags([{ type: 'Expense', id: 'LIST' }]));
+        } catch {
+          // If mutation failed, don't invalidate
+        }
+      },
     }),
     getDelegations: builder.query<Delegation[], void>({
       query: () => '/approvals/delegations',
