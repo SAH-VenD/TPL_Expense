@@ -207,13 +207,19 @@ describe('OcrService', () => {
       );
     });
 
-    it('should propagate Textract service errors', async () => {
+    it('should throw ServiceUnavailableException and mark receipt as failed on Textract error', async () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
       mockTextractProvider.analyzeExpense.mockRejectedValue(new Error('Textract unavailable'));
+      mockPrismaService.receipt.update.mockResolvedValue({});
 
       await expect(service.processReceipt('receipt-1', mockUser)).rejects.toThrow(
-        'Textract unavailable',
+        'OCR processing is temporarily unavailable',
       );
+
+      expect(mockPrismaService.receipt.update).toHaveBeenCalledWith({
+        where: { id: 'receipt-1' },
+        data: { ocrStatus: 'failed' },
+      });
     });
 
     it('should auto-create vendor when vendor name extracted and no match found', async () => {
@@ -462,12 +468,13 @@ describe('OcrService', () => {
       });
     });
 
-    it('should propagate errors from Textract during reprocess', async () => {
+    it('should throw ServiceUnavailableException on Textract error during reprocess', async () => {
       mockPrismaService.receipt.findUnique.mockResolvedValue(mockReceipt);
       mockTextractProvider.analyzeExpense.mockRejectedValue(new Error('Service timeout'));
+      mockPrismaService.receipt.update.mockResolvedValue({});
 
       await expect(service.reprocessReceipt('receipt-1', mockUser)).rejects.toThrow(
-        'Service timeout',
+        'OCR processing is temporarily unavailable',
       );
     });
   });
