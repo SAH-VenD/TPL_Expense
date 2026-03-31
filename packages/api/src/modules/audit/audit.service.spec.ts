@@ -107,8 +107,8 @@ describe('AuditService', () => {
         userId: 'user-1',
       });
 
-      expect(result.id).toBe('log-id');
-      expect(result.action).toBe('LOGIN');
+      expect(result!.id).toBe('log-id');
+      expect(result!.action).toBe('LOGIN');
     });
   });
 
