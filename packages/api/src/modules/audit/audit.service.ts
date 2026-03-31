@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 export interface AuditLogData {
   userId?: string;
@@ -51,9 +52,8 @@ export class AuditService {
     limit?: number;
   }) {
     try {
-      const page = Number(filters.page) || 1;
-      const limit = Number(filters.limit) || 50;
-      const skip = (page - 1) * limit;
+      const { skip, take: limit } = getPaginationParams(filters.page, filters.limit);
+      const page = Math.max(1, Number(filters.page) || 1);
 
       const where: any = {};
 

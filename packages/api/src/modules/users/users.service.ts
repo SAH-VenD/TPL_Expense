@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserStatus, RoleType, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 @Injectable()
 export class UsersService {
@@ -68,11 +69,9 @@ export class UsersService {
     role?: RoleType;
     status?: UserStatus;
   }) {
-    // Ensure page and pageSize are valid numbers with defaults
-    const page = Number(params.page) || 1;
-    const pageSize = Number(params.pageSize) || 20;
+    const { skip, take: pageSize } = getPaginationParams(params.page, params.pageSize);
+    const page = Math.max(1, Number(params.page) || 1);
     const { search, departmentId, role, status } = params;
-    const skip = Math.max(0, (page - 1) * pageSize);
 
     const where: Prisma.UserWhereInput = {};
 

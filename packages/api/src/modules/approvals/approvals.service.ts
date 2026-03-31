@@ -20,6 +20,7 @@ import {
 import { Decimal } from '@prisma/client/runtime/library';
 import { EMERGENCY_APPROVAL_ROLES } from '../../common/constants/roles';
 import { EmailService } from '../notifications/email.service';
+import { getPaginationParams } from '../../common/utils/pagination';
 
 @Injectable()
 export class ApprovalsService {
@@ -33,8 +34,7 @@ export class ApprovalsService {
   // ==================== PENDING APPROVALS ====================
 
   async getPendingApprovals(user: User, filters: { page?: number; limit?: number }) {
-    const { page = 1, limit = 20 } = filters;
-    const skip = (page - 1) * limit;
+    const { skip, take: limit } = getPaginationParams(filters.page, filters.limit);
 
     // Find expenses that need this user's approval
     const expenses = await this.findExpensesRequiringApproval(user.id);
@@ -69,7 +69,7 @@ export class ApprovalsService {
       data: fullExpenses,
       meta: {
         total: expenses.length,
-        page,
+        page: Math.max(1, Number(filters.page) || 1),
         limit,
         totalPages: Math.ceil(expenses.length / limit),
       },
