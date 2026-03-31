@@ -752,6 +752,7 @@ export class ApprovalsService {
   }
 
   private async findExpensesRequiringApproval(userId: string): Promise<Expense[]> {
+    // Query 1: Fetch user once
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -760,7 +761,7 @@ export class ApprovalsService {
       return [];
     }
 
-    // Get all pending expenses
+    // Query 2: Fetch all pending expenses with approvalHistory
     const pendingExpenses = await this.prisma.expense.findMany({
       where: {
         status: {
@@ -772,22 +773,103 @@ export class ApprovalsService {
       },
     });
 
-    // Filter expenses where user can approve at current tier
+    // Query 3: Fetch ALL active approval tiers (small static table)
+    const allTiers = await this.prisma.approvalTier.findMany({
+      where: { isActive: true },
+      orderBy: { tierOrder: 'asc' },
+    });
+
+    // Query 4: Fetch all active delegations for this user
+    const now = new Date();
+    const activeDelegations = await this.prisma.approvalDelegation.findMany({
+      where: {
+        toUserId: userId,
+        isActive: true,
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+      include: {
+        fromUser: {
+          select: { role: true },
+        },
+      },
+    });
+
+    // Filter expenses in memory using the same authorization logic
     const expensesForUser: Expense[] = [];
 
     for (const expense of pendingExpenses) {
-      try {
-        const requiredTier = await this.getRequiredApprovalTier(expense);
-        const { isAuthorized } = await this.checkApprovalAuthority(userId, expense, requiredTier);
+      // Determine required tier in memory (mirrors getRequiredApprovalTier logic)
+      const pkrAmount = expense.amountInPKR || expense.amount;
 
-        if (isAuthorized) {
-          expensesForUser.push(expense);
-        }
-      } catch {
-        // Skip expenses with no matching approval tier configured
+      const approvedTierLevels = new Set(
+        expense.approvalHistory
+          .filter((h) => h.action === ApprovalAction.APPROVED)
+          .map((h) => h.tierLevel),
+      );
+
+      // Find tiers matching this expense amount
+      const matchingTiers = allTiers.filter((tier) => {
+        const minOk = tier.minAmount.lte(pkrAmount);
+        const maxOk = tier.maxAmount === null || tier.maxAmount.gte(pkrAmount);
+        return minOk && maxOk;
+      });
+
+      // Find first tier not yet approved
+      const requiredTier = matchingTiers.find((tier) => !approvedTierLevels.has(tier.tierOrder));
+
+      if (!requiredTier) {
+        // No matching tier — skip (same as catching error in old code)
         this.logger.warn(
           `Skipping expense ${expense.id} in pending list: no matching approval tier`,
         );
+        continue;
+      }
+
+      // Check authorization in memory (mirrors checkApprovalAuthority logic)
+      let isAuthorized = false;
+
+      // CEO can approve at any tier
+      if (user.role === RoleType.CEO) {
+        isAuthorized = true;
+      }
+
+      // SUPER_APPROVER can approve at any tier except CEO-only tiers
+      if (
+        !isAuthorized &&
+        user.role === RoleType.SUPER_APPROVER &&
+        requiredTier.approverRole !== RoleType.CEO
+      ) {
+        isAuthorized = true;
+      }
+
+      // FINANCE can approve at FINANCE and APPROVER tiers
+      if (
+        !isAuthorized &&
+        user.role === RoleType.FINANCE &&
+        (requiredTier.approverRole === RoleType.FINANCE ||
+          requiredTier.approverRole === RoleType.APPROVER)
+      ) {
+        isAuthorized = true;
+      }
+
+      // Direct role match
+      if (!isAuthorized && user.role === requiredTier.approverRole) {
+        isAuthorized = true;
+      }
+
+      // Delegation role match
+      if (!isAuthorized) {
+        const hasDelegation = activeDelegations.some(
+          (d) => d.fromUser.role === requiredTier.approverRole,
+        );
+        if (hasDelegation) {
+          isAuthorized = true;
+        }
+      }
+
+      if (isAuthorized) {
+        expensesForUser.push(expense);
       }
     }
 
