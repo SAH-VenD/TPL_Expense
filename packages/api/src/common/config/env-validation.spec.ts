@@ -118,11 +118,68 @@ describe('validateEnvironment', () => {
     });
   });
 
+  describe('conditional S3 validation', () => {
+    it('should throw when STORAGE_TYPE is s3 and AWS variables are missing', () => {
+      setValidEnv();
+      process.env.STORAGE_TYPE = 's3';
+
+      expect(() => validateEnvironment()).toThrow(
+        'AWS_ACCESS_KEY_ID is required when STORAGE_TYPE is \'s3\'',
+      );
+    });
+
+    it('should not throw when STORAGE_TYPE is s3 and all AWS variables are set', () => {
+      setValidEnv();
+      process.env.STORAGE_TYPE = 's3';
+      process.env.AWS_ACCESS_KEY_ID = 'test-key';
+      process.env.AWS_SECRET_ACCESS_KEY = 'test-secret';
+      process.env.AWS_REGION = 'us-east-1';
+      process.env.AWS_S3_BUCKET = 'test-bucket';
+
+      expect(() => validateEnvironment()).not.toThrow();
+    });
+
+    it('should not validate AWS variables when STORAGE_TYPE is not s3', () => {
+      setValidEnv();
+      process.env.STORAGE_TYPE = 'local';
+
+      expect(() => validateEnvironment()).not.toThrow();
+    });
+  });
+
+  describe('conditional SMTP validation', () => {
+    it('should throw when SMTP_HOST is set but SMTP_PORT is missing', () => {
+      setValidEnv();
+      process.env.SMTP_HOST = 'smtp.example.com';
+      delete process.env.SMTP_PORT;
+
+      expect(() => validateEnvironment()).toThrow(
+        'SMTP_PORT is required when SMTP_HOST is set',
+      );
+    });
+
+    it('should not throw when both SMTP_HOST and SMTP_PORT are set', () => {
+      setValidEnv();
+      process.env.SMTP_HOST = 'smtp.example.com';
+      process.env.SMTP_PORT = '587';
+
+      expect(() => validateEnvironment()).not.toThrow();
+    });
+
+    it('should not throw when SMTP_HOST is not set', () => {
+      setValidEnv();
+      delete process.env.SMTP_HOST;
+
+      expect(() => validateEnvironment()).not.toThrow();
+    });
+  });
+
   describe('production warnings', () => {
     it('should warn when FRONTEND_URL is missing in production', () => {
       setValidEnv();
       process.env.NODE_ENV = 'production';
       process.env.SMTP_HOST = 'smtp.example.com';
+      process.env.SMTP_PORT = '587';
       delete process.env.FRONTEND_URL;
 
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -163,6 +220,7 @@ describe('validateEnvironment', () => {
       process.env.NODE_ENV = 'production';
       process.env.FRONTEND_URL = 'https://app.example.com';
       process.env.SMTP_HOST = 'smtp.example.com';
+      process.env.SMTP_PORT = '587';
 
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 

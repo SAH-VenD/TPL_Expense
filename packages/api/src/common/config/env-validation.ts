@@ -33,6 +33,26 @@ export function validateEnvironment(): void {
     }
   }
 
+  // Conditional S3 validation
+  if (process.env.STORAGE_TYPE === 's3') {
+    const s3Variables = [
+      'AWS_ACCESS_KEY_ID',
+      'AWS_SECRET_ACCESS_KEY',
+      'AWS_REGION',
+      'AWS_S3_BUCKET',
+    ] as const;
+    for (const name of s3Variables) {
+      if (!process.env[name] || process.env[name].trim() === '') {
+        errors.push(`${name} is required when STORAGE_TYPE is 's3'`);
+      }
+    }
+  }
+
+  // Conditional SMTP validation
+  if (process.env.SMTP_HOST && !process.env.SMTP_PORT) {
+    errors.push('SMTP_PORT is required when SMTP_HOST is set');
+  }
+
   if (errors.length > 0) {
     throw new Error(`Environment validation failed:\n${errors.map((e) => `  - ${e}`).join('\n')}`);
   }
