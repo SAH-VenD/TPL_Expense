@@ -69,6 +69,18 @@ export class ReportQueryDto {
   @IsEnum(ReportGroupBy)
   @IsOptional()
   groupBy?: ReportGroupBy;
+
+  @ApiPropertyOptional({
+    description: 'Maximum number of results to return (default 50, max 200)',
+    example: 50,
+  })
+  @Transform(({ value }) => Number.parseInt(value, 10))
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  @Max(200)
+  @IsOptional()
+  limit?: number;
 }
 
 /**
