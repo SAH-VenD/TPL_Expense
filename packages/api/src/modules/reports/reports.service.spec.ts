@@ -41,6 +41,7 @@ describe('ReportsService', () => {
     approvalHistory: {
       findMany: jest.fn(),
     },
+    $queryRaw: jest.fn(),
   };
 
   // Mock data factories
@@ -288,9 +289,11 @@ describe('ReportsService', () => {
   describe('getBudgetVsActual', () => {
     it('should return budget vs actual comparison', async () => {
       mockPrismaService.budget.findMany.mockResolvedValue([createMockBudget()]);
-      mockPrismaService.expense.aggregate.mockResolvedValue({
-        _sum: { totalAmount: new Decimal(25000) },
-      });
+      // Department budget uses $queryRaw for batch aggregation
+      mockPrismaService.$queryRaw.mockResolvedValue([
+        { departmentId: 'dept-1', total: 25000 },
+      ]);
+      mockPrismaService.expense.groupBy.mockResolvedValue([]);
 
       const result = await service.getBudgetVsActual();
 
@@ -306,9 +309,9 @@ describe('ReportsService', () => {
 
     it('should handle zero actual spend', async () => {
       mockPrismaService.budget.findMany.mockResolvedValue([createMockBudget()]);
-      mockPrismaService.expense.aggregate.mockResolvedValue({
-        _sum: { totalAmount: null },
-      });
+      // No matching department in raw query results
+      mockPrismaService.$queryRaw.mockResolvedValue([]);
+      mockPrismaService.expense.groupBy.mockResolvedValue([]);
 
       const result = await service.getBudgetVsActual();
 
