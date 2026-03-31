@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { User, RoleType } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TextractProvider, OcrResult } from './providers/textract.provider';
@@ -34,17 +40,36 @@ export class OcrService {
 
     this.logger.log(`Processing receipt: ${receiptId}`);
 
-    const result = await this.textractProvider.analyzeExpense(receipt.s3Key);
+    let result: OcrResult;
+    try {
+      result = await this.textractProvider.analyzeExpense(receipt.s3Key);
+    } catch (error) {
+      this.logger.error(`OCR processing failed for receipt ${receiptId}: ${error}`);
+      try {
+        await this.prisma.receipt.update({
+          where: { id: receiptId },
+          data: { ocrStatus: 'failed' },
+        });
+      } catch (updateError) {
+        this.logger.error(`Failed to mark receipt ${receiptId} as failed: ${updateError}`);
+      }
+      throw new ServiceUnavailableException('OCR processing is temporarily unavailable');
+    }
 
     // Update receipt with OCR data
-    await this.prisma.receipt.update({
-      where: { id: receiptId },
-      data: {
-        ocrResult: result as any,
-        ocrStatus: 'completed',
-        ocrConfidence: result.confidence,
-      },
-    });
+    try {
+      await this.prisma.receipt.update({
+        where: { id: receiptId },
+        data: {
+          ocrResult: result as any,
+          ocrStatus: 'completed',
+          ocrConfidence: result.confidence,
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to save OCR results for receipt ${receiptId}: ${error}`);
+      throw new ServiceUnavailableException('Failed to save OCR results');
+    }
 
     // Update expense with extracted data if confidence is high enough
     if (result.confidence >= 80) {
