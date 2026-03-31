@@ -272,6 +272,7 @@ export const expensesApi = createApi({
               { type: 'Expense', id: 'LIST' },
             ]
           : [{ type: 'Expense', id: 'LIST' }],
+      keepUnusedDataFor: 300,
     }),
 
     // Get single expense by ID
