@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 import { validateEnvironment } from './common/config/env-validation';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   validateEnvironment();
@@ -42,6 +43,9 @@ async function bootstrap() {
     }),
   );
 
+  // Global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter());
+
   // Swagger documentation
   const swaggerConfig = new DocumentBuilder()
     .setTitle('TPL Expense API')
@@ -78,5 +82,17 @@ async function bootstrap() {
   console.log(`🚀 Application is running on: http://localhost:${port}`);
   console.log(`📚 Swagger documentation: http://localhost:${port}/api/docs`);
 }
+
+process.on('unhandledRejection', (reason: unknown) => {
+  const logger = new Logger('Process');
+  logger.error('Unhandled Rejection', reason instanceof Error ? reason.stack : String(reason));
+  process.exit(1);
+});
+
+process.on('uncaughtException', (error: Error) => {
+  const logger = new Logger('Process');
+  logger.error('Uncaught Exception', error.stack);
+  process.exit(1);
+});
 
 bootstrap();
