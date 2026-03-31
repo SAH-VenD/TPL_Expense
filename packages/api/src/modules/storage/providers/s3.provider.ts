@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
@@ -34,36 +34,60 @@ export class S3Provider {
   }
 
   async upload(buffer: Buffer, key: string, mimeType: string): Promise<string> {
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: mimeType,
-    });
+    try {
+      const command = new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: buffer,
+        ContentType: mimeType,
+      });
 
-    await this.client.send(command);
-    this.logger.log(`File uploaded: ${key}`);
+      await this.client.send(command);
+      this.logger.log(`File uploaded: ${key}`);
 
-    return key;
+      return key;
+    } catch (error) {
+      this.logger.error(
+        'Failed to upload file',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException('File storage operation failed');
+    }
   }
 
   async getSignedUrl(key: string, expiresIn = 3600): Promise<string> {
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
 
-    return getSignedUrl(this.client, command, { expiresIn });
+      return await getSignedUrl(this.client, command, { expiresIn });
+    } catch (error) {
+      this.logger.error(
+        'Failed to get signed URL',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException('File storage operation failed');
+    }
   }
 
   async delete(key: string): Promise<void> {
-    const command = new DeleteObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-    });
+    try {
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      });
 
-    await this.client.send(command);
-    this.logger.log(`File deleted: ${key}`);
+      await this.client.send(command);
+      this.logger.log(`File deleted: ${key}`);
+    } catch (error) {
+      this.logger.error(
+        'Failed to delete file',
+        error instanceof Error ? error.stack : String(error),
+      );
+      throw new InternalServerErrorException('File storage operation failed');
+    }
   }
 
   async exists(key: string): Promise<boolean> {
