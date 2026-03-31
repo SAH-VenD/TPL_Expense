@@ -8,6 +8,7 @@ import {
 import { User, RoleType } from '@prisma/client';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { TextractProvider, OcrResult } from './providers/textract.provider';
+import { OCR_CONFIDENCE_THRESHOLD } from '../../common/constants/thresholds';
 
 /** Roles that can access any receipt for auditing purposes */
 const RECEIPT_AUDIT_ROLES: RoleType[] = [RoleType.ADMIN, RoleType.FINANCE];
@@ -72,7 +73,7 @@ export class OcrService {
     }
 
     // Update expense with extracted data if confidence is high enough
-    if (result.confidence >= 80) {
+    if (result.confidence >= OCR_CONFIDENCE_THRESHOLD) {
       await this.updateExpenseFromOcr(receipt.expenseId, result);
     } else {
       // Flag for manual review

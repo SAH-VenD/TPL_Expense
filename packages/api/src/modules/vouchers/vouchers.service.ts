@@ -14,12 +14,15 @@ import {
 } from './dto/voucher-actions.dto';
 import { VoucherStatus, RoleType, User, ExpenseStatus, ExpenseType } from '@prisma/client';
 import { ORG_WIDE_VISIBILITY_ROLES } from '../../common/constants/roles';
+import {
+  VOUCHER_MAX_AMOUNT_PKR,
+  VOUCHER_SETTLEMENT_DEADLINE_DAYS,
+  VOUCHER_SETTLEMENT_CALENDAR_DAYS,
+  VOUCHER_RELATED_EXPENSES_LIMIT,
+} from '../../common/constants/thresholds';
 
 @Injectable()
 export class VouchersService {
-  private readonly MAX_PETTY_CASH_AMOUNT = 50000; // PKR
-  private readonly SETTLEMENT_DEADLINE_DAYS = 7; // Business days
-
   constructor(private readonly prisma: PrismaService) {}
 
   // ==================== CREATE VOUCHER ====================
@@ -31,10 +34,8 @@ export class VouchersService {
     }
 
     // Rule 2: Validate maximum amount
-    if (createVoucherDto.requestedAmount > this.MAX_PETTY_CASH_AMOUNT) {
-      throw new BadRequestException(
-        `Maximum petty cash request is PKR ${this.MAX_PETTY_CASH_AMOUNT}`,
-      );
+    if (createVoucherDto.requestedAmount > VOUCHER_MAX_AMOUNT_PKR) {
+      throw new BadRequestException(`Maximum petty cash request is PKR ${VOUCHER_MAX_AMOUNT_PKR}`);
     }
 
     // Rule 3: Validate purpose minimum length
@@ -50,7 +51,7 @@ export class VouchersService {
 
     // Default settlement deadline is 30 days from creation
     const settlementDeadline = new Date();
-    settlementDeadline.setDate(settlementDeadline.getDate() + 30);
+    settlementDeadline.setDate(settlementDeadline.getDate() + VOUCHER_SETTLEMENT_CALENDAR_DAYS);
 
     return this.prisma.voucher.create({
       data: {
@@ -93,7 +94,7 @@ export class VouchersService {
             select: { id: true, firstName: true, lastName: true, email: true },
           },
           expenses: {
-            take: 5,
+            take: VOUCHER_RELATED_EXPENSES_LIMIT,
             select: {
               id: true,
               expenseNumber: true,
@@ -365,7 +366,7 @@ export class VouchersService {
     }
 
     // Rule 3: Calculate settlement deadline (7 business days from disbursement)
-    const settlementDeadline = this.calculateSettlementDeadline(this.SETTLEMENT_DEADLINE_DAYS);
+    const settlementDeadline = this.calculateSettlementDeadline(VOUCHER_SETTLEMENT_DEADLINE_DAYS);
 
     return this.prisma.voucher.update({
       where: { id },
