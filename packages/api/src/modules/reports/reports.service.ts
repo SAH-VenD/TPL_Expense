@@ -20,7 +20,14 @@ import {
   DashboardSummaryReportDto,
   DashboardMetricDto,
 } from './dto/report-responses.dto';
-import { ExpenseStatus, VoucherStatus, ApprovalAction, RoleType, User } from '@prisma/client';
+import {
+  ExpenseStatus,
+  Prisma,
+  VoucherStatus,
+  ApprovalAction,
+  RoleType,
+  User,
+} from '@prisma/client';
 import * as ExcelJS from 'exceljs';
 import * as PDFDocument from 'pdfkit';
 
@@ -185,42 +192,109 @@ export class ReportsService {
       },
     });
 
-    const result = [];
-
-    for (const budget of budgets) {
-      const where: Record<string, unknown> = {
-        status: { in: APPROVED_STATUSES },
-        createdAt: {
-          gte: budget.startDate,
-          lte: budget.endDate,
-        },
-      };
-
-      if (budget.departmentId) {
-        where.submitter = { departmentId: budget.departmentId };
-      } else if (budget.projectId) {
-        where.projectId = budget.projectId;
-      } else if (budget.categoryId) {
-        where.categoryId = budget.categoryId;
-      }
-
-      const actual = await this.prisma.expense.aggregate({
-        where,
-        _sum: { totalAmount: true },
-      });
-
-      result.push({
-        name: budget.name,
-        type: budget.type,
-        budgetAmount: Number(budget.totalAmount),
-        actualAmount: Number(actual._sum.totalAmount || 0),
-        variance: Number(budget.totalAmount) - Number(actual._sum.totalAmount || 0),
-        utilizationPercentage:
-          (Number(actual._sum.totalAmount || 0) / Number(budget.totalAmount)) * 100,
-      });
+    if (budgets.length === 0) {
+      return [];
     }
 
-    return result;
+    // Find widest date range across all budgets
+    const minStartDate = budgets.reduce(
+      (min, b) => (b.startDate < min ? b.startDate : min),
+      budgets[0].startDate,
+    );
+    const maxEndDate = budgets.reduce(
+      (max, b) => (b.endDate > max ? b.endDate : max),
+      budgets[0].endDate,
+    );
+
+    const baseDateFilter = { gte: minStartDate, lte: maxEndDate };
+
+    // Collect unique IDs per dimension
+    const departmentIds = [
+      ...new Set(budgets.filter((b) => b.departmentId).map((b) => b.departmentId as string)),
+    ];
+    const projectIds = [
+      ...new Set(budgets.filter((b) => b.projectId).map((b) => b.projectId as string)),
+    ];
+    const categoryIds = [
+      ...new Set(budgets.filter((b) => b.categoryId).map((b) => b.categoryId as string)),
+    ];
+
+    // Run batch groupBy queries in parallel (one per dimension type)
+    const [deptActuals, projectActuals, categoryActuals] = await Promise.all([
+      // Department budgets: aggregate by submitter.departmentId using raw SQL
+      // (Prisma groupBy does not support grouping by relation fields)
+      departmentIds.length > 0
+        ? this.prisma.$queryRaw<{ departmentId: string; total: number }[]>`
+            SELECT u."departmentId" AS "departmentId", COALESCE(SUM(e."totalAmount"), 0) AS "total"
+            FROM "Expense" e
+            JOIN "User" u ON e."submitterId" = u."id"
+            WHERE e."status" IN ('APPROVED', 'PAID')
+              AND e."createdAt" >= ${minStartDate}
+              AND e."createdAt" <= ${maxEndDate}
+              AND u."departmentId" IN (${Prisma.join(departmentIds)})
+            GROUP BY u."departmentId"
+          `
+        : Promise.resolve([]),
+
+      // Project budgets: groupBy projectId
+      projectIds.length > 0
+        ? this.prisma.expense.groupBy({
+            by: ['projectId'],
+            where: {
+              status: { in: APPROVED_STATUSES },
+              createdAt: baseDateFilter,
+              projectId: { in: projectIds },
+            },
+            _sum: { totalAmount: true },
+          })
+        : Promise.resolve([]),
+
+      // Category budgets: groupBy categoryId
+      categoryIds.length > 0
+        ? this.prisma.expense.groupBy({
+            by: ['categoryId'],
+            where: {
+              status: { in: APPROVED_STATUSES },
+              createdAt: baseDateFilter,
+              categoryId: { in: categoryIds },
+            },
+            _sum: { totalAmount: true },
+          })
+        : Promise.resolve([]),
+    ]);
+
+    // Build lookup maps
+    const deptMap = new Map<string, number>(
+      deptActuals.map((r) => [r.departmentId, Number(r.total)]),
+    );
+    const projectMap = new Map<string, number>(
+      projectActuals.map((r) => [r.projectId as string, Number(r._sum.totalAmount || 0)]),
+    );
+    const categoryMap = new Map<string, number>(
+      categoryActuals.map((r) => [r.categoryId, Number(r._sum.totalAmount || 0)]),
+    );
+
+    // Map budgets to results using lookup maps
+    return budgets.map((budget) => {
+      let actualAmount = 0;
+      if (budget.departmentId) {
+        actualAmount = deptMap.get(budget.departmentId) ?? 0;
+      } else if (budget.projectId) {
+        actualAmount = projectMap.get(budget.projectId) ?? 0;
+      } else if (budget.categoryId) {
+        actualAmount = categoryMap.get(budget.categoryId) ?? 0;
+      }
+
+      const budgetAmount = Number(budget.totalAmount);
+      return {
+        name: budget.name,
+        type: budget.type,
+        budgetAmount,
+        actualAmount,
+        variance: budgetAmount - actualAmount,
+        utilizationPercentage: (actualAmount / budgetAmount) * 100,
+      };
+    });
   }
 
   /**
