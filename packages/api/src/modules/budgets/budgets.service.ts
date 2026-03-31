@@ -26,6 +26,7 @@ import {
   RoleType,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { BUDGET_WARNING_DEFAULT_THRESHOLD } from '../../common/constants/thresholds';
 
 @Injectable()
 export class BudgetsService {
@@ -51,7 +52,7 @@ export class BudgetsService {
         type: createBudgetDto.type,
         period: createBudgetDto.period,
         totalAmount: createBudgetDto.totalAmount,
-        warningThreshold: createBudgetDto.warningThreshold ?? 80,
+        warningThreshold: createBudgetDto.warningThreshold ?? BUDGET_WARNING_DEFAULT_THRESHOLD,
         enforcement: createBudgetDto.enforcement ?? BudgetEnforcement.SOFT_WARNING,
         startDate,
         endDate,
